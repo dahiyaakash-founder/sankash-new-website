@@ -132,60 +132,14 @@ const ForTravelAgents = () => {
               </div>
             </motion.div>
 
-            {/* Right side: Optimiser teaser card */}
+            {/* Right side: Interactive uploader */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="bg-card rounded-2xl border shadow-card p-6 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <FileText size={14} className="text-primary" />
-                  Itinerary Review Preview
-                </div>
-                <div className="bg-muted rounded-xl p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-heading font-bold text-foreground">Europe Leisure Package</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">8N / 9D · 4 Travellers · ₹3,40,000</p>
-                    </div>
-                    <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      Review Ready
-                    </span>
-                  </div>
-                  <div className="border-t border-border pt-3 space-y-3">
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Financing</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 size={14} className="text-brand-green" />
-                        <span className="text-foreground font-medium">No Cost EMI available</span>
-                        <span className="text-muted-foreground text-xs ml-auto">₹28,333/mo × 12</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Protection</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 size={14} className="text-primary" />
-                        <span className="text-foreground font-medium">Protection add-ons recommended</span>
-                        <span className="text-muted-foreground text-xs ml-auto">Cancellation + medical</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Collection</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 size={14} className="text-brand-coral" />
-                        <span className="text-foreground font-medium">Payment collection ready</span>
-                        <span className="text-muted-foreground text-xs ml-auto">T+1 settlement</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Lock size={12} />
-                  <span>Full recommendations available after login</span>
-                </div>
-              </div>
+              <ItineraryUploader />
             </motion.div>
           </div>
         </div>
