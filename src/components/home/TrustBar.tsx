@@ -1,30 +1,35 @@
 import { motion } from "framer-motion";
+import { Users, ArrowLeftRight, Plane, FileCheck } from "lucide-react";
 
-const partners = [
-  "Thomas Cook", "Veena World", "Cordelia Cruises", "PickYourTrail", "GT Holidays", "Akbar Travels"
+const proofPoints = [
+  { icon: Users, value: "8,000+", label: "Active Travel Partners" },
+  { icon: ArrowLeftRight, value: "T+1", label: "Settlement Cycle" },
+  { icon: Plane, value: "5L+", label: "Travelers Served" },
+  { icon: FileCheck, value: "15+", label: "Lending Partners" },
 ];
 
 const TrustBar = () => {
   return (
-    <section className="py-8 border-b bg-card">
+    <section className="py-10 md:py-12 border-b bg-brand-deep">
       <div className="container">
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.1em] shrink-0">
-            Trusted by
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8">
-            {partners.map((name, i) => (
-              <motion.span
-                key={name}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="text-xs font-heading font-semibold text-muted-foreground/30 select-none whitespace-nowrap"
-              >
-                {name}
-              </motion.span>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          {proofPoints.map((point, i) => (
+            <motion.div
+              key={point.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.4 }}
+              className="flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center shrink-0">
+                <point.icon size={18} className="text-primary-foreground/60" />
+              </div>
+              <div>
+                <div className="text-lg font-heading font-bold text-primary-foreground">{point.value}</div>
+                <p className="text-[11px] text-primary-foreground/40 uppercase tracking-wider">{point.label}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

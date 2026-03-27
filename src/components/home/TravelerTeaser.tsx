@@ -1,7 +1,30 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Upload, Calculator, ArrowRight } from "lucide-react";
+import { Upload, Calculator, Search, CreditCard, ArrowRight } from "lucide-react";
+
+const steps = [
+  {
+    icon: Upload,
+    title: "Upload a Trip Quote",
+    desc: "Share your itinerary or quote from any travel agent. No commitment needed.",
+  },
+  {
+    icon: Search,
+    title: "Explore Better Value",
+    desc: "See if there's room for improvement — we'll flag where you could be getting more.",
+  },
+  {
+    icon: Calculator,
+    title: "Check EMI Options",
+    desc: "Get indicative monthly costs with No Cost EMI — quick, transparent, no surprises.",
+  },
+  {
+    icon: CreditCard,
+    title: "Get Finance-Ready",
+    desc: "Know your options before you book. Walk into any agent prepared and confident.",
+  },
+];
 
 const TravelerTeaser = () => {
   return (
@@ -17,39 +40,31 @@ const TravelerTeaser = () => {
           >
             <p className="text-[11px] font-semibold text-brand-coral uppercase tracking-[0.1em]">For Travelers</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
-              See what your trip could cost per month
+              Know your options before you book
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Upload a trip quote from any agent. Get indicative EMI options and 
-              a review of where there may be room for better value. No commitment.
+              Upload a trip quote. Explore whether there's scope for better value. 
+              Check what your trip could cost per month. Get finance-ready — before you commit.
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              {
-                icon: Upload,
-                title: "Upload a Trip Quote",
-                desc: "Share your itinerary or quote. We'll show indicative financing options and flag potential improvements.",
-              },
-              {
-                icon: Calculator,
-                title: "Explore EMI Options",
-                desc: "See how much your trip could cost per month with No Cost EMI. Quick, indicative, transparent.",
-              },
-            ].map((card, i) => (
+            {steps.map((card, i) => (
               <motion.div
                 key={card.title}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
-                className="p-6 rounded-xl border bg-card space-y-3"
+                transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
+                className="p-6 rounded-xl border bg-card hover:shadow-card transition-shadow space-y-3"
               >
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                  <card.icon size={20} className="text-primary" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-brand-coral/10 flex items-center justify-center">
+                    <card.icon size={18} className="text-brand-coral" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider">Step {i + 1}</span>
                 </div>
-                <h3 className="text-base font-heading font-bold">{card.title}</h3>
+                <h3 className="text-base font-heading font-bold text-primary-deep">{card.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
               </motion.div>
             ))}

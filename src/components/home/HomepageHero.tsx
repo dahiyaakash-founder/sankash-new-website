@@ -75,13 +75,12 @@ const HomepageHero = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-card-hover border border-border/40">
               <img
                 src={heroUI}
-                alt="SanKash travel commerce platform dashboard"
+                alt="SanKash travel commerce platform — lending, insurance, and payments infrastructure"
                 className="w-full aspect-[4/3] object-cover"
                 width={1280}
                 height={960}
               />
-              {/* Subtle gradient overlay at bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/40 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/60 to-transparent" />
             </div>
             {/* Floating badge */}
             <div className="absolute -bottom-3 left-6 bg-card border rounded-xl px-4 py-2.5 shadow-card flex items-center gap-3">
