@@ -13,7 +13,7 @@ const footerSections = [
   {
     title: "For You",
     links: [
-      { label: "Travel Agents", href: "/for-agents" },
+      { label: "Travel Agents", href: "/for-travel-agents" },
       { label: "Travelers", href: "/for-travelers" },
       { label: "Integrations", href: "/developers" },
     ],
