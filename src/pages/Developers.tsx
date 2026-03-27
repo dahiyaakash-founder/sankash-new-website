@@ -12,10 +12,10 @@ const fade = {
 };
 
 const gettingStartedSteps = [
-  { num: "01", label: "Request access", desc: "Tell us about your platform and use case. We'll review and approve within 2 business days." },
-  { num: "02", label: "Receive credentials", desc: "Get your KEY ID and KEY SECRET via a secure channel. These are used for Basic Authentication on all API calls." },
-  { num: "03", label: "Use docs & sandbox", desc: "Explore the API documentation, test endpoints in sandbox mode, and build your integration with real examples." },
-  { num: "04", label: "Go live with support", desc: "Move to production when ready. Our integration team supports you through launch and beyond." },
+  { num: "01", label: "Explore the docs", desc: "Browse the full API reference, request and response examples, and integration guides — no account needed." },
+  { num: "02", label: "Get sandbox credentials", desc: "Sign up for test credentials instantly. Use them to explore endpoints in a safe sandbox environment." },
+  { num: "03", label: "Build and test", desc: "Integrate SanKash APIs into your platform using sandbox mode. Test quotes, payments, and workflows with sample data." },
+  { num: "04", label: "Request production approval", desc: "When you're ready, request production credentials. Our team reviews and approves within 2 business days." },
 ];
 
 const insuranceEndpoints = [
