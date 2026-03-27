@@ -50,8 +50,9 @@ const Developers = () => {
             <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep leading-tight">
               Integrate SanKash in days, not months
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Simple APIs for travel insurance and payments, built for real travel workflows.
+             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
+             </p>
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               <Button size="xl">Get Sandbox Access</Button>
