@@ -85,7 +85,7 @@ const SiteNavbar = () => {
         </div>
 
         {/* Right CTAs */}
-        <div className="hidden lg:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
             Agent Signup
           </Button>
@@ -93,7 +93,7 @@ const SiteNavbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button className="lg:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
