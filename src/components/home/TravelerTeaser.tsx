@@ -5,60 +5,60 @@ import { Upload, Calculator, ArrowRight } from "lucide-react";
 
 const TravelerTeaser = () => {
   return (
-    <section className="py-20 md:py-28 bg-background">
+    <section className="py-20 md:py-28">
       <div className="container">
         <div className="max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="text-center space-y-4 mb-12"
           >
-            <p className="text-xs font-semibold text-secondary uppercase tracking-widest">For Travelers</p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
-              Explore smarter ways to travel
+            <p className="text-[11px] font-semibold text-brand-coral uppercase tracking-[0.1em]">For Travelers</p>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
+              See what your trip could cost per month
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Upload a trip quote and discover EMI options that make your dream trip more affordable. 
-              No commitment — just clarity.
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Upload a trip quote from any agent. Get indicative EMI options and 
+              a review of where there may be room for better value. No commitment.
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid sm:grid-cols-2 gap-6"
-          >
-            <div className="p-8 rounded-2xl border bg-gradient-to-br from-secondary/5 to-amber-glow/5 space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center">
-                <Upload size={22} className="text-secondary-foreground" />
-              </div>
-              <h3 className="text-lg font-heading font-bold">Upload a Trip Quote</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Share your itinerary or quote from any travel agent. We'll show you indicative EMI 
-                options and potential value improvements.
-              </p>
-            </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              {
+                icon: Upload,
+                title: "Upload a Trip Quote",
+                desc: "Share your itinerary or quote. We'll show indicative financing options and flag potential improvements.",
+              },
+              {
+                icon: Calculator,
+                title: "Explore EMI Options",
+                desc: "See how much your trip could cost per month with No Cost EMI. Quick, indicative, transparent.",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
+                className="p-6 rounded-xl border bg-card space-y-3"
+              >
+                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                  <card.icon size={20} className="text-primary" />
+                </div>
+                <h3 className="text-base font-heading font-bold">{card.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+              </motion.div>
+            ))}
+          </div>
 
-            <div className="p-8 rounded-2xl border bg-gradient-to-br from-primary/5 to-emerald-glow/5 space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calculator size={22} className="text-primary" />
-              </div>
-              <h3 className="text-lg font-heading font-bold">See EMI Options</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Get a quick, indicative view of how much your trip could cost per month with 
-                No Cost EMI and flexible payment plans.
-              </p>
-            </div>
-          </motion.div>
-
-          <div className="text-center mt-10">
+          <div className="text-center mt-8">
             <Link to="/for-travelers">
-              <Button variant="outline-primary" size="lg" className="gap-2">
-                Explore Traveler Tools <ArrowRight size={16} />
+              <Button variant="outline" size="lg" className="gap-2 text-sm border-primary/20 text-primary hover:bg-accent">
+                Explore Traveler Tools <ArrowRight size={14} />
               </Button>
             </Link>
           </div>

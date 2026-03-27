@@ -6,88 +6,104 @@
 
 @layer base {
   :root {
-    /* Premium travel-tech palette */
-    --background: 40 20% 98%;
-    --foreground: 220 25% 12%;
+    /* SanKash Brand System — Light Mode (premium default) */
+    --background: 40 15% 98%;
+    --foreground: 192 100% 21%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card-foreground: 192 100% 21%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover-foreground: 192 100% 21%;
 
-    /* Deep teal — trust, travel, growth */
-    --primary: 168 80% 28%;
+    /* Primary: #0198B0 → hsl(189, 99%, 35%) */
+    --primary: 189 99% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Warm amber — premium CTAs */
-    --secondary: 38 95% 55%;
-    --secondary-foreground: 220 25% 12%;
+    /* Deep teal: #00556A → hsl(192, 100%, 21%) */
+    --primary-deep: 192 100% 21%;
 
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 10% 46%;
+    /* Yellow: #FFF450 — used sparingly as highlight only */
+    --highlight: 57 100% 66%;
+    --highlight-foreground: 192 100% 15%;
 
-    /* Light teal tint */
-    --accent: 168 40% 94%;
-    --accent-foreground: 168 80% 22%;
+    /* Secondary: Slate #495A5A */
+    --secondary: 180 10% 32%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 180 8% 95%;
+    --muted-foreground: 180 10% 42%;
+
+    /* Accent: light teal tint */
+    --accent: 189 40% 95%;
+    --accent-foreground: 192 100% 21%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 91%;
-    --input: 220 15% 91%;
-    --ring: 168 80% 28%;
+    --border: 180 8% 90%;
+    --input: 180 8% 90%;
+    --ring: 189 99% 35%;
 
     --radius: 0.625rem;
 
-    /* Extended tokens */
+    /* Extended brand tokens */
     --surface-elevated: 0 0% 100%;
-    --emerald-glow: 168 80% 40%;
-    --amber-glow: 38 95% 62%;
-    --slate-deep: 220 30% 8%;
+    --brand-teal: 189 99% 35%;
+    --brand-deep: 192 100% 21%;
+    --brand-lime: 65 91% 56%;
+    --brand-green: 152 90% 42%;
+    --brand-coral: 10 100% 66%;
+    --brand-slate: 180 10% 32%;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 168 80% 28%;
+    --sidebar-foreground: 192 100% 21%;
+    --sidebar-primary: 189 99% 35%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 168 40% 94%;
-    --sidebar-accent-foreground: 168 80% 22%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 168 80% 28%;
+    --sidebar-accent: 189 40% 95%;
+    --sidebar-accent-foreground: 192 100% 21%;
+    --sidebar-border: 180 8% 90%;
+    --sidebar-ring: 189 99% 35%;
   }
 
   .dark {
-    --background: 220 25% 6%;
-    --foreground: 40 20% 95%;
-    --card: 220 25% 9%;
-    --card-foreground: 40 20% 95%;
-    --popover: 220 25% 9%;
-    --popover-foreground: 40 20% 95%;
-    --primary: 168 70% 42%;
+    --background: 200 25% 6%;
+    --foreground: 180 8% 92%;
+    --card: 200 25% 9%;
+    --card-foreground: 180 8% 92%;
+    --popover: 200 25% 9%;
+    --popover-foreground: 180 8% 92%;
+    --primary: 189 90% 42%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 38 90% 55%;
-    --secondary-foreground: 220 25% 8%;
-    --muted: 220 20% 14%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 168 30% 14%;
-    --accent-foreground: 168 70% 60%;
+    --primary-deep: 192 80% 30%;
+    --highlight: 57 100% 66%;
+    --highlight-foreground: 192 100% 10%;
+    --secondary: 180 8% 55%;
+    --secondary-foreground: 200 25% 6%;
+    --muted: 200 15% 14%;
+    --muted-foreground: 180 8% 55%;
+    --accent: 189 25% 14%;
+    --accent-foreground: 189 90% 60%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 168 70% 42%;
-    --surface-elevated: 220 25% 11%;
-    --emerald-glow: 168 70% 50%;
-    --amber-glow: 38 90% 58%;
-    --slate-deep: 220 20% 4%;
-    --sidebar-background: 220 25% 8%;
-    --sidebar-foreground: 40 20% 90%;
-    --sidebar-primary: 168 70% 42%;
+    --border: 200 15% 18%;
+    --input: 200 15% 18%;
+    --ring: 189 90% 42%;
+    --surface-elevated: 200 25% 11%;
+    --brand-teal: 189 90% 42%;
+    --brand-deep: 192 80% 30%;
+    --brand-lime: 65 85% 56%;
+    --brand-green: 152 80% 45%;
+    --brand-coral: 10 90% 60%;
+    --brand-slate: 180 8% 55%;
+    --sidebar-background: 200 25% 8%;
+    --sidebar-foreground: 180 8% 90%;
+    --sidebar-primary: 189 90% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 168 30% 14%;
-    --sidebar-accent-foreground: 168 70% 60%;
-    --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 168 70% 42%;
+    --sidebar-accent: 189 25% 14%;
+    --sidebar-accent-foreground: 189 90% 60%;
+    --sidebar-border: 200 15% 18%;
+    --sidebar-ring: 189 90% 42%;
   }
 }
 
@@ -107,18 +123,13 @@
 }
 
 @layer utilities {
-  .text-gradient-primary {
+  .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(168 80% 28%), hsl(168 80% 42%));
-  }
-
-  .text-gradient-warm {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(38 95% 55%), hsl(25 95% 50%));
+    background-image: linear-gradient(135deg, hsl(189 99% 35%), hsl(192 100% 21%));
   }
 
   .bg-hero-gradient {
-    background: linear-gradient(160deg, hsl(168 40% 94%) 0%, hsl(40 20% 98%) 40%, hsl(40 20% 98%) 100%);
+    background: linear-gradient(160deg, hsl(189 40% 95%) 0%, hsl(40 15% 98%) 50%, hsl(40 15% 98%) 100%);
   }
 
   .bg-section-alt {
@@ -129,12 +140,16 @@
     background: hsl(var(--surface-elevated));
   }
 
+  .bg-brand-deep {
+    background: hsl(var(--brand-deep));
+  }
+
   .shadow-card {
-    box-shadow: 0 1px 3px hsl(220 25% 12% / 0.04), 0 4px 16px hsl(220 25% 12% / 0.06);
+    box-shadow: 0 1px 3px hsl(192 100% 21% / 0.04), 0 4px 16px hsl(192 100% 21% / 0.06);
   }
 
   .shadow-card-hover {
-    box-shadow: 0 2px 8px hsl(220 25% 12% / 0.06), 0 8px 32px hsl(220 25% 12% / 0.1);
+    box-shadow: 0 2px 8px hsl(192 100% 21% / 0.06), 0 8px 32px hsl(192 100% 21% / 0.1);
   }
 
   .font-heading {
