@@ -58,23 +58,23 @@ const whyReasons = [
 const faqs = [
   {
     q: "Do I need to book through SanKash?",
-    a: "No. You continue booking through your travel agent as usual. SanKash reviews your quote and helps you explore financing and protection — we don't replace your agent.",
+    a: "No. SanKash does not replace your travel agent. You continue booking through your agent as usual. SanKash reviews your holiday quote and helps you explore EMI options, travel insurance, and better structuring — so you're more informed before you commit.",
   },
   {
-    q: "Is the quote review free?",
-    a: "Yes. The initial review is completely free. Detailed recommendations may require sharing your contact details.",
+    q: "Is the holiday quote review free?",
+    a: "Yes. Uploading your travel quote and getting an initial review is completely free. There's no obligation to proceed. If you want a detailed review with specific EMI options and insurance recommendations, you may need to share your contact details so our team can follow up.",
   },
   {
-    q: "Will checking EMI affect my credit score?",
-    a: "No. Eligibility checks are soft enquiries and do not impact your credit score.",
+    q: "Will checking travel EMI affect my credit score?",
+    a: "No. When you check EMI eligibility on SanKash, it's a soft enquiry — it does not appear on your credit report and has no impact on your credit score. A hard credit check only happens if you formally apply for financing with a lender.",
   },
   {
-    q: "What types of trips does this work for?",
-    a: "Domestic holidays, international packages, honeymoons, group travel, and pilgrimage tours — any trip with a quoted cost.",
+    q: "What types of trips and holidays does this work for?",
+    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Whether your quote is ₹30,000 or ₹5,00,000, you can check EMI options and explore travel protection.",
   },
   {
-    q: "How accurate are the initial observations?",
-    a: "The initial review is indicative. A detailed review by our team provides specific, actionable recommendations.",
+    q: "How does holiday EMI work on SanKash?",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately.",
   },
 ];
 
