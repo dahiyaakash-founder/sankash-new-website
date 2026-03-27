@@ -88,6 +88,11 @@ const Contact = () => {
 
   return (
     <SiteLayout>
+      <SEOHead
+        title="Contact SanKash for Demo, Support or Integrations | SanKash"
+        description="Book a demo, get integration help, start agent onboarding, or reach SanKash support. Fast guided routing to the right team."
+        jsonLd={contactPageSchema}
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">

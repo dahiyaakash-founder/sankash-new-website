@@ -29,6 +29,10 @@ const capabilities = [
 const About = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Financial Infrastructure for Travel Businesses | SanKash"
+        description="SanKash was built because travel deserved its own financial layer. Learn why lending, insurance, and payments needed a travel-first platform."
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl">

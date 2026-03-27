@@ -79,6 +79,10 @@ const fade = {
 const Solutions = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Lending, Insurance and Payment Solutions | SanKash"
+        description="Explore SanKash's three core solutions for travel businesses: No Cost EMI lending, embedded travel insurance, and T+1 payment settlements."
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">

@@ -44,6 +44,10 @@ const paymentsEndpoints = [
 const Developers = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel APIs for Lending, Insurance and Payments | SanKash"
+        description="Integrate SanKash APIs for travel lending, insurance, and payments. Get sandbox access, explore docs, and go live in days with simple Basic Authentication."
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl space-y-6">
