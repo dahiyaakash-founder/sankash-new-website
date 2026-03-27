@@ -6,6 +6,15 @@ import ThreePillars from "@/components/home/ThreePillars";
 import AgentValueProp from "@/components/home/AgentValueProp";
 import TravelerTeaser from "@/components/home/TravelerTeaser";
 import HomepageCTA from "@/components/home/HomepageCTA";
+import AssistantEntryPoint from "@/components/AssistantEntryPoint";
+
+const homepagePrompts = [
+  { label: "Review a holiday quote", link: "/for-travelers" },
+  { label: "Explore agent solutions", link: "/for-travel-agents" },
+  { label: "Find the right solution", link: "/solutions" },
+  { label: "Get integration help", link: "/developers" },
+  { label: "Book a demo", link: "/contact" },
+];
 
 const Index = () => {
   return (
@@ -16,6 +25,7 @@ const Index = () => {
       <ThreePillars />
       <AgentValueProp />
       <TravelerTeaser />
+      <AssistantEntryPoint prompts={homepagePrompts} />
       <HomepageCTA />
     </SiteLayout>
   );

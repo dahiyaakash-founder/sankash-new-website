@@ -1,5 +1,6 @@
 import React from "react";
 import SiteLayout from "@/components/SiteLayout";
+import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -355,6 +356,12 @@ const ForTravelAgents = () => {
           </div>
         </div>
       </section>
+
+      <AssistantEntryPoint prompts={[
+        { label: "Ask about agent onboarding", link: "/for-travel-agents" },
+        { label: "Check if SanKash fits my business", link: "/solutions" },
+        { label: "Understand EMI, insurance, and payments", link: "/solutions" },
+      ]} />
 
       {/* Final CTA */}
       <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">

@@ -1,5 +1,6 @@
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
+import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
@@ -240,6 +241,12 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
           </motion.div>
         </div>
       </section>
+
+      <AssistantEntryPoint prompts={[
+        { label: "Ask an integration question", link: "/contact" },
+        { label: "Get sandbox help", link: "/developers" },
+        { label: "Find the right API", link: "/developers" },
+      ]} />
 
       {/* Final CTA */}
       <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
