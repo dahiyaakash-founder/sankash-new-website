@@ -40,7 +40,7 @@ const SiteNavbar = () => {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-0.5">
+        <div className="hidden md:flex items-center gap-0.5">
           {navItems.map((item) =>
             item.dropdown ? (
               <div
