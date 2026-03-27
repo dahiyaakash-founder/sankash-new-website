@@ -2,7 +2,7 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, CreditCard, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
 
 const fade = {
   initial: { opacity: 0, y: 20 },
@@ -16,6 +16,13 @@ const gettingStartedSteps = [
   { num: "02", label: "Get sandbox credentials", desc: "Sign up for test credentials instantly. Use them to explore endpoints in a safe sandbox environment." },
   { num: "03", label: "Build and test", desc: "Integrate SanKash APIs into your platform using sandbox mode. Test quotes, payments, and workflows with sample data." },
   { num: "04", label: "Request production approval", desc: "When you're ready, request production credentials. Our team reviews and approves within 2 business days." },
+];
+
+const lendingEndpoints = [
+  "No Cost EMI enablement",
+  "Finance eligibility and pre-qualification",
+  "Checkout-linked lending flow",
+  "Hosted or integrated options by use case",
 ];
 
 const insuranceEndpoints = [
@@ -94,16 +101,37 @@ const Developers = () => {
           <motion.div {...fade} className="max-w-2xl mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">API overview</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
-              Two APIs, built for travel
+              Three integrations, built for travel
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Everything you need to embed insurance and payment capabilities into your travel platform.
+              Lending, Insurance, and Payments — everything you need to embed travel financial infrastructure into your platform.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Insurance API */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Lending API */}
             <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                  <Banknote size={20} className="text-primary" />
+                </div>
+                <h3 className="text-lg font-heading font-bold text-primary-deep">Lending & Checkout API</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Offer No Cost EMI and travel financing at point of sale. Integrate via API or use SanKash's hosted checkout — whichever fits your platform.
+              </p>
+              <ul className="space-y-2.5">
+                {lendingEndpoints.map((ep) => (
+                  <li key={ep} className="flex items-start gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 size={15} className="text-primary mt-0.5 shrink-0" />
+                    {ep}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Insurance API */}
+            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <ShieldCheck size={20} className="text-primary" />
@@ -124,7 +152,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Payments API */}
-            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <CreditCard size={20} className="text-primary" />
@@ -217,10 +245,10 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
-            Need API access for your travel platform?
+            Ready to integrate SanKash into your travel flow?
           </h2>
           <p className="text-primary-foreground/70 leading-relaxed">
-            Request access and our team will help you get started.
+            Get sandbox access or talk to our team about production integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Button size="lg" variant="secondary">Get Sandbox Access</Button>

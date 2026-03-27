@@ -15,7 +15,7 @@ const footerSections = [
     links: [
       { label: "Travel Agents", href: "/for-agents" },
       { label: "Travelers", href: "/for-travelers" },
-      { label: "Developers", href: "/developers" },
+      { label: "Integrations", href: "/developers" },
     ],
   },
   {
