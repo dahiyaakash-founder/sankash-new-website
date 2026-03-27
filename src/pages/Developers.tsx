@@ -242,6 +242,12 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
         </div>
       </section>
 
+      <AssistantEntryPoint prompts={[
+        { label: "Ask an integration question", link: "/contact" },
+        { label: "Get sandbox help", link: "/developers" },
+        { label: "Find the right API", link: "/developers" },
+      ]} />
+
       {/* Final CTA */}
       <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">

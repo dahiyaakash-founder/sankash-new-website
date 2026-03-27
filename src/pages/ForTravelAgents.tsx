@@ -357,6 +357,12 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
+      <AssistantEntryPoint prompts={[
+        { label: "Ask about agent onboarding", link: "/for-travel-agents" },
+        { label: "Check if SanKash fits my business", link: "/solutions" },
+        { label: "Understand EMI, insurance, and payments", link: "/solutions" },
+      ]} />
+
       {/* Final CTA */}
       <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
