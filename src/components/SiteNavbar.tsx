@@ -27,7 +27,7 @@ const SiteNavbar = () => {
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
+    <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
       <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 shrink-0">
