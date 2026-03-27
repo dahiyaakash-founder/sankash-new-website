@@ -18,9 +18,11 @@ const whoUses = [
   { label: "Travelers", desc: "Access No Cost EMI, protection products, and smarter payment options through their agent or platform." },
 ];
 
-const team = [
-  { name: "Akash Dahiya", role: "Co-founder & CEO", note: "Travel industry + fintech. Previously at MakeMyTrip and Cleartrip." },
-  { name: "Rajesh Kumar", role: "Co-founder & CTO", note: "Payments infrastructure and integration architecture." },
+const capabilities = [
+  { label: "Travel distribution understanding", desc: "Deep experience across OTAs, travel agencies, and partner distribution networks." },
+  { label: "Financial infrastructure expertise", desc: "Lending, insurance, and payments systems built from first principles for travel economics." },
+  { label: "Product & integration focus", desc: "API-led architecture designed to fit into real booking workflows, not bolted on after." },
+  { label: "Operations that scale", desc: "Settlement, compliance, and partner operations built for volume and reliability." },
 ];
 
 const About = () => {
