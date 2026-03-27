@@ -17,6 +17,7 @@ import {
   FileText,
   Clock,
 } from "lucide-react";
+import ItineraryUploader from "@/components/agents/ItineraryUploader";
 
 const whyReasons = [
   {
