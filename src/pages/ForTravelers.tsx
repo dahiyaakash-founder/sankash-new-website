@@ -248,7 +248,7 @@ const ForTravelers = () => {
               Why Use SanKash
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              Four reasons to check first
+              Why review your holiday quote with SanKash
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
