@@ -50,9 +50,9 @@ const whyReasons = [
 
 const optimiserSteps = [
   { num: "01", icon: Upload, label: "Upload your quote", desc: "Share an itinerary, quote, or package details." },
-  { num: "02", icon: Search, label: "Review competitiveness", desc: "See where pricing, financing, or protection can improve." },
-  { num: "03", icon: Banknote, label: "EMI & protection suggestions", desc: "Understand what financing and coverage options fit the trip." },
-  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in or register to access detailed recommendations." },
+  { num: "02", icon: Search, label: "Check competitiveness", desc: "See where pricing, financing, or protection can improve." },
+  { num: "03", icon: Banknote, label: "See financing & protection fits", desc: "Understand what EMI and coverage options work for the trip." },
+  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in or register for detailed recommendations." },
 ];
 
 const pillars = [
