@@ -225,8 +225,8 @@ const ForTravelAgents = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
-              Review an Itinerary <ArrowRight size={16} />
+            <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90" onClick={scrollToUploader}>
+              Upload a Quote <ArrowRight size={16} />
             </Button>
           </div>
         </div>
