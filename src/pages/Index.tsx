@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead, { organizationSchema, websiteSchema } from "@/components/SEOHead";
 import HomepageHero from "@/components/home/HomepageHero";
 import TrustBar from "@/components/home/TrustBar";
 import AudienceRouting from "@/components/home/AudienceRouting";
