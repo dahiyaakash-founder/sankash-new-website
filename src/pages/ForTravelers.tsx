@@ -36,23 +36,23 @@ const emiExamples = [
 const whyReasons = [
   {
     icon: Search,
-    title: "Know before you book",
-    desc: "Understand if your quote has room for better value — before you commit and pay.",
+    title: "Know if your quote has room for improvement",
+    desc: "Get a first read on whether there's scope for better structuring, pricing, or value — before you commit.",
   },
   {
     icon: Banknote,
-    title: "Make it affordable",
-    desc: "Break your trip cost into monthly payments. No Cost EMI and low-cost options available.",
+    title: "See monthly payment options before you commit",
+    desc: "Understand your EMI choices across 3, 6, or 12-month tenures so your trip fits your monthly budget.",
   },
   {
     icon: Shield,
-    title: "Travel protected",
-    desc: "Get relevant travel protection — cancellation cover, medical, baggage — matched to your trip.",
+    title: "Match protection to your trip",
+    desc: "Explore cancellation cover, medical, and baggage protection options relevant to your specific itinerary.",
   },
   {
     icon: UserCheck,
-    title: "Get finance-ready",
-    desc: "Pre-qualify for trip financing so you can book with confidence when you're ready.",
+    title: "Get finance-ready before you decide",
+    desc: "Pre-qualify for trip financing so you're ready to book with confidence when the time is right.",
   },
 ];
 
