@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroUI from "@/assets/hero-platform-ui.jpg";
+import heroVisual from "@/assets/hero-infrastructure.jpg";
 
 const HomepageHero = () => {
   return (
