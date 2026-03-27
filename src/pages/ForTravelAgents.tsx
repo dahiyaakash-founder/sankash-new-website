@@ -305,10 +305,10 @@ const ForTravelAgents = () => {
               className="grid grid-cols-2 gap-3"
             >
               {[
-                { icon: TrendingUp, label: "Booking Analytics", desc: "Track conversion, revenue, and customer trends" },
-                { icon: FileText, label: "Itinerary Insights", desc: "Detailed competitiveness analysis per quote" },
-                { icon: Clock, label: "Priority Settlement", desc: "Faster payouts with auto-reconciliation" },
-                { icon: Users, label: "Dedicated Support", desc: "Assigned relationship manager for your business" },
+                { icon: FileText, label: "Itinerary Insights", desc: "See how each quote stacks up on pricing, financing, and coverage" },
+                { icon: TrendingUp, label: "Quote Competitiveness", desc: "Benchmark your packages against market trends" },
+                { icon: Clock, label: "Priority Settlement", desc: "T+1 payouts with automatic reconciliation" },
+                { icon: Users, label: "Partner Support", desc: "Dedicated relationship manager for your agency" },
               ].map((tool) => (
                 <div
                   key={tool.label}
