@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroUI from "@/assets/hero-platform-ui.jpg";
+import heroVisual from "@/assets/hero-infrastructure.jpg";
 
 const HomepageHero = () => {
   return (
@@ -74,8 +74,8 @@ const HomepageHero = () => {
           >
             <div className="relative rounded-2xl overflow-hidden shadow-card-hover border border-border/40">
               <img
-                src={heroUI}
-                alt="SanKash travel commerce platform — lending, insurance, and payments infrastructure"
+                src={heroVisual}
+                alt="SanKash travel commerce infrastructure — lending, insurance, and payments network"
                 className="w-full aspect-[4/3] object-cover"
                 width={1280}
                 height={960}

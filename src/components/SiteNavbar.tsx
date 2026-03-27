@@ -40,7 +40,7 @@ const SiteNavbar = () => {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-0.5">
+        <div className="hidden md:flex items-center gap-0.5">
           {navItems.map((item) =>
             item.dropdown ? (
               <div
@@ -85,7 +85,7 @@ const SiteNavbar = () => {
         </div>
 
         {/* Right CTAs */}
-        <div className="hidden lg:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
             Agent Signup
           </Button>
@@ -93,14 +93,14 @@ const SiteNavbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button className="lg:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-background border-b max-h-[85vh] overflow-y-auto">
+        <div className="md:hidden bg-background border-b max-h-[85vh] overflow-y-auto">
           <div className="container py-3 space-y-0.5">
             {navItems.map((item) =>
               item.dropdown ? (
