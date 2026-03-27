@@ -1,22 +1,21 @@
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import StatsSection from "@/components/StatsSection";
-import SolutionsSection from "@/components/SolutionsSection";
-import WhyChooseSection from "@/components/WhyChooseSection";
-import CTASection from "@/components/CTASection";
-import Footer from "@/components/Footer";
+import SiteLayout from "@/components/SiteLayout";
+import HomepageHero from "@/components/home/HomepageHero";
+import TrustBar from "@/components/home/TrustBar";
+import ThreePillars from "@/components/home/ThreePillars";
+import AgentValueProp from "@/components/home/AgentValueProp";
+import TravelerTeaser from "@/components/home/TravelerTeaser";
+import HomepageCTA from "@/components/home/HomepageCTA";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <HeroSection />
-      <StatsSection />
-      <SolutionsSection />
-      <WhyChooseSection />
-      <CTASection />
-      <Footer />
-    </div>
+    <SiteLayout>
+      <HomepageHero />
+      <TrustBar />
+      <ThreePillars />
+      <AgentValueProp />
+      <TravelerTeaser />
+      <HomepageCTA />
+    </SiteLayout>
   );
 };
 
