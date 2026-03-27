@@ -35,23 +35,23 @@ const emiExamples = [
 const whyReasons = [
   {
     icon: Search,
-    title: "Spot room for better value",
-    desc: "Get a first read on whether your quote could be better structured or priced.",
+    title: "Review your holiday quote for better value",
+    desc: "Get a quick read on whether your travel quote could be structured differently — better pricing, better options, or both.",
   },
   {
     icon: Banknote,
-    title: "See your monthly cost upfront",
-    desc: "Compare EMI tenures so you know exactly what your trip costs per month.",
+    title: "See your travel EMI before you commit",
+    desc: "Compare No Cost EMI and low-cost monthly payment plans so you know exactly what your holiday costs per month.",
   },
   {
     icon: Shield,
-    title: "Match protection to your itinerary",
-    desc: "Explore cancellation, medical, and baggage cover relevant to your specific trip.",
+    title: "Match travel protection to your trip",
+    desc: "Explore cancellation, medical, and baggage cover matched to your specific itinerary and destination.",
   },
   {
     icon: UserCheck,
-    title: "Walk in finance-ready",
-    desc: "Pre-qualify for trip financing so you can book with confidence, not uncertainty.",
+    title: "Walk into your booking finance-ready",
+    desc: "Pre-qualify for trip financing before you sit down with your agent — no credit score impact, no obligation.",
   },
 ];
 
