@@ -264,7 +264,7 @@ const ForTravelAgents = () => {
 
           <div className="text-center mt-10">
             <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
-              Try Itinerary Optimiser <ArrowRight size={16} />
+              Review an Itinerary <ArrowRight size={16} />
             </Button>
           </div>
         </div>
