@@ -2,98 +2,185 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Target, Eye, Rocket } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-const values = [
-  { icon: Target, title: "Travel-First", desc: "Every product decision starts with understanding how travel businesses actually work." },
-  { icon: Eye, title: "Transparency", desc: "Clear pricing, honest communication, and no hidden surprises." },
-  { icon: Rocket, title: "Speed", desc: "Fast integrations, fast settlements, fast support. Time matters in travel." },
+const fade = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-40px" as const },
+  transition: { duration: 0.45 },
+};
+
+const whoUses = [
+  { label: "Travel agents & agencies", desc: "Offer financing, attach protection, and collect faster on every booking." },
+  { label: "OTAs & platforms", desc: "Embed lending, insurance, and payments via API or checkout flows." },
+  { label: "Distribution partners", desc: "Add SanKash products into existing travel workflows and earn on every transaction." },
+  { label: "Travelers", desc: "Access No Cost EMI, protection products, and smarter payment options through their agent or platform." },
+];
+
+const team = [
+  { name: "Akash Dahiya", role: "Co-founder & CEO", note: "Travel industry + fintech. Previously at MakeMyTrip and Cleartrip." },
+  { name: "Rajesh Kumar", role: "Co-founder & CTO", note: "Payments infrastructure and integration architecture." },
 ];
 
 const About = () => {
   return (
     <SiteLayout>
+      {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest">About SanKash</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
-              Opening the world to everyone
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest">Why SanKash</p>
+            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-primary-deep">
+              Travel needed a financial layer.<br />We built it.
             </h1>
-            <p className="text-lg text-muted-foreground">
-              SanKash is India's largest travel-focused financial platform. Since 2018, we've partnered 
-              with travel agents to make dream vacations a reality — not just a budget fantasy.
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
+              Most financial products are built for retail, e-commerce, or general-purpose businesses. 
+              Travel has different economics — variable pricing, advance bookings, split payments, 
+              multi-party settlements, and customers who need financing at the moment of decision. 
+              SanKash exists because travel deserved its own infrastructure.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Mission */}
+      {/* The gap */}
       <section className="py-20 md:py-28">
-        <div className="container max-w-3xl space-y-8">
-          <h2 className="text-3xl font-heading font-bold">Our Mission</h2>
-          <p className="text-muted-foreground text-lg leading-relaxed">
-            We believe travel shouldn't be limited by financial constraints. By bridging the gap between 
-            travel and finance, we empower agents to serve more customers and help travelers explore 
-            the world on their terms.
-          </p>
-          <p className="text-muted-foreground text-lg leading-relaxed">
-            Our platform combines lending, insurance, and payments into a single, purpose-built solution 
-            for the travel industry — serving 8,000+ travel partners and over 500,000 travelers since our founding in 2018.
-          </p>
+        <div className="container max-w-3xl">
+          <motion.div {...fade} className="space-y-8">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+              The problem we saw
+            </h2>
+            <div className="space-y-5 text-muted-foreground text-lg leading-relaxed">
+              <p>
+                Travel agents lose bookings because customers can't afford the full cost upfront. 
+                OTAs lose conversion because checkout doesn't offer real financing. 
+                Travelers delay trips because they don't know what's possible.
+              </p>
+              <p>
+                Generic lending products don't understand travel workflows. 
+                General-purpose payment gateways don't handle travel's settlement complexity. 
+                And nobody was embedding insurance at the point of booking in a way that actually worked for agents.
+              </p>
+              <p className="text-foreground font-medium">
+                SanKash was built from the ground up to solve this — not by adapting retail 
+                fintech, but by building financial infrastructure specifically for how travel businesses operate.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Values */}
+      {/* What makes us different */}
       <section className="py-20 md:py-28 bg-section-alt">
+        <div className="container max-w-4xl">
+          <motion.div {...fade} className="space-y-10">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+              What makes SanKash different
+            </h2>
+            <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
+              {[
+                { q: "Travel-first, not adapted", a: "Every product decision — lending logic, settlement cycles, checkout flows — starts with how travel businesses actually work." },
+                { q: "Three products, one platform", a: "Lending, Insurance, and Payments run as a single integrated layer. Agents don't need three separate vendors." },
+                { q: "Built for agents, not just consumers", a: "Most fintech targets the end consumer. SanKash is built for the agent and business that serves the consumer." },
+                { q: "Real integration, not just a widget", a: "API-led and checkout-linked flows that fit into existing booking systems, not bolted-on afterthoughts." },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.q}
+                  {...fade}
+                  transition={{ delay: i * 0.08, duration: 0.4 }}
+                  className="space-y-2"
+                >
+                  <h3 className="text-base font-heading font-bold text-foreground">{item.q}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.a}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Who uses SanKash */}
+      <section className="py-20 md:py-28">
+        <div className="container max-w-4xl">
+          <motion.div {...fade} className="space-y-10">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+              Who uses SanKash
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {whoUses.map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  {...fade}
+                  transition={{ delay: i * 0.08, duration: 0.4 }}
+                  className="rounded-xl border bg-card p-6 space-y-2"
+                >
+                  <h3 className="text-sm font-heading font-bold text-foreground">{item.label}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trust stats — sparse */}
+      <section className="py-14 bg-brand-deep">
         <div className="container">
-          <h2 className="text-3xl font-heading font-bold text-center mb-14">Our Values</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {values.map((v, i) => (
-              <motion.div
-                key={v.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="p-8 rounded-2xl border bg-card text-center space-y-4"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <v.icon size={24} className="text-primary" />
-                </div>
-                <h3 className="text-lg font-heading font-bold">{v.title}</h3>
-                <p className="text-sm text-muted-foreground">{v.desc}</p>
-              </motion.div>
+          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-center">
+            {[
+              { v: "8,000+", l: "Active Partners" },
+              { v: "5 Lakh+", l: "Travelers Served" },
+              { v: "T+1", l: "Settlement Cycle" },
+            ].map((s) => (
+              <div key={s.l}>
+                <div className="text-2xl md:text-3xl font-heading font-bold text-primary-foreground">{s.v}</div>
+                <p className="text-[11px] text-primary-foreground/50 uppercase tracking-wider mt-1">{s.l}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-16 bg-primary">
-        <div className="container grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { v: "2018", l: "Founded" },
-            { v: "8K+", l: "Travel Partners" },
-            { v: "500K+", l: "Travelers Served" },
-            { v: "₹500Cr+", l: "Processed" },
-          ].map((s) => (
-            <div key={s.l}>
-              <div className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground">{s.v}</div>
-              <p className="text-xs text-primary-foreground/60 mt-1">{s.l}</p>
+      {/* Team — simple, credible */}
+      <section className="py-20 md:py-28">
+        <div className="container max-w-3xl">
+          <motion.div {...fade} className="space-y-8">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+              Built by people who know travel
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              SanKash was founded in 2018 by a team that spent years inside travel companies and 
+              financial institutions — and understood that neither side had built the right bridge.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 pt-2">
+              {team.map((t) => (
+                <div key={t.name} className="rounded-xl border bg-card p-6 space-y-1.5">
+                  <h3 className="text-base font-heading font-bold text-foreground">{t.name}</h3>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wide">{t.role}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed pt-1">{t.note}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          </motion.div>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="container text-center">
-          <Link to="/contact">
-            <Button size="xl" className="gap-2">
-              Work With Us <ArrowRight size={18} />
+      {/* CTA */}
+      <section className="py-16 md:py-20 bg-section-alt">
+        <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+            See how SanKash works for your business
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <Button size="lg" asChild>
+              <Link to="/solutions">Explore Solutions</Link>
             </Button>
-          </Link>
-        </div>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/contact">Book a Demo <ArrowRight size={14} /></Link>
+            </Button>
+          </div>
+        </motion.div>
       </section>
     </SiteLayout>
   );
