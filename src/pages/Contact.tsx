@@ -155,6 +155,15 @@ const Contact = () => {
 
       <SanKashAssistant />
 
+      <div className="container max-w-3xl text-center py-4">
+        <a
+          href="#demo-form"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Prefer to leave a message? <ArrowRight size={11} />
+        </a>
+      </div>
+
       {/* Escalation paths */}
       <section id="escalation" className="py-16 md:py-20">
         <div className="container max-w-4xl">
