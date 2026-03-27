@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
