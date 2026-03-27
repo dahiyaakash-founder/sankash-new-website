@@ -245,10 +245,10 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
-            Need API access for your travel platform?
+            Ready to integrate SanKash into your travel flow?
           </h2>
           <p className="text-primary-foreground/70 leading-relaxed">
-            Request access and our team will help you get started.
+            Get sandbox access or talk to our team about production integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Button size="lg" variant="secondary">Get Sandbox Access</Button>
