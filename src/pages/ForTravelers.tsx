@@ -312,7 +312,7 @@ const ForTravelers = () => {
               className="space-y-3"
             >
               <h3 className="text-xl font-heading font-bold text-foreground mb-1">
-                Common questions
+                Holiday EMI and quote review FAQs
               </h3>
               {faqs.map((faq) => (
                 <details
