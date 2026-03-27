@@ -21,25 +21,25 @@ const quickActions = [
   {
     icon: FileText,
     label: "Review a holiday quote",
-    description: "Upload an itinerary and get instant observations",
+    description: "Upload a quote and get quick guidance before you book",
     link: "/for-travelers",
   },
   {
     icon: Users,
-    label: "Ask about agent onboarding",
-    description: "Learn how to start offering SanKash to your customers",
+    label: "Start agent onboarding",
+    description: "Understand how SanKash fits your travel agency",
     link: "/for-travel-agents",
   },
   {
     icon: Code,
     label: "Get integration help",
-    description: "API docs, sandbox access, and technical guidance",
+    description: "Docs, sandbox access, and setup guidance",
     link: "/developers",
   },
   {
     icon: Calendar,
     label: "Book a demo",
-    description: "See SanKash in action with a guided walkthrough",
+    description: "See how SanKash works for your business",
     href: "#demo-form",
   },
   {
