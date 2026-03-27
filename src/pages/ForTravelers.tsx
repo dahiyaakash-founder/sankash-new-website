@@ -2,7 +2,6 @@ import React from "react";
 import SiteLayout from "@/components/SiteLayout";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -14,18 +13,16 @@ import {
   CreditCard,
   Banknote,
   HelpCircle,
-  Phone,
-  Clock,
   BadgeCheck,
   UserCheck,
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 
 const howItWorks = [
-  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share an itinerary, quote, screenshot, or PDF from any travel agent." },
-  { num: "02", icon: Search, label: "Explore value", desc: "See if there's room for optimisation, better structuring, or savings." },
-  { num: "03", icon: Calculator, label: "Check EMI options", desc: "Understand monthly outflow across 3, 6, 9, or 12-month tenures." },
-  { num: "04", icon: BadgeCheck, label: "Get finance-ready", desc: "Pre-qualify for trip financing so you're ready when you decide to book." },
+  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share a quote, itinerary, or screenshot from any agent." },
+  { num: "02", icon: Search, label: "Explore value", desc: "See if there's scope for better structuring or savings." },
+  { num: "03", icon: Calculator, label: "Check EMI options", desc: "View monthly costs across 3, 6, or 12-month tenures." },
+  { num: "04", icon: BadgeCheck, label: "Get finance-ready", desc: "Pre-qualify so you're prepared when you decide to book." },
 ];
 
 const emiExamples = [
@@ -37,46 +34,46 @@ const emiExamples = [
 const whyReasons = [
   {
     icon: Search,
-    title: "Know if your quote has room for improvement",
-    desc: "Get a first read on whether there's scope for better structuring, pricing, or value — before you commit.",
+    title: "Spot room for better value",
+    desc: "Get a first read on whether your quote could be better structured or priced.",
   },
   {
     icon: Banknote,
-    title: "See monthly payment options before you commit",
-    desc: "Understand your EMI choices across 3, 6, or 12-month tenures so your trip fits your monthly budget.",
+    title: "See your monthly cost upfront",
+    desc: "Compare EMI tenures so you know exactly what your trip costs per month.",
   },
   {
     icon: Shield,
-    title: "Match protection to your trip",
-    desc: "Explore cancellation cover, medical, and baggage protection options relevant to your specific itinerary.",
+    title: "Match protection to your itinerary",
+    desc: "Explore cancellation, medical, and baggage cover relevant to your specific trip.",
   },
   {
     icon: UserCheck,
-    title: "Get finance-ready before you decide",
-    desc: "Pre-qualify for trip financing so you're ready to book with confidence when the time is right.",
+    title: "Walk in finance-ready",
+    desc: "Pre-qualify for trip financing so you can book with confidence, not uncertainty.",
   },
 ];
 
 const faqs = [
   {
     q: "Do I need to book through SanKash?",
-    a: "No. You continue booking through your travel agent as usual. SanKash only reviews your quote and helps you explore financing and protection options — we don't replace your agent or change your booking.",
+    a: "No. You continue booking through your travel agent as usual. SanKash reviews your quote and helps you explore financing and protection — we don't replace your agent.",
   },
   {
     q: "Is the quote review free?",
-    a: "Yes. The initial review is completely free. Detailed recommendations may require sharing your contact details so our team can assist you.",
+    a: "Yes. The initial review is completely free. Detailed recommendations may require sharing your contact details.",
   },
   {
     q: "Will checking EMI affect my credit score?",
-    a: "No. Checking eligibility is a soft enquiry and does not impact your credit score.",
+    a: "No. Eligibility checks are soft enquiries and do not impact your credit score.",
   },
   {
     q: "What types of trips does this work for?",
-    a: "Domestic holidays, international packages, honeymoon trips, group travel, and pilgrimage tours — any trip with a quoted cost.",
+    a: "Domestic holidays, international packages, honeymoons, group travel, and pilgrimage tours — any trip with a quoted cost.",
   },
   {
     q: "How accurate are the initial observations?",
-    a: "The initial review is indicative and based on trip signals. A detailed review by our team provides specific, actionable recommendations.",
+    a: "The initial review is indicative. A detailed review by our team provides specific, actionable recommendations.",
   },
 ];
 
@@ -90,14 +87,14 @@ const ForTravelers = () => {
   return (
     <SiteLayout>
       {/* Hero */}
-      <section className="bg-hero-gradient py-16 md:py-24">
+      <section className="bg-hero-gradient py-14 md:py-20">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-5 lg:pt-4"
+              className="space-y-4 lg:pt-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travelers
@@ -108,8 +105,7 @@ const ForTravelers = () => {
                 <span className="text-gradient-brand">Check it before you book.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload a quote, itinerary, or screenshot to explore better-value possibilities
-                and understand your monthly payment options — before you commit.
+                Upload your quote to explore better-value options and check monthly payment plans — all before you commit.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
@@ -136,20 +132,17 @@ const ForTravelers = () => {
       </section>
 
       {/* How Quote Review Works */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-20">
         <div className="container">
-          <div className="max-w-2xl mx-auto text-center mb-14">
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">
+          <div className="max-w-2xl mx-auto text-center mb-10">
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               How It Works
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
               From quote to confidence in 4 steps
             </h2>
-            <p className="mt-4 text-muted-foreground text-lg max-w-lg mx-auto">
-              Upload what you have. We'll help you understand what's possible.
-            </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
             {howItWorks.map((step, i) => (
               <motion.div
                 key={step.num}
@@ -157,13 +150,13 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="text-center p-5 rounded-xl"
+                className="text-center p-4 rounded-xl"
               >
-                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 font-heading font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
                   {step.num}
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mx-auto mb-3">
-                  <step.icon size={20} className="text-primary" />
+                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2.5">
+                  <step.icon size={18} className="text-primary" />
                 </div>
                 <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{step.label}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
@@ -174,15 +167,15 @@ const ForTravelers = () => {
       </section>
 
       {/* EMI & Affordability */}
-      <section id="emi-section" className="py-20 md:py-28 bg-section-alt">
+      <section id="emi-section" className="py-16 md:py-22 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="space-y-5"
+              className="space-y-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 EMI & Affordability
@@ -191,11 +184,9 @@ const ForTravelers = () => {
                 Your trip doesn't have to wait
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Break your holiday cost into comfortable monthly payments.
-                No Cost EMI and low-cost EMI options available across 15+ lending partners.
-                Check your eligibility without affecting your credit score.
+                Split your holiday cost into comfortable monthly payments. No Cost EMI and low-cost options across 15+ lending partners. Eligibility checks don't affect your credit score.
               </p>
-              <div className="flex flex-wrap gap-3 pt-1">
+              <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={16} />
                 </Button>
@@ -208,16 +199,16 @@ const ForTravelers = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="bg-card rounded-2xl border shadow-card p-6 space-y-4">
+              <div className="bg-card rounded-2xl border shadow-card p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
                   Indicative EMI for a ₹85,000 trip
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {emiExamples.map((emi) => (
                     <div
                       key={emi.tenure}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-accent/40 border border-border/50"
+                      className="flex items-center justify-between p-3 rounded-xl bg-accent/40 border border-border/50"
                     >
                       <div>
                         <p className="font-heading font-bold text-foreground text-sm">
@@ -234,8 +225,8 @@ const ForTravelers = () => {
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-muted-foreground text-center pt-1">
-                  * EMI amounts are indicative. Final options depend on lender approval and trip details.
+                <p className="text-[10px] text-muted-foreground text-center">
+                  * Indicative amounts. Final options depend on lender approval and trip details.
                 </p>
               </div>
             </motion.div>
@@ -243,18 +234,18 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* Why Use SanKash Before Booking */}
-      <section className="py-20 md:py-28">
+      {/* Why Use SanKash */}
+      <section className="py-16 md:py-22">
         <div className="container">
-          <div className="max-w-2xl mb-14">
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">
+          <div className="max-w-2xl mb-10">
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               Why Use SanKash
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              Be informed before you book
+              Four reasons to check first
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 gap-4">
             {whyReasons.map((r, i) => (
               <motion.div
                 key={r.title}
@@ -262,12 +253,12 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="p-6 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                className="p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
               >
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-4">
-                  <r.icon size={20} className="text-primary" />
+                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
+                  <r.icon size={18} className="text-primary" />
                 </div>
-                <h3 className="font-heading font-bold text-foreground mb-2">{r.title}</h3>
+                <h3 className="font-heading font-bold text-foreground mb-1.5 text-sm">{r.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{r.desc}</p>
               </motion.div>
             ))}
@@ -276,61 +267,57 @@ const ForTravelers = () => {
       </section>
 
       {/* Trust & FAQ */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-16 md:py-22 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Trust signals */}
+          <div className="grid lg:grid-cols-2 gap-10">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-5"
             >
               <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
                 Built for real travel bookings
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                SanKash works with 8,000+ travel partners and 15+ lending institutions
-                to help travelers make informed, confident booking decisions.
+                8,000+ travel partners. 15+ lending institutions. 5L+ travelers served.
               </p>
-              <div className="space-y-4 pt-2">
+              <div className="space-y-3 pt-1">
                 {[
-                  "Built for real holiday quotes — not hypothetical scenarios",
-                  "The review helps you before you commit — no obligation to proceed",
-                  "Checking EMI eligibility does not affect your credit score",
-                  "Your travel agent finalises the booking — SanKash only facilitates",
-                  "5L+ travelers have explored trip financing through SanKash",
+                  "Works with real holiday quotes, not hypothetical scenarios",
+                  "No obligation — the review helps you before you commit",
+                  "EMI eligibility checks don't affect your credit score",
+                  "Your agent finalises the booking — SanKash only facilitates",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
+                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
                     <p className="text-sm text-muted-foreground">{point}</p>
                   </div>
                 ))}
               </div>
             </motion.div>
 
-            {/* FAQ */}
             <motion.div
               initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="space-y-4"
+              className="space-y-3"
             >
-              <h3 className="text-xl font-heading font-bold text-foreground mb-2">
+              <h3 className="text-xl font-heading font-bold text-foreground mb-1">
                 Common questions
               </h3>
               {faqs.map((faq) => (
                 <details
                   key={faq.q}
-                  className="group bg-card rounded-xl border p-4 cursor-pointer"
+                  className="group bg-card rounded-xl border p-3.5 cursor-pointer"
                 >
                   <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
                     {faq.q}
-                    <HelpCircle size={16} className="text-muted-foreground shrink-0 ml-2 group-open:text-primary transition-colors" />
+                    <HelpCircle size={15} className="text-muted-foreground shrink-0 ml-2 group-open:text-primary transition-colors" />
                   </summary>
-                  <p className="text-sm text-muted-foreground leading-relaxed mt-3 pr-6">
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-2.5 pr-6">
                     {faq.a}
                   </p>
                 </details>
@@ -342,12 +329,11 @@ const ForTravelers = () => {
 
       <AssistantEntryPoint prompts={[
         { label: "Ask about my quote", link: "/for-travelers" },
-        { label: "Check EMI options", href: "#emi" },
-        { label: "Understand next steps", link: "/contact" },
+        { label: "Check EMI options", href: "#emi-section" },
       ]} />
 
       {/* Final CTA */}
-      <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
+      <section className="py-14 md:py-20 bg-brand-deep relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -355,15 +341,14 @@ const ForTravelers = () => {
             backgroundSize: "32px 32px",
           }}
         />
-        <div className="container relative max-w-3xl text-center space-y-6">
+        <div className="container relative max-w-3xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Upload your holiday quote and find out if there's a better way
-            to structure, finance, or protect your trip.
+            Upload your holiday quote and see if there's a better way to structure, finance, or protect your trip.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex flex-wrap justify-center gap-3 pt-1">
             <Button
               size="xl"
               className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90"
@@ -381,11 +366,10 @@ const ForTravelers = () => {
       </section>
 
       {/* Disclaimer */}
-      <section className="py-8 bg-background">
+      <section className="py-6 bg-background">
         <div className="container max-w-2xl text-center">
           <p className="text-[11px] text-muted-foreground">
-            * EMI options and savings shown are indicative and subject to review. Final offers depend on
-            lender approval, trip details, and agent terms. SanKash facilitates — your travel agent finalizes.
+            * EMI options and savings are indicative. Final offers depend on lender approval, trip details, and agent terms. SanKash facilitates — your travel agent finalizes.
           </p>
         </div>
       </section>
