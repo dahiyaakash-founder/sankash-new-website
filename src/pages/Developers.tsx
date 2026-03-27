@@ -161,7 +161,7 @@ const Developers = () => {
               Basic Authentication
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              All SanKash API requests use Basic Authentication. After your integration is approved, you'll receive a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong> through a secure channel. These credentials authenticate every API call.
+              All SanKash API requests use Basic Authentication with a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong>. Sandbox credentials are available immediately when you sign up. Production credentials are shared privately after your integration is reviewed and approved.
             </p>
             <div className="bg-muted rounded-xl p-6 border">
               <pre className="text-sm font-mono text-foreground leading-relaxed overflow-x-auto">
