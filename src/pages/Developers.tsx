@@ -12,10 +12,10 @@ const fade = {
 };
 
 const gettingStartedSteps = [
-  { num: "01", label: "Request access", desc: "Tell us about your platform and use case. We'll review and approve within 2 business days." },
-  { num: "02", label: "Receive credentials", desc: "Get your KEY ID and KEY SECRET via a secure channel. These are used for Basic Authentication on all API calls." },
-  { num: "03", label: "Use docs & sandbox", desc: "Explore the API documentation, test endpoints in sandbox mode, and build your integration with real examples." },
-  { num: "04", label: "Go live with support", desc: "Move to production when ready. Our integration team supports you through launch and beyond." },
+  { num: "01", label: "Explore the docs", desc: "Browse the full API reference, request and response examples, and integration guides — no account needed." },
+  { num: "02", label: "Get sandbox credentials", desc: "Sign up for test credentials instantly. Use them to explore endpoints in a safe sandbox environment." },
+  { num: "03", label: "Build and test", desc: "Integrate SanKash APIs into your platform using sandbox mode. Test quotes, payments, and workflows with sample data." },
+  { num: "04", label: "Request production approval", desc: "When you're ready, request production credentials. Our team reviews and approves within 2 business days." },
 ];
 
 const insuranceEndpoints = [
@@ -47,10 +47,11 @@ const Developers = () => {
               Simple APIs for travel insurance and payments, built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
+              <Button size="xl">Get Sandbox Access</Button>
               <Link to="/contact">
-                <Button size="xl">Request API Access</Button>
+                <Button variant="outline" size="xl">Request Production Access</Button>
               </Link>
-              <Button variant="outline" size="xl" className="gap-2">
+              <Button variant="ghost" size="xl" className="gap-2">
                 <BookOpen size={18} /> View Docs
               </Button>
             </div>
@@ -160,7 +161,7 @@ const Developers = () => {
               Basic Authentication
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              All SanKash API requests use Basic Authentication. After your integration is approved, you'll receive a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong> through a secure channel. These credentials authenticate every API call.
+              All SanKash API requests use Basic Authentication with a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong>. Sandbox credentials are available immediately when you sign up. Production credentials are shared privately after your integration is reviewed and approved.
             </p>
             <div className="bg-muted rounded-xl p-6 border">
               <pre className="text-sm font-mono text-foreground leading-relaxed overflow-x-auto">
@@ -222,11 +223,9 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
             Request access and our team will help you get started.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/contact">Request API Access</Link>
-            </Button>
-            <Button size="lg" variant="ghost-dark" className="gap-2">
-              <BookOpen size={16} /> View Docs
+            <Button size="lg" variant="secondary">Get Sandbox Access</Button>
+            <Button size="lg" variant="ghost-dark" asChild>
+              <Link to="/contact">Request Production Access</Link>
             </Button>
           </div>
         </motion.div>
