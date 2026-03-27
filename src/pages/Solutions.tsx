@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Banknote, ShieldCheck, CreditCard, ArrowRight, CheckCircle2, Users, Zap, BarChart3 } from "lucide-react";
