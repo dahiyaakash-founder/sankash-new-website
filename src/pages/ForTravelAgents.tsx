@@ -191,7 +191,7 @@ const ForTravelAgents = () => {
               Agent-Only Feature
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-foreground">
-              Itinerary Optimiser
+              Review your itinerary
             </h2>
             <p className="mt-4 text-primary-foreground/50 leading-relaxed max-w-lg mx-auto">
               Upload a customer quote and understand how to make it more competitive — 
