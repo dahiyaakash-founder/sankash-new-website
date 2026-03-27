@@ -20,10 +20,10 @@ import {
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 
 const howItWorks = [
-  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share a quote, itinerary, or screenshot from any agent." },
-  { num: "02", icon: Search, label: "Explore value", desc: "See if there's scope for better structuring or savings." },
-  { num: "03", icon: Calculator, label: "Check EMI options", desc: "View monthly costs across 3, 6, or 12-month tenures." },
-  { num: "04", icon: BadgeCheck, label: "Get finance-ready", desc: "Pre-qualify so you're prepared when you decide to book." },
+  { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
+  { num: "02", icon: Search, label: "Review value and pricing", desc: "See if there's room for better structuring or savings on your trip." },
+  { num: "03", icon: Calculator, label: "Check travel EMI options", desc: "Compare monthly payment plans across 3, 6, or 12-month tenures." },
+  { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
 const emiExamples = [
