@@ -1,5 +1,6 @@
 import React from "react";
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -83,6 +84,10 @@ const ForTravelAgents = () => {
 
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Agent EMI, Insurance and Payments | SanKash"
+        description="Offer No Cost EMI, embedded insurance, and faster settlements to your travel customers. Upload a quote and review financing opportunities with SanKash."
+      />
       {/* Hero — compact decision block */}
       <section className="bg-hero-gradient py-10 md:py-14">
         <div className="container">

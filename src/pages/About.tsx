@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -28,6 +29,10 @@ const capabilities = [
 const About = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Financial Infrastructure for Travel Businesses | SanKash"
+        description="SanKash was built because travel deserved its own financial layer. Learn why lending, insurance, and payments needed a travel-first platform."
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl">

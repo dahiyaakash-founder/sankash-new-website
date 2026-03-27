@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.sankash.in/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://www.sankash.in/solutions</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/solutions/lending</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/solutions/insurance</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/solutions/payments</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/for-travel-agents</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/for-travelers</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/developers</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/about</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.sankash.in/contact</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+</urlset>

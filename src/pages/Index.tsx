@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead, { organizationSchema, websiteSchema } from "@/components/SEOHead";
 import HomepageHero from "@/components/home/HomepageHero";
 import TrustBar from "@/components/home/TrustBar";
 import AudienceRouting from "@/components/home/AudienceRouting";
@@ -19,6 +20,11 @@ const homepagePrompts = [
 const Index = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Lending, Insurance and Payments Platform | SanKash"
+        description="SanKash helps travel businesses grow with No Cost EMI, embedded travel insurance, and T+1 payment settlements. 8,000+ travel partners across India."
+        jsonLd={[organizationSchema, websiteSchema]}
+      />
       <HomepageHero />
       <TrustBar />
       <AudienceRouting />

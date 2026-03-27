@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,6 +8,10 @@ import { ArrowRight, CreditCard, CheckCircle2, Clock, BarChart3, Wallet } from "
 const Payments = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Payment Settlement and Collections | SanKash"
+        description="T+1 settlements, all payment modes, and automated reconciliation built for travel businesses. Accept UPI, cards, wallets, and NEFT with SanKash."
+      />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
