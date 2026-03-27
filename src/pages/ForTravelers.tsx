@@ -111,7 +111,7 @@ const ForTravelers = () => {
                 <span className="text-gradient-brand">Check it before you book.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload your quote to explore better-value options and check monthly payment plans — all before you commit.
+                Upload your holiday quote to explore better-value options and check travel EMI plans — before you commit to booking.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
