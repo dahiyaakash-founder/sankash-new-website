@@ -20,10 +20,10 @@ import {
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 
 const howItWorks = [
-  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share a quote, itinerary, or screenshot from any agent." },
-  { num: "02", icon: Search, label: "Explore value", desc: "See if there's scope for better structuring or savings." },
-  { num: "03", icon: Calculator, label: "Check EMI options", desc: "View monthly costs across 3, 6, or 12-month tenures." },
-  { num: "04", icon: BadgeCheck, label: "Get finance-ready", desc: "Pre-qualify so you're prepared when you decide to book." },
+  { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
+  { num: "02", icon: Search, label: "Review value and pricing", desc: "See if there's room for better structuring or savings on your trip." },
+  { num: "03", icon: Calculator, label: "Check travel EMI options", desc: "Compare monthly payment plans across 3, 6, or 12-month tenures." },
+  { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
 const emiExamples = [
@@ -35,46 +35,46 @@ const emiExamples = [
 const whyReasons = [
   {
     icon: Search,
-    title: "Spot room for better value",
-    desc: "Get a first read on whether your quote could be better structured or priced.",
+    title: "Review your holiday quote for better value",
+    desc: "Get a quick read on whether your travel quote could be structured differently — better pricing, better options, or both.",
   },
   {
     icon: Banknote,
-    title: "See your monthly cost upfront",
-    desc: "Compare EMI tenures so you know exactly what your trip costs per month.",
+    title: "See your travel EMI before you commit",
+    desc: "Compare No Cost EMI and low-cost monthly payment plans so you know exactly what your holiday costs per month.",
   },
   {
     icon: Shield,
-    title: "Match protection to your itinerary",
-    desc: "Explore cancellation, medical, and baggage cover relevant to your specific trip.",
+    title: "Match travel protection to your trip",
+    desc: "Explore cancellation, medical, and baggage cover matched to your specific itinerary and destination.",
   },
   {
     icon: UserCheck,
-    title: "Walk in finance-ready",
-    desc: "Pre-qualify for trip financing so you can book with confidence, not uncertainty.",
+    title: "Walk into your booking finance-ready",
+    desc: "Pre-qualify for trip financing before you sit down with your agent — no credit score impact, no obligation.",
   },
 ];
 
 const faqs = [
   {
     q: "Do I need to book through SanKash?",
-    a: "No. You continue booking through your travel agent as usual. SanKash reviews your quote and helps you explore financing and protection — we don't replace your agent.",
+    a: "No. SanKash does not replace your travel agent. You continue booking through your agent as usual. SanKash reviews your holiday quote and helps you explore EMI options, travel insurance, and better structuring — so you're more informed before you commit.",
   },
   {
-    q: "Is the quote review free?",
-    a: "Yes. The initial review is completely free. Detailed recommendations may require sharing your contact details.",
+    q: "Is the holiday quote review free?",
+    a: "Yes. Uploading your travel quote and getting an initial review is completely free. There's no obligation to proceed. If you want a detailed review with specific EMI options and insurance recommendations, you may need to share your contact details so our team can follow up.",
   },
   {
-    q: "Will checking EMI affect my credit score?",
-    a: "No. Eligibility checks are soft enquiries and do not impact your credit score.",
+    q: "Will checking travel EMI affect my credit score?",
+    a: "No. When you check EMI eligibility on SanKash, it's a soft enquiry — it does not appear on your credit report and has no impact on your credit score. A hard credit check only happens if you formally apply for financing with a lender.",
   },
   {
-    q: "What types of trips does this work for?",
-    a: "Domestic holidays, international packages, honeymoons, group travel, and pilgrimage tours — any trip with a quoted cost.",
+    q: "What types of trips and holidays does this work for?",
+    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Whether your quote is ₹30,000 or ₹5,00,000, you can check EMI options and explore travel protection.",
   },
   {
-    q: "How accurate are the initial observations?",
-    a: "The initial review is indicative. A detailed review by our team provides specific, actionable recommendations.",
+    q: "How does holiday EMI work on SanKash?",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately.",
   },
 ];
 
@@ -111,7 +111,7 @@ const ForTravelers = () => {
                 <span className="text-gradient-brand">Check it before you book.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload your quote to explore better-value options and check monthly payment plans — all before you commit.
+                Upload your holiday quote to explore better-value options and check travel EMI plans — before you commit to booking.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
@@ -145,7 +145,7 @@ const ForTravelers = () => {
               How It Works
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              From quote to confidence in 4 steps
+              How holiday quote review works
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
@@ -187,10 +187,10 @@ const ForTravelers = () => {
                 EMI & Affordability
               </p>
               <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Your trip doesn't have to wait
+                Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Split your holiday cost into comfortable monthly payments. No Cost EMI and low-cost options across 15+ lending partners. Eligibility checks don't affect your credit score.
+                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2" onClick={scrollToUploader}>
@@ -248,7 +248,7 @@ const ForTravelers = () => {
               Why Use SanKash
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              Four reasons to check first
+              Why review your holiday quote with SanKash
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -284,10 +284,10 @@ const ForTravelers = () => {
               className="space-y-5"
             >
               <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Built for real travel bookings
+                Trusted by real travelers and travel partners
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                8,000+ travel partners. 15+ lending institutions. 5L+ travelers served.
+                8,000+ travel agent partners. 15+ lending institutions. Over 5 lakh travelers have used SanKash for holiday financing and quote reviews.
               </p>
               <div className="space-y-3 pt-1">
                 {[
@@ -312,7 +312,7 @@ const ForTravelers = () => {
               className="space-y-3"
             >
               <h3 className="text-xl font-heading font-bold text-foreground mb-1">
-                Common questions
+                Holiday EMI and quote review FAQs
               </h3>
               {faqs.map((faq) => (
                 <details
@@ -352,7 +352,7 @@ const ForTravelers = () => {
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Upload your holiday quote and see if there's a better way to structure, finance, or protect your trip.
+            Upload your holiday quote and explore travel EMI options, better structuring, and trip protection — all before you book.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-1">
             <Button
