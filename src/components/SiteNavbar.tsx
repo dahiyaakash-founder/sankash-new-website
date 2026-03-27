@@ -12,7 +12,7 @@ const solutionsDropdown = [
 
 const navItems = [
   { label: "Solutions", dropdown: solutionsDropdown },
-  { label: "For Travel Agents", href: "/for-agents" },
+  { label: "For Travel Agents", href: "/for-travel-agents" },
   { label: "For Travelers", href: "/for-travelers" },
   { label: "Developers", href: "/developers" },
   { label: "About", href: "/about" },
