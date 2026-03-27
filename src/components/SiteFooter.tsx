@@ -24,7 +24,6 @@ const footerSections = [
       { label: "About Us", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Careers", href: "/about" },
-      { label: "Blog", href: "/about" },
     ],
   },
   {
@@ -39,33 +38,32 @@ const footerSections = [
 
 const SiteFooter = () => {
   return (
-    <footer className="bg-slate-deep text-muted-foreground">
-      <div className="container py-16">
+    <footer className="bg-brand-deep">
+      <div className="container py-14">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-          {/* Brand column */}
-          <div className="col-span-2 md:col-span-1 space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-3">
             <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-heading font-bold text-sm">S</span>
+              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-heading font-bold text-xs">S</span>
               </div>
-              <span className="text-xl font-heading font-bold tracking-tight text-background">
-                San<span className="text-emerald-glow">Kash</span>
+              <span className="text-lg font-heading font-bold text-primary-foreground tracking-tight">
+                SanKash
               </span>
             </Link>
-            <p className="text-sm leading-relaxed opacity-60">
-              Powering travel growth through Lending, Insurance, and Payments.
+            <p className="text-[13px] text-primary-foreground/40 leading-relaxed">
+              Lending. Insurance. Payments.<br />Built for travel growth.
             </p>
           </div>
 
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h4 className="font-heading font-semibold text-background text-sm mb-4">{section.title}</h4>
-              <ul className="space-y-2.5">
+              <h4 className="font-heading font-semibold text-primary-foreground/80 text-[13px] mb-4">{section.title}</h4>
+              <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="text-sm opacity-50 hover:opacity-80 transition-opacity"
+                      className="text-[13px] text-primary-foreground/35 hover:text-primary-foreground/60 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -76,9 +74,9 @@ const SiteFooter = () => {
           ))}
         </div>
 
-        <div className="border-t border-background/10 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs opacity-40">© {new Date().getFullYear()} SanKash. All rights reserved.</p>
-          <p className="text-xs opacity-40">Made in India 🇮🇳</p>
+        <div className="border-t border-primary-foreground/8 mt-10 pt-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <p className="text-[11px] text-primary-foreground/25">© {new Date().getFullYear()} SanKash. All rights reserved.</p>
+          <p className="text-[11px] text-primary-foreground/25">Made in India 🇮🇳</p>
         </div>
       </div>
     </footer>
