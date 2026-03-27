@@ -295,11 +295,11 @@ const ForTravelers = () => {
               </p>
               <div className="space-y-4 pt-2">
                 {[
-                  "Designed for actual holiday quotes, not hypothetical scenarios",
-                  "The review helps you before you commit — no obligation",
-                  "EMI eligibility check doesn't affect your credit score",
-                  "SanKash facilitates — your travel agent finalizes the booking",
-                  "5L+ travelers have explored financing through SanKash",
+                  "Built for real holiday quotes — not hypothetical scenarios",
+                  "The review helps you before you commit — no obligation to proceed",
+                  "Checking EMI eligibility does not affect your credit score",
+                  "Your travel agent finalises the booking — SanKash only facilitates",
+                  "5L+ travelers have explored trip financing through SanKash",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
                     <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
