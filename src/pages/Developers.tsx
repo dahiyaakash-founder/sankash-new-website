@@ -227,11 +227,11 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              {[
-                { label: "Documentation", desc: "Complete API reference with request and response examples" },
-                { label: "Sandbox access", desc: "Test your integration safely before going live" },
-                { label: "Integration help", desc: "Our team supports you from first API call to production" },
-              ].map((item) => (
+               {[
+                 { label: "Documentation", desc: "Full API reference, request and response examples, and integration guides" },
+                 { label: "Sandbox credentials", desc: "Test your integration safely with sample data before going live" },
+                 { label: "Integration support", desc: "Our team supports you from first API call to production launch" },
+               ].map((item) => (
                 <div key={item.label} className="bg-card border rounded-xl p-5 shadow-card">
                   <h3 className="text-sm font-heading font-bold text-primary-deep">{item.label}</h3>
                   <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{item.desc}</p>
