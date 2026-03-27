@@ -19,10 +19,10 @@ const whoUses = [
 ];
 
 const capabilities = [
-  { label: "Travel distribution understanding", desc: "Deep experience across OTAs, travel agencies, and partner distribution networks." },
-  { label: "Financial infrastructure expertise", desc: "Lending, insurance, and payments systems built from first principles for travel economics." },
-  { label: "Product & integration focus", desc: "API-led architecture designed to fit into real booking workflows, not bolted on after." },
-  { label: "Operations that scale", desc: "Settlement, compliance, and partner operations built for volume and reliability." },
+  { label: "Travel distribution understanding", desc: "Built by people who have worked inside OTAs, travel agencies, and partner distribution networks — and understand how bookings actually move." },
+  { label: "Financial infrastructure expertise", desc: "Lending, insurance, and payments systems designed from first principles around travel economics — not adapted from retail or e-commerce." },
+  { label: "Product & integration focus", desc: "API-led architecture and checkout flows designed to fit into real booking systems, with minimal integration effort." },
+  { label: "Operations that scale", desc: "Settlement cycles, compliance workflows, and partner operations built to handle volume without breaking." },
 ];
 
 const About = () => {
