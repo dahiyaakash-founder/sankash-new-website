@@ -284,10 +284,10 @@ const ForTravelers = () => {
               className="space-y-5"
             >
               <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Built for real travel bookings
+                Trusted by real travelers and travel partners
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                8,000+ travel partners. 15+ lending institutions. 5L+ travelers served.
+                8,000+ travel agent partners. 15+ lending institutions. Over 5 lakh travelers have used SanKash for holiday financing and quote reviews.
               </p>
               <div className="space-y-3 pt-1">
                 {[
