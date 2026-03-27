@@ -116,10 +116,13 @@ const ItineraryUploader = () => {
               </div>
               <div className="text-center">
                 <p className="font-heading font-bold text-sm text-foreground">
-                  Drop your itinerary or quote here
+                  Drop an itinerary, quote, or screenshot
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PDF, screenshot, or document · Max 10 MB
+                  Get a quick review of financing, protection & collection opportunities
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                  PDF, PNG, JPG, DOC · Max 10 MB
                 </p>
               </div>
               <input
