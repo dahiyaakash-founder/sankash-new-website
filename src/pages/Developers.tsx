@@ -51,7 +51,7 @@ const Developers = () => {
               Integrate SanKash in days, not months
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Simple APIs for travel insurance and payments, built for real travel workflows.
+              Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               <Button size="xl">Get Sandbox Access</Button>
@@ -189,7 +189,7 @@ const Developers = () => {
               Basic Authentication
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              All SanKash API requests use Basic Authentication with a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong>. Sandbox credentials are available immediately when you sign up. Production credentials are shared privately after your integration is reviewed and approved.
+              All SanKash integrations use Basic Authentication with a <strong className="text-foreground">KEY ID</strong> and <strong className="text-foreground">KEY SECRET</strong>. This applies to direct API calls and checkout-linked flows. Sandbox credentials are available immediately when you sign up. Production credentials are shared privately after your integration is reviewed and approved.
             </p>
             <div className="bg-muted rounded-xl p-6 border">
               <pre className="text-sm font-mono text-foreground leading-relaxed overflow-x-auto">
@@ -226,11 +226,11 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              {[
-                { label: "Documentation", desc: "Complete API reference with request and response examples" },
-                { label: "Sandbox access", desc: "Test your integration safely before going live" },
-                { label: "Integration help", desc: "Our team supports you from first API call to production" },
-              ].map((item) => (
+               {[
+                 { label: "Documentation", desc: "Full API reference, request and response examples, and integration guides" },
+                 { label: "Sandbox credentials", desc: "Test your integration safely with sample data before going live" },
+                 { label: "Integration support", desc: "Our team supports you from first API call to production launch" },
+               ].map((item) => (
                 <div key={item.label} className="bg-card border rounded-xl p-5 shadow-card">
                   <h3 className="text-sm font-heading font-bold text-primary-deep">{item.label}</h3>
                   <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{item.desc}</p>
