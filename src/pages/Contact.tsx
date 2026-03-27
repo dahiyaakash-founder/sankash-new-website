@@ -162,22 +162,48 @@ const Contact = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="p-8 md:p-10 rounded-2xl border bg-card text-center space-y-5"
+            className="p-8 md:p-10 rounded-2xl border bg-card space-y-6"
           >
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-              <Sparkles size={22} className="text-primary" />
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                <Sparkles size={12} />
+                Smart guide
+              </div>
+              <h2 className="text-2xl font-heading font-bold">
+                SanKash Assistant
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">
+                Understand products, find the right next step, or get routed
+                to onboarding, demos, support, or integrations — instantly.
+              </p>
             </div>
-            <h2 className="text-2xl font-heading font-bold">
-              SanKash Assistant
-            </h2>
-            <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
-              Understand products, route questions, and find the right next step
-              — instantly. No waiting, no searching.
-            </p>
-            <Button size="lg" className="gap-2">
-              <MessageSquare size={16} />
-              Start a conversation
-            </Button>
+
+            <div className="grid sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
+              {[
+                "I'm a travel agent, where do I start?",
+                "I want to understand EMI options",
+                "I need sandbox access",
+                "I need help with an existing issue",
+              ].map((prompt) => (
+                <button
+                  key={prompt}
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl border bg-background text-left text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors duration-200"
+                >
+                  <MessageSquare size={13} className="text-primary shrink-0" />
+                  {prompt}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-center pt-1">
+              <Button size="lg" className="gap-2">
+                <MessageSquare size={16} />
+                Start a conversation
+              </Button>
+              <p className="text-[11px] text-muted-foreground mt-2.5">
+                Coming soon — in the meantime, use the quick actions above or the form below.
+              </p>
+            </div>
           </motion.div>
         </div>
       </section>
