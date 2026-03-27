@@ -1,5 +1,6 @@
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
+import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
