@@ -1,8 +1,42 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Banknote, ShieldCheck, CreditCard, FileText, CheckCircle2, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroVisual from "@/assets/hero-infrastructure.jpg";
+
+const proofCards = [
+  {
+    icon: FileText,
+    label: "Trip Quote",
+    title: "Goa Family Package",
+    detail: "₹1,24,000 · 4N/5D · 4 Pax",
+    accent: "border-primary/20 bg-primary/[0.03]",
+    iconColor: "text-primary",
+  },
+  {
+    icon: Banknote,
+    label: "No Cost EMI",
+    title: "₹10,333 /month × 12",
+    detail: "0% interest · Approved in <60s",
+    accent: "border-brand-green/20 bg-brand-green/[0.04]",
+    iconColor: "text-brand-green",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Travel Protection",
+    title: "Trip Insurance Added",
+    detail: "₹899 per traveler · Embedded at checkout",
+    accent: "border-primary/20 bg-primary/[0.03]",
+    iconColor: "text-primary",
+  },
+  {
+    icon: CreditCard,
+    label: "Payment Collected",
+    title: "₹1,24,899 received",
+    detail: "Settlement: T+1 · Auto-reconciled",
+    accent: "border-brand-coral/20 bg-brand-coral/[0.04]",
+    iconColor: "text-brand-coral",
+  },
+];
 
 const HomepageHero = () => {
   return (
@@ -65,31 +99,47 @@ const HomepageHero = () => {
             </div>
           </motion.div>
 
-          {/* Right — Product visual */}
+          {/* Right — Product proof cards */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
             className="lg:col-span-6 relative"
           >
-            <div className="relative rounded-2xl overflow-hidden shadow-card-hover border border-border/40">
-              <img
-                src={heroVisual}
-                alt="SanKash travel commerce infrastructure — lending, insurance, and payments network"
-                className="w-full aspect-[4/3] object-cover"
-                width={1280}
-                height={960}
-              />
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/60 to-transparent" />
-            </div>
-            {/* Floating badge */}
-            <div className="absolute -bottom-3 left-6 bg-card border rounded-xl px-4 py-2.5 shadow-card flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-primary font-heading font-bold text-xs">3</span>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold text-primary-deep">Growth Engines</p>
-                <p className="text-[10px] text-muted-foreground">Lending · Insurance · Payments</p>
+            {/* Workflow connector line */}
+            <div className="absolute left-7 top-6 bottom-6 w-px bg-border/60 hidden sm:block" />
+
+            <div className="space-y-3 relative">
+              {proofCards.map((card, i) => (
+                <motion.div
+                  key={card.label}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 + i * 0.1, duration: 0.4, ease: "easeOut" }}
+                  className={`relative flex items-start gap-4 p-4 rounded-xl border ${card.accent} backdrop-blur-sm`}
+                >
+                  {/* Step indicator */}
+                  <div className="relative z-10 w-10 h-10 rounded-lg bg-card border border-border/60 flex items-center justify-center shadow-sm shrink-0">
+                    <card.icon size={18} className={card.iconColor} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</span>
+                      <CheckCircle2 size={14} className="text-brand-green shrink-0" />
+                    </div>
+                    <p className="text-sm font-heading font-bold text-primary-deep mt-0.5">{card.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{card.detail}</p>
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Summary footer */}
+              <div className="flex items-center gap-2 pl-14 pt-1">
+                <Clock size={12} className="text-brand-green" />
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  Full booking cycle — quote to settlement — in one platform
+                </span>
               </div>
             </div>
           </motion.div>
