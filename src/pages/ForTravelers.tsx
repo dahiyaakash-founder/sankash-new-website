@@ -36,30 +36,30 @@ const emiExamples = [
 const whyReasons = [
   {
     icon: Search,
-    title: "Know before you book",
-    desc: "Understand if your quote has room for better value — before you commit and pay.",
+    title: "Know if your quote has room for improvement",
+    desc: "Get a first read on whether there's scope for better structuring, pricing, or value — before you commit.",
   },
   {
     icon: Banknote,
-    title: "Make it affordable",
-    desc: "Break your trip cost into monthly payments. No Cost EMI and low-cost options available.",
+    title: "See monthly payment options before you commit",
+    desc: "Understand your EMI choices across 3, 6, or 12-month tenures so your trip fits your monthly budget.",
   },
   {
     icon: Shield,
-    title: "Travel protected",
-    desc: "Get relevant travel protection — cancellation cover, medical, baggage — matched to your trip.",
+    title: "Match protection to your trip",
+    desc: "Explore cancellation cover, medical, and baggage protection options relevant to your specific itinerary.",
   },
   {
     icon: UserCheck,
-    title: "Get finance-ready",
-    desc: "Pre-qualify for trip financing so you can book with confidence when you're ready.",
+    title: "Get finance-ready before you decide",
+    desc: "Pre-qualify for trip financing so you're ready to book with confidence when the time is right.",
   },
 ];
 
 const faqs = [
   {
     q: "Do I need to book through SanKash?",
-    a: "No. SanKash reviews your existing quote and helps you understand financing and protection options. You book through your travel agent as usual.",
+    a: "No. You continue booking through your travel agent as usual. SanKash only reviews your quote and helps you explore financing and protection options — we don't replace your agent or change your booking.",
   },
   {
     q: "Is the quote review free?",
@@ -210,7 +210,7 @@ const ForTravelers = () => {
               <div className="bg-card rounded-2xl border shadow-card p-6 space-y-4">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
-                  Indicative EMI · ₹85,000 trip
+                  Indicative EMI for a ₹85,000 trip
                 </div>
                 <div className="space-y-3">
                   {emiExamples.map((emi) => (
@@ -295,11 +295,11 @@ const ForTravelers = () => {
               </p>
               <div className="space-y-4 pt-2">
                 {[
-                  "Designed for actual holiday quotes, not hypothetical scenarios",
-                  "The review helps you before you commit — no obligation",
-                  "EMI eligibility check doesn't affect your credit score",
-                  "SanKash facilitates — your travel agent finalizes the booking",
-                  "5L+ travelers have explored financing through SanKash",
+                  "Built for real holiday quotes — not hypothetical scenarios",
+                  "The review helps you before you commit — no obligation to proceed",
+                  "Checking EMI eligibility does not affect your credit score",
+                  "Your travel agent finalises the booking — SanKash only facilitates",
+                  "5L+ travelers have explored trip financing through SanKash",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
                     <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
@@ -364,11 +364,11 @@ const ForTravelers = () => {
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <Link to="/contact">
-              <Button variant="ghost-dark" size="xl">
-                Talk to Us
+            <a href="#emi-section">
+              <Button variant="ghost-dark" size="xl" className="gap-2">
+                <Calculator size={16} /> Check EMI Options
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
