@@ -2,7 +2,7 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, CreditCard, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
 
 const fade = {
   initial: { opacity: 0, y: 20 },
