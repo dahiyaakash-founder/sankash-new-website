@@ -104,19 +104,21 @@ const ForTravelers = () => {
               <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Already got a holiday quote?
                 <br />
-                <span className="text-gradient-brand">Let's review it.</span>
+                <span className="text-gradient-brand">Check it before you book.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload your itinerary or quote to explore possible better-value options
-                and see EMI choices — before you book.
+                Upload a quote, itinerary, or screenshot to explore better-value possibilities
+                and understand your monthly payment options — before you commit.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
                   Upload My Quote <ArrowRight size={18} />
                 </Button>
-                <Button variant="outline" size="xl" className="gap-2">
-                  <Calculator size={16} /> Check EMI Options
-                </Button>
+                <a href="#emi-section">
+                  <Button variant="outline" size="xl" className="gap-2">
+                    <Calculator size={16} /> Check EMI Options
+                  </Button>
+                </a>
               </div>
             </motion.div>
 
