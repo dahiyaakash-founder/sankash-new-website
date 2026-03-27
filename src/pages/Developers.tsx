@@ -108,9 +108,30 @@ const Developers = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Insurance API */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Lending API */}
             <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                  <Banknote size={20} className="text-primary" />
+                </div>
+                <h3 className="text-lg font-heading font-bold text-primary-deep">Lending & Checkout API</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Offer No Cost EMI and travel financing at point of sale. Integrate via API or use SanKash's hosted checkout — whichever fits your platform.
+              </p>
+              <ul className="space-y-2.5">
+                {lendingEndpoints.map((ep) => (
+                  <li key={ep} className="flex items-start gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 size={15} className="text-primary mt-0.5 shrink-0" />
+                    {ep}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Insurance API */}
+            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <ShieldCheck size={20} className="text-primary" />
@@ -131,7 +152,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Payments API */}
-            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <CreditCard size={20} className="text-primary" />
