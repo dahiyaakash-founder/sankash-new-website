@@ -340,6 +340,12 @@ const ForTravelers = () => {
         </div>
       </section>
 
+      <AssistantEntryPoint prompts={[
+        { label: "Ask about my quote", link: "/for-travelers" },
+        { label: "Check EMI options", href: "#emi" },
+        { label: "Understand next steps", link: "/contact" },
+      ]} />
+
       {/* Final CTA */}
       <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
         <div
