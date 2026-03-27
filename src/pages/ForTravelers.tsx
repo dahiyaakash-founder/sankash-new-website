@@ -145,7 +145,7 @@ const ForTravelers = () => {
               How It Works
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              From quote to confidence in 4 steps
+              How holiday quote review works
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
