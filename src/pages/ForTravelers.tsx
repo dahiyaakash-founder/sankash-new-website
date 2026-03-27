@@ -31,7 +31,7 @@ const ForTravelers = () => {
               Upload a quote and see your options — no commitment required.
             </p>
             <Link to="/contact">
-              <Button size="xl" variant="amber" className="gap-2">
+              <Button size="xl" className="gap-2">
                 Upload a Trip Quote <ArrowRight size={18} />
               </Button>
             </Link>
