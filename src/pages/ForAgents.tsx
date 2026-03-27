@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -16,6 +17,10 @@ const features = [
 const ForAgents = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Agent Tools for EMI, Insurance and Payments | SanKash"
+        description="Equip your travel agency with No Cost EMI, embedded insurance, and T+1 payments. Drive higher conversion and customer satisfaction with SanKash."
+      />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">

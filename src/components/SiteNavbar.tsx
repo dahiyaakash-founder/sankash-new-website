@@ -27,11 +27,11 @@ const SiteNavbar = () => {
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
+    <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
       <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-1.5 shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+        <Link to="/" className="flex items-center gap-1.5 shrink-0" aria-label="SanKash home">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center" aria-hidden="true">
             <span className="text-primary-foreground font-heading font-bold text-sm">S</span>
           </div>
           <span className="text-lg font-heading font-bold tracking-tight text-primary-deep">
@@ -93,7 +93,7 @@ const SiteNavbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)} aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen}>
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>

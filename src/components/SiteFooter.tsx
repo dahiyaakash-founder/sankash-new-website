@@ -13,7 +13,7 @@ const footerSections = [
   {
     title: "For You",
     links: [
-      { label: "Travel Agents", href: "/for-agents" },
+      { label: "Travel Agents", href: "/for-travel-agents" },
       { label: "Travelers", href: "/for-travelers" },
       { label: "Integrations", href: "/developers" },
     ],
@@ -42,8 +42,8 @@ const SiteFooter = () => {
       <div className="container py-14">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1 space-y-3">
-            <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-1.5" aria-label="SanKash home">
+              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center" aria-hidden="true">
                 <span className="text-primary-foreground font-heading font-bold text-xs">S</span>
               </div>
               <span className="text-lg font-heading font-bold text-primary-foreground tracking-tight">

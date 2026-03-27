@@ -35,6 +35,7 @@ const Payments = () => {
 
       <section className="py-20 md:py-28">
         <div className="container">
+          <h2 className="text-3xl font-heading font-bold mb-14">Key capabilities</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {[
               { icon: Clock, title: "T+1 Settlement", desc: "Get paid the next business day. No more waiting for weeks." },
@@ -59,7 +60,7 @@ const Payments = () => {
           </div>
 
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-heading font-bold text-center mb-8">Built for travel</h2>
+            <h3 className="text-2xl font-heading font-bold text-center mb-8">Built for travel</h3>
             <div className="space-y-3">
               {[
                 "Payment splitting for multi-supplier bookings",
