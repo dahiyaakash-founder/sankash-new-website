@@ -31,15 +31,15 @@ const SiteNavbar = () => {
       <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 shrink-0">
-          <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-heading font-bold text-xs">S</span>
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-heading font-bold text-sm">S</span>
           </div>
           <span className="text-lg font-heading font-bold tracking-tight text-primary-deep">
             SanKash
           </span>
         </Link>
 
-        {/* Desktop nav — compact */}
+        {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-0.5">
           {navItems.map((item) =>
             item.dropdown ? (
@@ -60,7 +60,7 @@ const SiteNavbar = () => {
                         <Link
                           key={child.href}
                           to={child.href}
-                          className="block px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                          className="block px-3 py-2.5 rounded-lg hover:bg-accent transition-colors"
                         >
                           <div className="text-[13px] font-medium">{child.label}</div>
                           <div className="text-[11px] text-muted-foreground">{child.desc}</div>
