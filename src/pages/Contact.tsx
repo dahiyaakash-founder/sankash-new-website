@@ -12,10 +12,10 @@ import {
   Code,
   Calendar,
   Headphones,
-  MessageSquare,
-  Sparkles,
   ExternalLink,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import SanKashAssistant from "@/components/contact/SanKashAssistant";
 import { Link } from "react-router-dom";
 
 const quickActions = [
