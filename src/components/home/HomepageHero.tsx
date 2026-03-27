@@ -105,18 +105,18 @@ const HomepageHero = () => {
             {/* Workflow connector line */}
             <div className="absolute left-7 top-6 bottom-6 w-px bg-border/60 hidden sm:block" />
 
-            <div className="space-y-3 relative">
+            <div className="space-y-2.5 relative">
               {proofCards.map((card, i) => (
                 <motion.div
                   key={card.label}
                   initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25 + i * 0.1, duration: 0.4, ease: "easeOut" }}
-                  className={`relative flex items-start gap-4 p-4 rounded-xl border ${card.accent} backdrop-blur-sm`}
+                  className="relative flex items-start gap-4 p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm"
                 >
-                  {/* Step indicator */}
-                  <div className="relative z-10 w-10 h-10 rounded-lg bg-card border border-border/60 flex items-center justify-center shadow-sm shrink-0">
-                    <card.icon size={18} className={card.iconColor} />
+                  {/* Step number */}
+                  <div className="relative z-10 w-10 h-10 rounded-lg bg-accent/60 border border-border/40 flex items-center justify-center shrink-0">
+                    <span className="text-[11px] font-heading font-bold text-primary">{card.step}</span>
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -134,7 +134,7 @@ const HomepageHero = () => {
               <div className="flex items-center gap-2 pl-14 pt-1">
                 <Clock size={12} className="text-brand-green" />
                 <span className="text-[11px] font-medium text-muted-foreground">
-                  Full booking cycle — quote to settlement — in one platform
+                  Quote → Finance → Protect → Collect — one platform
                 </span>
               </div>
             </div>
