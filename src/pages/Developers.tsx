@@ -1,4 +1,5 @@
 import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Link } from "react-router-dom";
