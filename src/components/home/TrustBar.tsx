@@ -1,28 +1,30 @@
 import { motion } from "framer-motion";
 
-const logos = [
+const partners = [
   "Thomas Cook", "Veena World", "Cordelia Cruises", "PickYourTrail", "GT Holidays", "Akbar Travels"
 ];
 
 const TrustBar = () => {
   return (
-    <section className="py-10 border-b bg-background">
+    <section className="py-8 border-b bg-card">
       <div className="container">
-        <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">
-          Trusted by India's leading travel brands
-        </p>
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-          {logos.map((name, i) => (
-            <motion.div
-              key={name}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="text-sm font-heading font-semibold text-muted-foreground/40 select-none"
-            >
-              {name}
-            </motion.div>
-          ))}
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.1em] shrink-0">
+            Trusted by
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8">
+            {partners.map((name, i) => (
+              <motion.span
+                key={name}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.08, duration: 0.4 }}
+                className="text-xs font-heading font-semibold text-muted-foreground/30 select-none whitespace-nowrap"
+              >
+                {name}
+              </motion.span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
