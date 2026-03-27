@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import ForAgents from "./pages/ForAgents";
+import ForTravelAgents from "./pages/ForTravelAgents";
 import ForTravelers from "./pages/ForTravelers";
 import Solutions from "./pages/Solutions";
 import Lending from "./pages/Lending";
