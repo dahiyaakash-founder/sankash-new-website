@@ -18,9 +18,11 @@ const whoUses = [
   { label: "Travelers", desc: "Access No Cost EMI, protection products, and smarter payment options through their agent or platform." },
 ];
 
-const team = [
-  { name: "Akash Dahiya", role: "Co-founder & CEO", note: "Travel industry + fintech. Previously at MakeMyTrip and Cleartrip." },
-  { name: "Rajesh Kumar", role: "Co-founder & CTO", note: "Payments infrastructure and integration architecture." },
+const capabilities = [
+  { label: "Travel distribution understanding", desc: "Deep experience across OTAs, travel agencies, and partner distribution networks." },
+  { label: "Financial infrastructure expertise", desc: "Lending, insurance, and payments systems built from first principles for travel economics." },
+  { label: "Product & integration focus", desc: "API-led architecture designed to fit into real booking workflows, not bolted on after." },
+  { label: "Operations that scale", desc: "Settlement, compliance, and partner operations built for volume and reliability." },
 ];
 
 const About = () => {
@@ -142,24 +144,25 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team — simple, credible */}
+      {/* Capabilities */}
       <section className="py-20 md:py-28">
-        <div className="container max-w-3xl">
-          <motion.div {...fade} className="space-y-8">
-            <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
-              Built by people who know travel
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              SanKash was founded in 2018 by a team that spent years inside travel companies and 
-              financial institutions — and understood that neither side had built the right bridge.
-            </p>
-            <div className="grid sm:grid-cols-2 gap-4 pt-2">
-              {team.map((t) => (
-                <div key={t.name} className="rounded-xl border bg-card p-6 space-y-1.5">
-                  <h3 className="text-base font-heading font-bold text-foreground">{t.name}</h3>
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wide">{t.role}</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed pt-1">{t.note}</p>
-                </div>
+        <div className="container max-w-4xl">
+          <motion.div {...fade} className="space-y-10">
+            <div className="max-w-2xl space-y-3">
+              <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
+                Built by people who know travel
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                SanKash was founded in 2018 by a team that spent years inside travel companies and 
+                financial institutions — and understood that neither side had built the right bridge.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
+              {capabilities.map((c, i) => (
+                <motion.div key={c.label} {...fade} transition={{ delay: i * 0.07, duration: 0.4 }} className="space-y-1.5">
+                  <h3 className="text-sm font-heading font-bold text-foreground">{c.label}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
+                </motion.div>
               ))}
             </div>
           </motion.div>
