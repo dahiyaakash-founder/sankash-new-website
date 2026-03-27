@@ -127,7 +127,7 @@ const About = () => {
       </section>
 
       {/* Trust stats — sparse */}
-      <section className="py-14 bg-brand-deep">
+      <section className="py-12 md:py-14 bg-brand-deep">
         <div className="container">
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-center">
             {[
