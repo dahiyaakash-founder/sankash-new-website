@@ -17,6 +17,10 @@ const features = [
 const Lending = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Travel Lending and No Cost EMI for Agents | SanKash"
+        description="Offer No Cost EMI and instant travel financing at point of sale. 15+ lender partners, under 60-second approvals, and zero paperwork for travel agents."
+      />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">

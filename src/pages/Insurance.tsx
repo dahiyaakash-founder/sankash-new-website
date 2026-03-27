@@ -14,6 +14,10 @@ const coverageTypes = [
 const Insurance = () => {
   return (
     <SiteLayout>
+      <SEOHead
+        title="Embedded Travel Insurance for Agents | SanKash"
+        description="Embed travel insurance into your booking flow. Trip cancellation, medical, and baggage cover issued instantly with ancillary revenue on every policy."
+      />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
