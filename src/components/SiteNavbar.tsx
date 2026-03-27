@@ -100,7 +100,7 @@ const SiteNavbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden bg-background border-b max-h-[85vh] overflow-y-auto">
+        <div className="md:hidden bg-background border-b max-h-[85vh] overflow-y-auto">
           <div className="container py-3 space-y-0.5">
             {navItems.map((item) =>
               item.dropdown ? (
