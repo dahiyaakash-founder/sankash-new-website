@@ -210,7 +210,7 @@ const ForTravelers = () => {
               <div className="bg-card rounded-2xl border shadow-card p-6 space-y-4">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
-                  Indicative EMI · ₹85,000 trip
+                  Indicative EMI for a ₹85,000 trip
                 </div>
                 <div className="space-y-3">
                   {emiExamples.map((emi) => (
