@@ -47,10 +47,11 @@ const Developers = () => {
               Simple APIs for travel insurance and payments, built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
+              <Button size="xl">Get Sandbox Access</Button>
               <Link to="/contact">
-                <Button size="xl">Request API Access</Button>
+                <Button variant="outline" size="xl">Request Production Access</Button>
               </Link>
-              <Button variant="outline" size="xl" className="gap-2">
+              <Button variant="ghost" size="xl" className="gap-2">
                 <BookOpen size={18} /> View Docs
               </Button>
             </div>
