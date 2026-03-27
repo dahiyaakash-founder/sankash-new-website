@@ -1,5 +1,7 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import SiteLayout from "@/components/SiteLayout";
+import SEOHead from "@/components/SEOHead";
 
 const NotFound = () => {
   const location = useLocation();
@@ -9,15 +11,21 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
+    <SiteLayout>
+      <SEOHead
+        title="Page Not Found | SanKash"
+        description="The page you're looking for doesn't exist. Return to SanKash to explore travel lending, insurance, and payment solutions."
+      />
+      <div className="flex items-center justify-center py-32">
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-heading font-bold text-primary-deep">404</h1>
+          <p className="text-lg text-muted-foreground">This page doesn't exist.</p>
+          <Link to="/" className="inline-block text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+            Return to Home →
+          </Link>
+        </div>
       </div>
-    </div>
+    </SiteLayout>
   );
 };
 

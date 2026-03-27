@@ -7,7 +7,7 @@ const audiences = [
     icon: Briefcase,
     title: "For Travel Agents",
     desc: "Grow bookings with lending, earn from insurance, and get settled in T+1. Tools built for how agents actually sell.",
-    href: "/for-agents",
+    href: "/for-travel-agents",
     accent: "bg-primary/10 text-primary",
   },
   {
