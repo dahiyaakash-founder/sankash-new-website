@@ -24,36 +24,49 @@ import ItineraryUploader from "@/components/agents/ItineraryUploader";
 const whyReasons = [
   {
     icon: TrendingUp,
-    title: "Close higher-value bookings",
-    desc: "When customers can pay in installments, they book premium packages instead of downgrading. Your average ticket size goes up.",
+    title: "Higher-value bookings",
+    desc: "Customers book premium packages when they can pay in installments.",
   },
   {
     icon: Banknote,
-    title: "Offer No Cost EMI at point of sale",
-    desc: "Instant EMI approval with 15+ lending partners. Customers choose their tenure, you get paid upfront.",
+    title: "No Cost EMI at point of sale",
+    desc: "Instant approval with 15+ lending partners. You get paid upfront.",
   },
   {
     icon: ShieldCheck,
-    title: "Attach protection to every booking",
-    desc: "Embed travel insurance at checkout. Earn ancillary revenue on every relevant trip without extra effort.",
+    title: "Protection on every booking",
+    desc: "Embed travel insurance at checkout. Earn ancillary revenue effortlessly.",
   },
   {
     icon: CreditCard,
-    title: "Collect payments through SanKash",
-    desc: "Accept customer payments with built-in reconciliation. Track collections in one place, settle T+1.",
+    title: "Payments with built-in reconciliation",
+    desc: "Accept payments, track collections, settle T+1.",
   },
   {
     icon: Zap,
-    title: "Reduce friction in your selling flow",
-    desc: "No paperwork, no separate finance applications. Everything happens inside the booking workflow your customers already use.",
+    title: "No paperwork, no friction",
+    desc: "Everything happens inside your existing booking workflow.",
   },
 ];
 
 const optimiserSteps = [
-  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share an itinerary, quote, or package details." },
-  { num: "02", icon: Search, label: "Check competitiveness", desc: "See where pricing, financing, or protection can improve." },
-  { num: "03", icon: Banknote, label: "See financing & protection fits", desc: "Understand what EMI and coverage options work for the trip." },
-  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in or register for detailed recommendations." },
+  { num: "01", icon: Upload, label: "Upload your quote", desc: "Share an itinerary or package details." },
+  { num: "02", icon: Search, label: "Check competitiveness", desc: "See where pricing or financing can improve." },
+  { num: "03", icon: Banknote, label: "Financing & protection fits", desc: "EMI and coverage options for the trip." },
+  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in for detailed recommendations." },
+];
+
+const beforeSignup = [
+  { icon: Upload, label: "Upload and review a quote", desc: "Get quick feedback on any itinerary" },
+  { icon: Search, label: "See competitiveness signals", desc: "Understand pricing and financing gaps" },
+  { icon: Banknote, label: "Preview EMI options", desc: "See what financing could look like" },
+];
+
+const afterSignup = [
+  { icon: FileText, label: "Itinerary Insights", desc: "Detailed review of pricing, financing, and coverage" },
+  { icon: TrendingUp, label: "Quote Competitiveness", desc: "Benchmark packages against market trends" },
+  { icon: Clock, label: "Priority Settlement", desc: "T+1 payouts with automatic reconciliation" },
+  { icon: Users, label: "Partner Support", desc: "Dedicated relationship manager for your agency" },
 ];
 
 const pillars = [
@@ -64,7 +77,6 @@ const pillars = [
     points: [
       "No Cost EMI and low-cost EMI options",
       "Instant approval — 15+ lending partners",
-      "Higher conversion on premium packages",
       "You get paid upfront, customer pays over time",
     ],
   },
@@ -75,8 +87,7 @@ const pillars = [
     points: [
       "Embedded travel protection at checkout",
       "Trip cancellation, medical, and baggage cover",
-      "Ancillary revenue stream for your business",
-      "Automated policy issuance — no manual work",
+      "Ancillary revenue — no manual work",
     ],
   },
   {
@@ -84,19 +95,11 @@ const pillars = [
     title: "Payments",
     hook: "Collect faster, settle sooner",
     points: [
-      "Accept customer payments through SanKash",
-      "T+1 settlement cycle — no delays",
-      "Auto-reconciliation and payment tracking",
+      "Accept payments through SanKash",
+      "T+1 settlement — auto-reconciliation",
       "Reduce follow-ups and collection friction",
     ],
   },
-];
-
-const onboardingSteps = [
-  { num: "1", title: "Sign up as a partner", desc: "Quick registration — no technical setup required." },
-  { num: "2", title: "Upload a customer quote", desc: "Run the review tool on a real itinerary." },
-  { num: "3", title: "Turn on EMI & insurance", desc: "Offer financing and protection on your bookings." },
-  { num: "4", title: "Collect payments via SanKash", desc: "Accept payments with built-in settlement tracking." },
 ];
 
 const ForTravelAgents = () => {
@@ -108,29 +111,29 @@ const ForTravelAgents = () => {
 
   return (
     <SiteLayout>
-      {/* Hero */}
-      <section className="bg-hero-gradient py-16 md:py-24">
+      {/* Hero — compact decision block */}
+      <section className="bg-hero-gradient py-10 md:py-16">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-5 lg:pt-4"
+              className="space-y-4 lg:pt-2"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travel Agents & Businesses
               </p>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Review your itinerary
                 <br />
                 <span className="text-gradient-brand">before you send it.</span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+              <p className="text-base text-muted-foreground max-w-xl leading-relaxed">
                 Upload a quote and get a quick review of financing, protection,
                 and collection opportunities — before your customer sees it.
               </p>
-              <div className="flex flex-wrap gap-3 pt-1">
+              <div className="flex flex-wrap gap-3">
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
@@ -140,7 +143,6 @@ const ForTravelAgents = () => {
               </div>
             </motion.div>
 
-            {/* Right side: Interactive uploader */}
             <motion.div
               ref={uploaderRef}
               initial={{ opacity: 0, x: 20 }}
@@ -154,28 +156,28 @@ const ForTravelAgents = () => {
       </section>
 
       {/* Why agents use SanKash */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-20">
         <div className="container">
-          <div className="max-w-2xl mb-14">
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-3">Why Travel Agents Choose SanKash</p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+          <div className="max-w-2xl mb-10">
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Why Travel Agents Choose SanKash</p>
+            <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground">
               Sell smarter. Close more bookings.
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {whyReasons.map((r, i) => (
               <motion.div
                 key={r.title}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="p-6 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                transition={{ delay: i * 0.06, duration: 0.35 }}
+                className="p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
               >
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-4">
-                  <r.icon size={20} className="text-primary" />
+                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
+                  <r.icon size={18} className="text-primary" />
                 </div>
-                <h3 className="font-heading font-bold text-foreground mb-2">{r.title}</h3>
+                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{r.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{r.desc}</p>
               </motion.div>
             ))}
@@ -183,41 +185,40 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
-      {/* Itinerary Optimiser */}
-      <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
+      {/* Review your itinerary — dark section, compressed */}
+      <section className="py-12 md:py-16 bg-brand-deep relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="container relative">
-          <div className="max-w-2xl mx-auto text-center mb-14">
-            <p className="text-[11px] font-semibold text-primary-foreground/50 uppercase tracking-[0.1em] mb-3">
+          <div className="max-w-2xl mx-auto text-center mb-10">
+            <p className="text-[11px] font-semibold text-primary-foreground/50 uppercase tracking-[0.1em] mb-2">
               Agent-Only Feature
             </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-foreground">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-primary-foreground">
               Review your itinerary
             </h2>
-            <p className="mt-4 text-primary-foreground/50 leading-relaxed max-w-lg mx-auto">
-              Upload a customer quote and understand how to make it more competitive — 
-              with financing, protection, and sourcing signals.
+            <p className="mt-3 text-sm text-primary-foreground/50 leading-relaxed max-w-lg mx-auto">
+              Upload a customer quote and understand how to make it more competitive.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
             {optimiserSteps.map((step, i) => (
               <motion.div
                 key={step.num}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="relative p-5 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-center"
+                transition={{ delay: i * 0.08, duration: 0.35 }}
+                className="relative p-4 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-center"
               >
-                <div className="text-[10px] font-semibold text-primary-foreground/30 uppercase tracking-widest mb-3">
+                <div className="text-[10px] font-semibold text-primary-foreground/30 uppercase tracking-widest mb-2">
                   Step {step.num}
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center mx-auto mb-3">
-                  <step.icon size={20} className="text-primary-foreground/70" />
+                <div className="w-9 h-9 rounded-lg bg-primary-foreground/10 flex items-center justify-center mx-auto mb-2">
+                  <step.icon size={18} className="text-primary-foreground/70" />
                 </div>
-                <h3 className="font-heading font-bold text-primary-foreground text-sm mb-1">{step.label}</h3>
-                <p className="text-xs text-primary-foreground/40 leading-relaxed">{step.desc}</p>
+                <h3 className="font-heading font-bold text-primary-foreground text-xs mb-1">{step.label}</h3>
+                <p className="text-[11px] text-primary-foreground/40 leading-relaxed">{step.desc}</p>
                 {i < optimiserSteps.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-primary-foreground/15" />
                 )}
@@ -225,7 +226,7 @@ const ForTravelAgents = () => {
             ))}
           </div>
 
-          <div className="text-center mt-10">
+          <div className="text-center mt-8">
             <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90" onClick={scrollToUploader}>
               Upload a Quote <ArrowRight size={16} />
             </Button>
@@ -234,35 +235,35 @@ const ForTravelAgents = () => {
       </section>
 
       {/* Three Growth Pillars */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-20">
         <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground">
               Three pillars of agent growth
             </h2>
-            <p className="mt-4 text-muted-foreground text-lg">
+            <p className="mt-3 text-muted-foreground">
               Lending, Insurance, and Payments — integrated into your booking workflow.
             </p>
           </div>
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-5">
             {pillars.map((p, i) => (
               <motion.div
                 key={p.title}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="p-7 rounded-2xl border bg-card"
+                transition={{ delay: i * 0.08, duration: 0.35 }}
+                className="p-6 rounded-2xl border bg-card"
               >
-                <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-5">
-                  <p.icon size={22} className="text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center mb-4">
+                  <p.icon size={20} className="text-primary" />
                 </div>
-                <h3 className="text-xl font-heading font-bold text-foreground mb-1">{p.title}</h3>
-                <p className="text-sm text-primary font-medium mb-4">{p.hook}</p>
-                <ul className="space-y-2.5">
+                <h3 className="text-lg font-heading font-bold text-foreground mb-1">{p.title}</h3>
+                <p className="text-sm text-primary font-medium mb-3">{p.hook}</p>
+                <ul className="space-y-2">
                   {p.points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                      <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
+                    <li key={pt} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
                       <span>{pt}</span>
                     </li>
                   ))}
@@ -273,108 +274,95 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
-      {/* Gated Partner Tools */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      {/* Merged: What opens up after signup */}
+      <section className="py-14 md:py-20 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="space-y-5"
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1">
-                <Lock size={12} className="text-primary" />
-                <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">Partner Access</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Deeper tools for registered partners
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                SanKash partners get access to advanced analytics, detailed itinerary insights,
-                priority settlement, and dedicated support. These tools are designed for agents
-                who want to grow systematically.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="grid grid-cols-2 gap-3"
-            >
-              {[
-                { icon: FileText, label: "Itinerary Insights", desc: "See how each quote stacks up on pricing, financing, and coverage" },
-                { icon: TrendingUp, label: "Quote Competitiveness", desc: "Benchmark your packages against market trends" },
-                { icon: Clock, label: "Priority Settlement", desc: "T+1 payouts with automatic reconciliation" },
-                { icon: Users, label: "Partner Support", desc: "Dedicated relationship manager for your agency" },
-              ].map((tool) => (
-                <div
-                  key={tool.label}
-                  className="p-5 rounded-xl border bg-card"
-                >
-                  <tool.icon size={20} className="text-primary mb-3" />
-                  <h4 className="font-heading font-bold text-sm text-foreground mb-1">{tool.label}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{tool.desc}</p>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Getting Started */}
-      <section className="py-20 md:py-28">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              Get started in minutes
+          <div className="max-w-2xl mx-auto text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground">
+              What opens up after signup
             </h2>
-            <p className="mt-4 text-muted-foreground text-lg">
-              No heavy integration needed. Start using SanKash with your existing workflow.
+            <p className="mt-3 text-muted-foreground leading-relaxed max-w-lg mx-auto">
+              Start with a free quote review. After onboarding, unlock deeper insights, faster settlement, and dedicated support.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-4xl mx-auto">
-            {onboardingSteps.map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="text-center"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 font-heading font-bold text-sm">
-                  {step.num}
-                </div>
-                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{step.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Before signup */}
+            <motion.div
+              initial={{ opacity: 0, x: -12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="p-6 rounded-2xl border bg-card"
+            >
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">What you can try now</p>
+              <div className="space-y-4">
+                {beforeSignup.map((item) => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0 mt-0.5">
+                      <item.icon size={16} className="text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-heading font-bold text-foreground">{item.label}</h4>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* After signup */}
+            <motion.div
+              initial={{ opacity: 0, x: 12 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="p-6 rounded-2xl border bg-card"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Lock size={12} className="text-primary" />
+                <p className="text-xs font-semibold text-primary uppercase tracking-wider">What partners unlock</p>
+              </div>
+              <div className="space-y-4">
+                {afterSignup.map((item) => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <item.icon size={16} className="text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-heading font-bold text-foreground">{item.label}</h4>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      <AssistantEntryPoint prompts={[
-        { label: "Ask about agent onboarding", link: "/for-travel-agents" },
-        { label: "Check if SanKash fits my business", link: "/solutions" },
-        { label: "Understand EMI, insurance, and payments", link: "/solutions" },
-      ]} />
+      {/* Assistant — compact utility */}
+      <AssistantEntryPoint
+        className="py-8 md:py-10"
+        prompts={[
+          { label: "Ask about agent onboarding", link: "/for-travel-agents" },
+          { label: "Check if SanKash fits my business", link: "/solutions" },
+          { label: "Understand EMI, insurance, and payments", link: "/solutions" },
+        ]}
+      />
 
-      {/* Final CTA */}
-      <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
+      {/* Final CTA — crisp closing */}
+      <section className="py-14 md:py-18 bg-brand-deep relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
-        <div className="container relative max-w-3xl text-center space-y-6">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
+        <div className="container relative max-w-3xl text-center space-y-4">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-foreground tracking-tight">
             Your next booking starts here.
           </h2>
-          <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Join 8,000+ travel partners already using SanKash to close more bookings,
-            earn more per trip, and collect faster.
+          <p className="text-primary-foreground/50 leading-relaxed max-w-lg mx-auto">
+            Join 8,000+ travel partners already using SanKash to close more bookings
+            and collect faster.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex flex-wrap justify-center gap-3 pt-1">
             <Link to="/contact">
               <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
                 Get Started <ArrowRight size={18} />
