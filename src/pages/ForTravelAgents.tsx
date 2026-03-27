@@ -1,3 +1,4 @@
+import React from "react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -98,17 +99,23 @@ const onboardingSteps = [
 ];
 
 const ForTravelAgents = () => {
+  const uploaderRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToUploader = () => {
+    uploaderRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <SiteLayout>
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-16 md:py-24">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-6"
+              className="space-y-5 lg:pt-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travel Agents & Businesses
@@ -119,12 +126,12 @@ const ForTravelAgents = () => {
                 <span className="text-gradient-brand">before you send it.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload a quote or itinerary and see how SanKash can help you improve value,
-                offer financing, attach protection, and collect faster.
+                Upload a quote and get a quick review of financing, protection,
+                and collection opportunities — before your customer sees it.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
-                <Button size="xl" className="gap-2">
-                  Review an Itinerary <ArrowRight size={18} />
+                <Button size="xl" className="gap-2" onClick={scrollToUploader}>
+                  Upload a Quote <ArrowRight size={18} />
                 </Button>
                 <Button variant="outline" size="xl">
                   Agent Login
@@ -134,10 +141,10 @@ const ForTravelAgents = () => {
 
             {/* Right side: Interactive uploader */}
             <motion.div
+              ref={uploaderRef}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
             >
               <ItineraryUploader />
             </motion.div>
