@@ -223,11 +223,9 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
             Request access and our team will help you get started.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/contact">Request API Access</Link>
-            </Button>
-            <Button size="lg" variant="ghost-dark" className="gap-2">
-              <BookOpen size={16} /> View Docs
+            <Button size="lg" variant="secondary">Get Sandbox Access</Button>
+            <Button size="lg" variant="ghost-dark" asChild>
+              <Link to="/contact">Request Production Access</Link>
             </Button>
           </div>
         </motion.div>
