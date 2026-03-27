@@ -101,10 +101,10 @@ const Developers = () => {
           <motion.div {...fade} className="max-w-2xl mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">API overview</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
-              Two APIs, built for travel
+              Three integrations, built for travel
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Everything you need to embed insurance and payment capabilities into your travel platform.
+              Lending, Insurance, and Payments — everything you need to embed travel financial infrastructure into your platform.
             </p>
           </motion.div>
 
