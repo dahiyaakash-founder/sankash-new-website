@@ -18,6 +18,13 @@ const gettingStartedSteps = [
   { num: "04", label: "Request production approval", desc: "When you're ready, request production credentials. Our team reviews and approves within 2 business days." },
 ];
 
+const lendingEndpoints = [
+  "No Cost EMI enablement",
+  "Finance eligibility and pre-qualification",
+  "Checkout-linked lending flow",
+  "Hosted or integrated options by use case",
+];
+
 const insuranceEndpoints = [
   "Quote generation and plan selection",
   "Traveler details submission",
