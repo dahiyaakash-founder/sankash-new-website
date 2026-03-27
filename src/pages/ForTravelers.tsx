@@ -364,11 +364,11 @@ const ForTravelers = () => {
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <Link to="/contact">
-              <Button variant="ghost-dark" size="xl">
-                Talk to Us
+            <a href="#emi-section">
+              <Button variant="ghost-dark" size="xl" className="gap-2">
+                <Calculator size={16} /> Check EMI Options
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
