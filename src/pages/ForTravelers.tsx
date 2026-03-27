@@ -187,10 +187,10 @@ const ForTravelers = () => {
                 EMI & Affordability
               </p>
               <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Your trip doesn't have to wait
+                Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Split your holiday cost into comfortable monthly payments. No Cost EMI and low-cost options across 15+ lending partners. Eligibility checks don't affect your credit score.
+                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2" onClick={scrollToUploader}>
