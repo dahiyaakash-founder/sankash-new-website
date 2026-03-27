@@ -92,10 +92,10 @@ const pillars = [
 ];
 
 const onboardingSteps = [
-  { num: "1", title: "Register as a partner", desc: "Quick signup — no integration needed to start." },
-  { num: "2", title: "Upload your first itinerary", desc: "Try the optimiser on a real customer quote." },
-  { num: "3", title: "Enable financing & protection", desc: "Turn on EMI and insurance for your bookings." },
-  { num: "4", title: "Start collecting through SanKash", desc: "Accept payments with built-in settlement tracking." },
+  { num: "1", title: "Sign up as a partner", desc: "Quick registration — no technical setup required." },
+  { num: "2", title: "Upload a customer quote", desc: "Run the review tool on a real itinerary." },
+  { num: "3", title: "Turn on EMI & insurance", desc: "Offer financing and protection on your bookings." },
+  { num: "4", title: "Collect payments via SanKash", desc: "Accept payments with built-in settlement tracking." },
 ];
 
 const ForTravelAgents = () => {
