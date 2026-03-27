@@ -352,7 +352,7 @@ const ForTravelers = () => {
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Upload your holiday quote and see if there's a better way to structure, finance, or protect your trip.
+            Upload your holiday quote and explore travel EMI options, better structuring, and trip protection — all before you book.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-1">
             <Button
