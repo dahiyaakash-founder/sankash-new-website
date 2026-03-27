@@ -123,7 +123,7 @@ const ForTravelAgents = () => {
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <Button size="xl" className="gap-2">
-                  Try Itinerary Optimiser <ArrowRight size={18} />
+                  Review an Itinerary <ArrowRight size={18} />
                 </Button>
                 <Button variant="outline" size="xl">
                   Agent Login
