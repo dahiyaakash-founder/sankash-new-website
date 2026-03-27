@@ -39,7 +39,7 @@ const Developers = () => {
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl space-y-6">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-5">
-            <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">Developers</p>
+            <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">API & Integrations</p>
             <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep leading-tight">
               Integrate SanKash in days, not months
             </h1>
