@@ -59,7 +59,7 @@ const whyReasons = [
 const faqs = [
   {
     q: "Do I need to book through SanKash?",
-    a: "No. SanKash reviews your existing quote and helps you understand financing and protection options. You book through your travel agent as usual.",
+    a: "No. You continue booking through your travel agent as usual. SanKash only reviews your quote and helps you explore financing and protection options — we don't replace your agent or change your booking.",
   },
   {
     q: "Is the quote review free?",
