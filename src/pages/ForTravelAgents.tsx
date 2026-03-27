@@ -153,18 +153,31 @@ const ForTravelAgents = () => {
                       Review Ready
                     </span>
                   </div>
-                  <div className="border-t border-border pt-3 space-y-2">
-                    {[
-                      { label: "No Cost EMI available", detail: "₹28,333/mo × 12", color: "text-brand-green" },
-                      { label: "Travel protection recommended", detail: "Trip cancellation + medical", color: "text-primary" },
-                      { label: "Collection via SanKash", detail: "T+1 settlement", color: "text-brand-coral" },
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 size={14} className={item.color} />
-                        <span className="text-foreground font-medium">{item.label}</span>
-                        <span className="text-muted-foreground text-xs ml-auto">{item.detail}</span>
+                  <div className="border-t border-border pt-3 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Financing</p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 size={14} className="text-brand-green" />
+                        <span className="text-foreground font-medium">No Cost EMI available</span>
+                        <span className="text-muted-foreground text-xs ml-auto">₹28,333/mo × 12</span>
                       </div>
-                    ))}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Protection</p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 size={14} className="text-primary" />
+                        <span className="text-foreground font-medium">Protection add-ons recommended</span>
+                        <span className="text-muted-foreground text-xs ml-auto">Cancellation + medical</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Collection</p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 size={14} className="text-brand-coral" />
+                        <span className="text-foreground font-medium">Payment collection ready</span>
+                        <span className="text-muted-foreground text-xs ml-auto">T+1 settlement</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
