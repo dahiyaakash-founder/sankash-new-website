@@ -50,9 +50,9 @@ const whyReasons = [
 
 const optimiserSteps = [
   { num: "01", icon: Upload, label: "Upload your quote", desc: "Share an itinerary, quote, or package details." },
-  { num: "02", icon: Search, label: "Review competitiveness", desc: "See where pricing, financing, or protection can improve." },
-  { num: "03", icon: Banknote, label: "EMI & protection suggestions", desc: "Understand what financing and coverage options fit the trip." },
-  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in or register to access detailed recommendations." },
+  { num: "02", icon: Search, label: "Check competitiveness", desc: "See where pricing, financing, or protection can improve." },
+  { num: "03", icon: Banknote, label: "See financing & protection fits", desc: "Understand what EMI and coverage options work for the trip." },
+  { num: "04", icon: Lock, label: "Unlock full insights", desc: "Sign in or register for detailed recommendations." },
 ];
 
 const pillars = [
@@ -92,10 +92,10 @@ const pillars = [
 ];
 
 const onboardingSteps = [
-  { num: "1", title: "Register as a partner", desc: "Quick signup — no integration needed to start." },
-  { num: "2", title: "Upload your first itinerary", desc: "Try the optimiser on a real customer quote." },
-  { num: "3", title: "Enable financing & protection", desc: "Turn on EMI and insurance for your bookings." },
-  { num: "4", title: "Start collecting through SanKash", desc: "Accept payments with built-in settlement tracking." },
+  { num: "1", title: "Sign up as a partner", desc: "Quick registration — no technical setup required." },
+  { num: "2", title: "Upload a customer quote", desc: "Run the review tool on a real itinerary." },
+  { num: "3", title: "Turn on EMI & insurance", desc: "Offer financing and protection on your bookings." },
+  { num: "4", title: "Collect payments via SanKash", desc: "Accept payments with built-in settlement tracking." },
 ];
 
 const ForTravelAgents = () => {
@@ -191,7 +191,7 @@ const ForTravelAgents = () => {
               Agent-Only Feature
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-foreground">
-              Itinerary Optimiser
+              Review your itinerary
             </h2>
             <p className="mt-4 text-primary-foreground/50 leading-relaxed max-w-lg mx-auto">
               Upload a customer quote and understand how to make it more competitive — 
@@ -225,8 +225,8 @@ const ForTravelAgents = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
-              Review an Itinerary <ArrowRight size={16} />
+            <Button size="lg" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90" onClick={scrollToUploader}>
+              Upload a Quote <ArrowRight size={16} />
             </Button>
           </div>
         </div>
@@ -305,10 +305,10 @@ const ForTravelAgents = () => {
               className="grid grid-cols-2 gap-3"
             >
               {[
-                { icon: TrendingUp, label: "Booking Analytics", desc: "Track conversion, revenue, and customer trends" },
-                { icon: FileText, label: "Itinerary Insights", desc: "Detailed competitiveness analysis per quote" },
-                { icon: Clock, label: "Priority Settlement", desc: "Faster payouts with auto-reconciliation" },
-                { icon: Users, label: "Dedicated Support", desc: "Assigned relationship manager for your business" },
+                { icon: FileText, label: "Itinerary Insights", desc: "See how each quote stacks up on pricing, financing, and coverage" },
+                { icon: TrendingUp, label: "Quote Competitiveness", desc: "Benchmark your packages against market trends" },
+                { icon: Clock, label: "Priority Settlement", desc: "T+1 payouts with automatic reconciliation" },
+                { icon: Users, label: "Partner Support", desc: "Dedicated relationship manager for your agency" },
               ].map((tool) => (
                 <div
                   key={tool.label}
@@ -361,7 +361,7 @@ const ForTravelAgents = () => {
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="container relative max-w-3xl text-center space-y-6">
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
-            Ready to sell smarter?
+            Your next booking starts here.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
             Join 8,000+ travel partners already using SanKash to close more bookings,
