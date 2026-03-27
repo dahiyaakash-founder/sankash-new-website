@@ -108,13 +108,13 @@ const TravelerQuoteUploader = () => {
               </div>
               <div className="text-center">
                 <p className="font-heading font-bold text-sm text-foreground">
-                  Drop your holiday quote or itinerary
+                  Upload a quote, itinerary, screenshot, or PDF
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  See if there's room for better value and explore EMI options
+                  Get a quick first review before you book
                 </p>
                 <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                  PDF, PNG, JPG, DOC · Max 10 MB
+                  PDF, PNG, JPG, DOC supported · Max 10 MB
                 </p>
               </div>
               <input

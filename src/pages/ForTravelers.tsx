@@ -173,7 +173,7 @@ const ForTravelers = () => {
       </section>
 
       {/* EMI & Affordability */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section id="emi-section" className="py-20 md:py-28 bg-section-alt">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
