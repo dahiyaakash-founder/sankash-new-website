@@ -47,7 +47,7 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     {
       icon: TrendingDown,
       label: "This holiday quote can be optimised",
-      detail: "We may be able to improve this quote by up to 5%",
+      detail: "We have identified potential room for savings of up to 5%",
       hasBlurredValue: true,
     },
     {
