@@ -14,9 +14,9 @@ const proofCards = [
   {
     icon: Banknote,
     step: "02",
-    label: "Offer EMI",
-    title: "Enable travel EMI",
-    proof: "₹24,652 × 12 months at checkout",
+    label: "Offer No Cost EMI",
+    title: "Let customers book holidays in monthly instalments at checkout",
+    proof: "20% sales lift · 40% better conversion",
   },
   {
     icon: ShieldCheck,

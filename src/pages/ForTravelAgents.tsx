@@ -70,7 +70,7 @@ const afterSignup = [
 ];
 
 const pillars = [
-  { icon: Banknote, title: "Lending", outcome: "Customers pay in installments. You get paid upfront." },
+  { icon: Banknote, title: "Lending", outcome: "Offer No Cost EMI at checkout. 20% sales lift, 40% better conversion." },
   { icon: ShieldCheck, title: "Insurance", outcome: "Embedded protection at checkout. Ancillary revenue." },
   { icon: CreditCard, title: "Payments", outcome: "Collect faster. Settle T+1. Auto-reconciliation." },
 ];

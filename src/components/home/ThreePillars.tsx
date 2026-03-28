@@ -6,9 +6,9 @@ const pillars = [
   {
     icon: Banknote,
     label: "Lending",
-    title: "Finance travel at the point of sale",
-    desc: "Offer No Cost EMI, BNPL, and instant credit to customers. Increase ticket sizes, close more bookings, and lift conversion from every inquiry.",
-    metrics: ["<60s approval", "15+ lender partners", "0% EMI options"],
+    title: "Offer No Cost EMI at checkout",
+    desc: "Help customers book holidays in monthly instalments and unlock stronger conversion for every booking.",
+    metrics: ["20% sales lift", "40% better conversion", "200% more queries"],
     href: "/solutions/lending",
     accent: "bg-primary/8 border-primary/12",
   },

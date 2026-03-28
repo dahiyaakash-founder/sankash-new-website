@@ -124,7 +124,7 @@ const Developers = () => {
                 <h3 className="text-lg font-heading font-bold text-primary-deep">Lending & Checkout API</h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Offer No Cost EMI and travel financing at point of sale. Integrate via API or use SanKash's hosted checkout — whichever fits your platform.
+                Offer No Cost EMI at checkout and let customers book holidays in monthly instalments. Integrate via API or use SanKash's hosted checkout.
               </p>
               <ul className="space-y-2.5">
                 {lendingEndpoints.map((ep) => (

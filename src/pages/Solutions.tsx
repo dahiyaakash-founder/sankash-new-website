@@ -58,7 +58,7 @@ const pillars = [
 
 const workflowSteps = [
   { num: "01", label: "Quote", desc: "Agent shares itinerary or package quote with the customer" },
-  { num: "02", label: "Finance", desc: "Customer chooses No Cost EMI or credit option at checkout" },
+  { num: "02", label: "Finance", desc: "Customer chooses No Cost EMI to book in monthly instalments at checkout" },
   { num: "03", label: "Protect", desc: "Travel insurance is attached directly to the booking" },
   { num: "04", label: "Collect", desc: "Payment is collected and settled to the agent in T+1" },
 ];

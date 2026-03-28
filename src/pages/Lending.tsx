@@ -6,12 +6,12 @@ import { motion } from "framer-motion";
 import { ArrowRight, Banknote, CheckCircle2, Users, Zap } from "lucide-react";
 
 const features = [
-  "No Cost EMI across leading banks",
-  "Instant credit decisions in under 60 seconds",
-  "Zero paperwork — fully digital flow",
-  "Multiple lender partners for high approval rates",
-  "Seamless checkout integration",
-  "Dedicated lender relationship management",
+  "No Cost EMI at checkout across leading banks",
+  "20% increase in agent sales",
+  "40% higher booking conversion",
+  "200% increase in customer queries",
+  "Seamless checkout integration — no workflow changes",
+  "Fully digital, zero-paperwork approval flow",
 ];
 
 const Lending = () => {
