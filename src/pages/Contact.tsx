@@ -74,7 +74,7 @@ const escalationPaths = [
     title: "Existing partners",
     description: "Dashboard access, settlement queries, account help",
     cta: "Agent login",
-    href: "https://partner.sankash.in",
+    href: "https://app.sankash.in/agent/auth/login",
   },
 ];
 
