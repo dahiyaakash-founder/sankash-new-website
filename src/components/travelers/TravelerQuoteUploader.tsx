@@ -440,7 +440,7 @@ const TravelerQuoteUploader = () => {
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   What We Found
                 </p>
-                {firstLayerInsights.map((insight, i) => (
+                {buildTravelerInsights(insuranceInsight ?? { headline: "Travel protection can be added", detail: "Trip cancellation, medical and baggage cover available" }).map((insight, i) => (
                   <motion.div
                     key={insight.label}
                     initial={{ opacity: 0, x: -8 }}
