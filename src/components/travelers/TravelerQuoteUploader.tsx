@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 import {
   validateFile,
-  hasLikelyTravelContent,
+  assessTravelConfidence,
   sampleAcceptedFiles,
   type ValidationErrorType,
+  type TravelConfidence,
 } from "@/lib/upload-validation";
 import {
   Dialog,
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-type Stage = "upload" | "validating" | "analyzing" | "results" | "error";
+type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
 const firstLayerInsights = [
   {
@@ -48,6 +49,12 @@ const firstLayerInsights = [
     label: "A detailed review can confirm pricing and finance fit",
     detail: "Our team can review for better-value options and structuring",
   },
+];
+
+const mediumConfidenceBullets = [
+  "Travel quote or itinerary detected",
+  "EMI options may be available",
+  "Our team can review this in more detail",
 ];
 
 const gatedInsights = [
@@ -86,7 +93,9 @@ const TravelerQuoteUploader = () => {
     setStage("validating");
 
     setTimeout(() => {
-      if (!hasLikelyTravelContent(file.name)) {
+      const result = assessTravelConfidence(file.name);
+
+      if (result.confidence === "invalid") {
         setErrorTitle("This file does not look like a holiday quote or itinerary");
         setErrorBody(
           "Upload a holiday quotation, itinerary, booking summary, or package PDF / image that includes destination, travel dates, travellers, or pricing."
@@ -95,8 +104,11 @@ const TravelerQuoteUploader = () => {
         setStage("error");
         return;
       }
+
       setStage("analyzing");
-      setTimeout(() => setStage("results"), 2400);
+      setTimeout(() => {
+        setStage(result.confidence === "high" ? "results-high" : "results-medium");
+      }, 2400);
     }, 800);
   }, []);
 
@@ -264,7 +276,6 @@ const TravelerQuoteUploader = () => {
                     {errorBody}
                   </p>
                 </div>
-                {/* Why this failed hint */}
                 {errorType === "not-travel" && (
                   <div className="flex items-start gap-2 bg-accent/50 rounded-lg px-3 py-2 max-w-[320px]">
                     <AlertCircle size={12} className="text-muted-foreground shrink-0 mt-0.5" />
@@ -319,10 +330,78 @@ const TravelerQuoteUploader = () => {
             </motion.div>
           )}
 
-          {/* ── Results ── */}
-          {stage === "results" && (
+          {/* ── Medium Confidence Results ── */}
+          {stage === "results-medium" && (
             <motion.div
-              key="results"
+              key="results-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <FileText size={14} className="text-primary" />
+                  Quote Detected
+                </div>
+                <button
+                  onClick={reset}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+                >
+                  Upload another file
+                </button>
+              </div>
+
+              <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
+                <FileText size={14} className="text-muted-foreground shrink-0" />
+                <span className="text-xs text-foreground font-medium truncate">{fileName}</span>
+                <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
+                  Detected
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="font-heading font-bold text-sm text-foreground mb-1">
+                    This looks like a holiday quote or itinerary
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    We found enough travel signals to continue, but a detailed review may need our team to verify the file.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {mediumConfidenceBullets.map((bullet, i) => (
+                    <motion.div
+                      key={bullet}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.12, duration: 0.3 }}
+                      className="flex items-center gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                    >
+                      <CheckCircle2 size={14} className="text-primary shrink-0" />
+                      <p className="text-sm text-foreground">{bullet}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
+                  <Phone size={14} /> Share My Number
+                </Button>
+                <Button variant="outline" size="sm" onClick={reset}>
+                  Upload another file
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── High Confidence Results ── */}
+          {stage === "results-high" && (
+            <motion.div
+              key="results-high"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
