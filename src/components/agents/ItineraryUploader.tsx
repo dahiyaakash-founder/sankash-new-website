@@ -10,83 +10,34 @@ import {
   ArrowRight,
   Loader2,
   XCircle,
+  HelpCircle,
+  Info,
 } from "lucide-react";
+import {
+  validateFile,
+  hasLikelyTravelContent,
+  sampleAcceptedFiles,
+  type ValidationErrorType,
+} from "@/lib/upload-validation";
 
 type Stage = "upload" | "validating" | "analyzing" | "results" | "error";
 
-const TRAVEL_KEYWORDS = [
-  "itinerary", "booking", "quote", "travel", "flight", "hotel", "tour",
-  "package", "trip", "holiday", "destination", "passenger", "traveller",
-  "traveler", "resort", "cruise", "visa", "airport", "airline",
-  "accommodation", "departure", "arrival", "pax", "nights", "days",
-];
-
-const ACCEPTED_TYPES = [
-  "application/pdf",
-  "image/png",
-  "image/jpeg",
-  "image/jpg",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const MIN_FILE_SIZE = 1024; // 1 KB minimum
-
-function hasLikelyTravelContent(fileName: string): boolean {
-  const lower = fileName.toLowerCase();
-  return TRAVEL_KEYWORDS.some((kw) => lower.includes(kw));
-}
-
-function validateFile(file: File): { valid: boolean; errorTitle?: string; errorBody?: string } {
-  if (!ACCEPTED_TYPES.includes(file.type) && !file.name.match(/\.(pdf|png|jpg|jpeg|doc|docx)$/i)) {
-    return {
-      valid: false,
-      errorTitle: "Unsupported file type",
-      errorBody: "Upload a PDF, PNG, JPG, or DOC file containing your itinerary or travel quote.",
-    };
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return {
-      valid: false,
-      errorTitle: "File is too large",
-      errorBody: "Please upload a file under 10 MB.",
-    };
-  }
-  if (file.size < MIN_FILE_SIZE) {
-    return {
-      valid: false,
-      errorTitle: "We could not read travel details from this file",
-      errorBody: "Please upload a clearer document or image with destination, dates, traveller count, or package pricing.",
-    };
-  }
-  return { valid: true };
-}
-
 const firstLayerInsights = [
   {
-    icon: AlertCircle,
     label: "No Cost EMI opportunity detected",
-    detail: "This quote qualifies for No Cost EMI at checkout",
-    color: "text-primary",
+    detail: "This quote may qualify for No Cost EMI at checkout",
   },
   {
-    icon: AlertCircle,
     label: "Protection products may be relevant",
     detail: "Trip type and duration suggest coverage add-ons",
-    color: "text-primary",
   },
   {
-    icon: AlertCircle,
     label: "Payment collection can be streamlined",
     detail: "Settlement and reconciliation improvements available",
-    color: "text-primary",
   },
   {
-    icon: AlertCircle,
-    label: "Itinerary has room for optimisation",
-    detail: "Pricing and sourcing signals identified",
-    color: "text-primary",
+    label: "Itinerary may have room for optimisation",
+    detail: "Pricing and sourcing signals identified for review",
   },
 ];
 
@@ -103,6 +54,8 @@ const ItineraryUploader = () => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [errorTitle, setErrorTitle] = useState("");
   const [errorBody, setErrorBody] = useState("");
+  const [errorType, setErrorType] = useState<ValidationErrorType | null>(null);
+  const [showSamples, setShowSamples] = useState(false);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
@@ -110,6 +63,7 @@ const ItineraryUploader = () => {
       setFileName(file.name);
       setErrorTitle(validation.errorTitle!);
       setErrorBody(validation.errorBody!);
+      setErrorType(validation.errorType!);
       setStage("error");
       return;
     }
@@ -117,13 +71,13 @@ const ItineraryUploader = () => {
     setFileName(file.name);
     setStage("validating");
 
-    // Simulate validation check
     setTimeout(() => {
       if (!hasLikelyTravelContent(file.name)) {
-        setErrorTitle("This file does not look like a travel quote or itinerary");
+        setErrorTitle("This file does not look like a holiday quote or itinerary");
         setErrorBody(
-          "Upload a holiday quotation, itinerary, booking summary, or package PDF / image that includes travel details such as destination, dates, travellers, or pricing."
+          "Upload a holiday quotation, itinerary, booking summary, or package PDF / image that includes destination, travel dates, travellers, or pricing."
         );
+        setErrorType("not-travel");
         setStage("error");
         return;
       }
@@ -155,12 +109,14 @@ const ItineraryUploader = () => {
     setFileName("");
     setErrorTitle("");
     setErrorBody("");
+    setErrorType(null);
+    setShowSamples(false);
   };
 
   return (
     <div className="bg-card rounded-2xl border shadow-card overflow-hidden">
       <AnimatePresence mode="wait">
-        {/* Upload Stage */}
+        {/* ── Upload ── */}
         {stage === "upload" && (
           <motion.div
             key="upload"
@@ -195,10 +151,7 @@ const ItineraryUploader = () => {
                   Drop an itinerary, quote, or screenshot
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Get a quick review of financing, protection & collection opportunities
-                </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                  PDF, PNG, JPG, DOC · Max 10 MB
+                  Get a first-pass review of financing, protection & collection opportunities
                 </p>
               </div>
               <input
@@ -211,10 +164,17 @@ const ItineraryUploader = () => {
                 Browse Files
               </Button>
             </label>
+            {/* Trust microcopy */}
+            <div className="flex items-start gap-2 mt-3 px-1">
+              <Info size={11} className="text-muted-foreground/50 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
+                Accepted: PDF, JPG, PNG, DOC · Best results with itinerary, holiday quote, package summary, or booking confirmation · Max 10 MB
+              </p>
+            </div>
           </motion.div>
         )}
 
-        {/* Validating Stage */}
+        {/* ── Validating / Analyzing ── */}
         {(stage === "validating" || stage === "analyzing") && (
           <motion.div
             key="analyzing"
@@ -232,7 +192,7 @@ const ItineraryUploader = () => {
               <Loader2 size={32} className="text-primary animate-spin" />
               <div className="text-center">
                 <p className="font-heading font-bold text-foreground">
-                  {stage === "validating" ? "Checking your document…" : "Analyzing your itinerary…"}
+                  {stage === "validating" ? "Checking your document…" : "Running first-pass review…"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 truncate max-w-[240px]">
                   {fileName}
@@ -252,7 +212,7 @@ const ItineraryUploader = () => {
           </motion.div>
         )}
 
-        {/* Error Stage */}
+        {/* ── Error ── */}
         {stage === "error" && (
           <motion.div
             key="error"
@@ -266,15 +226,15 @@ const ItineraryUploader = () => {
               <FileText size={14} className="text-primary" />
               Upload Issue
             </div>
-            <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center">
+            <div className="flex flex-col items-center justify-center py-5 space-y-4 text-center">
               <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
                 <XCircle size={22} className="text-destructive" />
               </div>
               <div>
-                <p className="font-heading font-bold text-sm text-foreground mb-1">
+                <p className="font-heading font-bold text-sm text-foreground mb-1.5">
                   {errorTitle}
                 </p>
-                <p className="text-xs text-muted-foreground max-w-[280px] leading-relaxed">
+                <p className="text-xs text-muted-foreground max-w-[300px] leading-relaxed">
                   {errorBody}
                 </p>
               </div>
@@ -284,14 +244,48 @@ const ItineraryUploader = () => {
                   <span className="text-[11px] text-muted-foreground truncate">{fileName}</span>
                 </div>
               )}
-              <Button variant="outline" size="sm" onClick={reset} className="mt-1">
-                Try Again
-              </Button>
+              <div className="flex items-center gap-3 pt-1">
+                <Button variant="outline" size="sm" onClick={reset}>
+                  Upload another file
+                </Button>
+                <button
+                  onClick={() => setShowSamples(!showSamples)}
+                  className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 transition-colors font-medium"
+                >
+                  <HelpCircle size={11} />
+                  {errorType === "unreadable" ? "View upload tips" : "See accepted files"}
+                </button>
+              </div>
+
+              {/* Sample accepted files */}
+              <AnimatePresence>
+                {showSamples && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full overflow-hidden"
+                  >
+                    <div className="bg-accent/50 rounded-lg p-3 text-left space-y-1.5 mt-1">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        Accepted examples
+                      </p>
+                      {sampleAcceptedFiles.map((sample) => (
+                        <div key={sample} className="flex items-center gap-2">
+                          <CheckCircle2 size={10} className="text-primary shrink-0" />
+                          <span className="text-[11px] text-muted-foreground">{sample}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
 
-        {/* Results Stage */}
+        {/* ── Results ── */}
         {stage === "results" && (
           <motion.div
             key="results"
@@ -304,13 +298,13 @@ const ItineraryUploader = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 <FileText size={14} className="text-primary" />
-                Review Results
+                Initial Review
               </div>
               <button
                 onClick={reset}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
               >
-                Upload another
+                Upload another quote
               </button>
             </div>
 
@@ -322,9 +316,10 @@ const ItineraryUploader = () => {
               </span>
             </div>
 
+            {/* What we found */}
             <div className="space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Initial Observations
+                What We Found
               </p>
               {firstLayerInsights.map((insight, i) => (
                 <motion.div
@@ -341,12 +336,16 @@ const ItineraryUploader = () => {
                   </div>
                 </motion.div>
               ))}
+              <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                This is a first-pass review. A detailed review can confirm pricing, financing fit, and specific recommendations.
+              </p>
             </div>
 
+            {/* Unlock detailed review */}
             <div className="relative">
               <div className="space-y-2">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Detailed Recommendations
+                  Unlock Detailed Review
                 </p>
                 <div className="space-y-2 select-none" style={{ filter: "blur(4px)" }} aria-hidden>
                   {gatedInsights.map((item) => (
@@ -367,10 +366,10 @@ const ItineraryUploader = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                 <Lock size={18} className="text-primary mb-2" />
                 <p className="font-heading font-bold text-sm text-foreground mb-1">
-                  Unlock full review
+                  Get your detailed review
                 </p>
                 <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                  Sign in or register to access detailed recommendations
+                  Sign in to access full recommendations, EMI options, and coverage analysis
                 </p>
                 <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="gap-1.5">
