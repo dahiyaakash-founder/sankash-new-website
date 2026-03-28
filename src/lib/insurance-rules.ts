@@ -221,15 +221,15 @@ export function getAgentInsuranceInsight(fileName: string): InsuranceInsight {
       const band = findBand(bands, duration);
       if (band) {
         return {
-          headline: "Insurance add-on revenue opportunity detected",
-          detail: `International protection from ₹${band.startingFrom}/traveller can be offered at checkout`,
+          headline: "International protection can be attached on this itinerary",
+          detail: `Starting from ₹${band.startingFrom} per traveller, with ancillary revenue on every issuance`,
         };
       }
     }
 
     return {
-      headline: "Insurance add-on revenue opportunity detected",
-      detail: "International medical, cancellation and baggage protection can be offered",
+      headline: "International protection can be attached on this itinerary",
+      detail: "Medical, cancellation and baggage cover with ancillary revenue on every issuance",
     };
   }
 
@@ -238,14 +238,14 @@ export function getAgentInsuranceInsight(fileName: string): InsuranceInsight {
     const band = findBand(DOMESTIC_PRICING_BANDS, duration);
     if (band) {
       return {
-        headline: "Protection products may be relevant",
-        detail: `Domestic cover from ₹${band.startingFrom}/traveller — trip cancellation, medical and baggage`,
+        headline: "Domestic protection can be attached on this itinerary",
+        detail: `Cover from ₹${band.startingFrom}/traveller — earn on every booking`,
       };
     }
   }
 
   return {
-    headline: "Protection products may be relevant",
-    detail: "Domestic trip cancellation, medical and baggage cover can be added",
+    headline: "Domestic protection can be attached on this itinerary",
+    detail: "Add relevant travel cover and earn on every booking",
   };
 }
