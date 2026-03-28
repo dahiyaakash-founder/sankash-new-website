@@ -110,6 +110,7 @@ const TravelerQuoteUploader = () => {
         return;
       }
 
+      setInsuranceInsight(getInsuranceInsight(file.name));
       setStage("analyzing");
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
