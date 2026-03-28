@@ -29,8 +29,8 @@ const whyReasons = [
   },
   {
     icon: Banknote,
-    title: "No Cost EMI at point of sale",
-    desc: "Instant approval, 15+ lenders. You get paid upfront.",
+    title: "No Cost EMI at checkout",
+    desc: "20% sales lift, 40% better conversion. You get paid upfront.",
   },
   {
     icon: ShieldCheck,
