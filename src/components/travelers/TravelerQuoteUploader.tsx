@@ -64,8 +64,8 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This booking is eligible for zero gateway charges",
-      detail: "Pay digitally without extra payment gateway charges, subject to applicable mode and offer terms",
+      label: "This booking may qualify for zero online payment charges",
+      detail: "Pay digitally without extra online payment charges, subject to payment mode and offer terms",
       hasBlurredValue: false,
     },
   ];
