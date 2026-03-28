@@ -80,8 +80,8 @@ const HomepageHero = () => {
             <div className="flex gap-8 pt-4 border-t border-border/60">
               {[
                 { v: "8,000+", l: "Travel Partners" },
-                { v: "5L+", l: "Travelers Served" },
-                { v: "T+1", l: "Settlements" },
+                { v: "5 Million+", l: "Travelers Served" },
+                { v: "T+1", l: "Agent Settlements" },
               ].map((s) => (
                 <div key={s.l}>
                   <div className="text-xl font-heading font-bold text-primary-deep">{s.v}</div>
