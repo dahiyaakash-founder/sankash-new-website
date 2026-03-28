@@ -47,7 +47,7 @@ const nextSteps: Record<string, { icon: typeof Upload; label: string; link?: str
     { icon: ExternalLink, label: "Request production access", link: "/contact" },
   ],
   support: [
-    { icon: LogIn, label: "Existing partner login", href: "https://partner.sankash.in" },
+    { icon: LogIn, label: "Existing partner login", href: "https://app.sankash.in/agent/auth/login" },
     { icon: Mail, label: "Contact support", href: "mailto:support@sankash.in" },
     { icon: FileText, label: "Leave a message", href: "#demo-form" },
   ],

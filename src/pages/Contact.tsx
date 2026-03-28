@@ -353,7 +353,7 @@ const Contact = () => {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Access your dashboard and tools through the agent portal.
                 </p>
-                <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
+                <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline-primary" size="sm">
                     Agent Login
                   </Button>
