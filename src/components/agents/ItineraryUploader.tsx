@@ -23,24 +23,27 @@ import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-const firstLayerInsights = [
-  {
-    label: "No Cost EMI opportunity detected",
-    detail: "This quote may qualify for No Cost EMI at checkout",
-  },
-  {
-    label: "Protection products may be relevant",
-    detail: "Trip type and duration suggest coverage add-ons",
-  },
-  {
-    label: "Payment collection can be streamlined",
-    detail: "Settlement and reconciliation improvements available",
-  },
-  {
-    label: "Itinerary may have room for optimisation",
-    detail: "Pricing and sourcing signals identified for review",
-  },
-];
+/** Build 4 agent insight cards — card 2 is now insurance-aware */
+function buildAgentInsights(insurance: InsuranceInsight) {
+  return [
+    {
+      label: "No Cost EMI opportunity detected",
+      detail: "This quote may qualify for No Cost EMI at checkout",
+    },
+    {
+      label: insurance.headline,
+      detail: insurance.detail,
+    },
+    {
+      label: "Payment collection can be streamlined",
+      detail: "Settlement and reconciliation improvements available",
+    },
+    {
+      label: "Itinerary may have room for optimisation",
+      detail: "Pricing and sourcing signals identified for review",
+    },
+  ];
+}
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
