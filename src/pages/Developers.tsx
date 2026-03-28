@@ -1,10 +1,16 @@
+import { useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, BookOpen, Terminal, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, Terminal, CheckCircle2, ExternalLink } from "lucide-react";
+import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
+import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
+import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
+import ApiFinderModal from "@/components/developers/ApiFinderModal";
+import { SANKASH_DOCS_URL } from "@/lib/constants";
 
 const fade = {
   initial: { opacity: 0, y: 20 },
@@ -42,12 +48,24 @@ const paymentsEndpoints = [
 ];
 
 const Developers = () => {
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [productionOpen, setProductionOpen] = useState(false);
+  const [questionOpen, setQuestionOpen] = useState(false);
+  const [finderOpen, setFinderOpen] = useState(false);
+
   return (
     <SiteLayout>
       <SEOHead
         title="Travel APIs for Lending, Insurance and Payments | SanKash"
         description="Integrate SanKash APIs for travel lending, insurance, and payments. Get sandbox access, explore docs, and go live in days with simple Basic Authentication."
       />
+
+      {/* Modals */}
+      <SandboxAccessModal open={sandboxOpen} onOpenChange={setSandboxOpen} />
+      <ProductionAccessModal open={productionOpen} onOpenChange={setProductionOpen} />
+      <IntegrationQuestionModal open={questionOpen} onOpenChange={setQuestionOpen} />
+      <ApiFinderModal open={finderOpen} onOpenChange={setFinderOpen} onOpenSandbox={() => setSandboxOpen(true)} />
+
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl space-y-6">
@@ -60,13 +78,20 @@ const Developers = () => {
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
-              <Link to="/contact">
-                <Button size="xl">Get Sandbox Access</Button>
-              </Link>
-              <Link to="/contact">
-                <Button variant="outline" size="xl">Request Production Access</Button>
-              </Link>
+              <Button size="xl" asChild>
+                <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                  View Docs <ExternalLink size={16} />
+                </a>
+              </Button>
+              <Button size="xl" variant="outline" onClick={() => setSandboxOpen(true)}>
+                Get Sandbox Access
+              </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Prefer to speak first?{" "}
+              <Link to="/contact" className="text-primary hover:underline underline-offset-2">Contact us</Link>
+              {" "}for integration support.
+            </p>
           </motion.div>
         </div>
       </section>
@@ -133,6 +158,12 @@ const Developers = () => {
                   </li>
                 ))}
               </ul>
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" asChild>
+                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
+              </div>
             </motion.div>
 
             {/* Insurance API */}
@@ -154,6 +185,12 @@ const Developers = () => {
                   </li>
                 ))}
               </ul>
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" asChild>
+                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
+              </div>
             </motion.div>
 
             {/* Payments API */}
@@ -175,6 +212,12 @@ const Developers = () => {
                   </li>
                 ))}
               </ul>
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" asChild>
+                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -208,7 +251,11 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               </pre>
             </div>
             <p className="text-sm text-muted-foreground">
-              Credentials are never shared publicly. Contact us to request access for your platform.
+              Credentials are never shared publicly.{" "}
+              <button onClick={() => setSandboxOpen(true)} className="text-primary hover:underline underline-offset-2">
+                Request sandbox access
+              </button>{" "}
+              to get started.
             </p>
           </motion.div>
         </div>
@@ -231,25 +278,27 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-               {[
-                 { label: "Documentation", desc: "Full API reference, request and response examples, and integration guides" },
-                 { label: "Sandbox credentials", desc: "Test your integration safely with sample data before going live" },
-                 { label: "Integration support", desc: "Our team supports you from first API call to production launch" },
-               ].map((item) => (
-                <div key={item.label} className="bg-card border rounded-xl p-5 shadow-card">
-                  <h3 className="text-sm font-heading font-bold text-primary-deep">{item.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
+              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group">
+                <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Full API reference, request and response examples, and integration guides</p>
+              </a>
+              <button onClick={() => setSandboxOpen(true)} className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group">
+                <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Sandbox credentials</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Test your integration safely with sample data before going live</p>
+              </button>
+              <Link to="/contact" className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group">
+                <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Integration support</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Our team supports you from first API call to production launch</p>
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
       <AssistantEntryPoint prompts={[
-        { label: "Ask an integration question", link: "/contact" },
-        { label: "Get sandbox help", link: "/developers" },
-        { label: "Find the right API", link: "/developers" },
+        { label: "Ask an integration question", onClick: () => setQuestionOpen(true) },
+        { label: "Get sandbox help", onClick: () => setSandboxOpen(true) },
+        { label: "Find the right API", onClick: () => setFinderOpen(true) },
       ]} />
 
       {/* Final CTA */}
@@ -262,11 +311,11 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
             Get sandbox access or talk to our team about production integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/contact">Get Sandbox Access</Link>
+            <Button size="lg" variant="secondary" onClick={() => setSandboxOpen(true)}>
+              Get Sandbox Access
             </Button>
-            <Button size="lg" variant="ghost-dark" asChild>
-              <Link to="/contact">Request Production Access</Link>
+            <Button size="lg" variant="ghost-dark" onClick={() => setProductionOpen(true)}>
+              Request Production Access
             </Button>
           </div>
         </motion.div>
