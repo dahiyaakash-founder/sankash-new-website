@@ -82,10 +82,14 @@ const SiteNavbar = () => {
 
         {/* Right CTAs */}
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
-            Agent Signup
-          </Button>
-          <Button size="sm" className="text-[13px]">Agent Login</Button>
+          <Link to="/contact">
+            <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
+              Agent Signup
+            </Button>
+          </Link>
+          <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
+            <Button size="sm" className="text-[13px]">Agent Login</Button>
+          </a>
         </div>
 
         {/* Mobile toggle */}
