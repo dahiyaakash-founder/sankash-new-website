@@ -177,14 +177,14 @@ export function getInsuranceInsight(fileName: string): InsuranceInsight {
       const band = findBand(bands, duration);
       if (band) {
         return {
-          headline: "International travel protection may be relevant for this trip",
-          detail: `Medical, cancellation and baggage cover can be added — starting from ₹${band.startingFrom} per traveller`,
+          headline: "International travel protection can be added",
+          detail: `Medical, cancellation and baggage cover starting from ₹${band.startingFrom} per traveller`,
         };
       }
     }
 
     return {
-      headline: "International travel protection may be relevant for this trip",
+      headline: "International travel protection can be added",
       detail: "Medical, cancellation and baggage cover can be added for overseas travel",
     };
   }
@@ -194,15 +194,15 @@ export function getInsuranceInsight(fileName: string): InsuranceInsight {
     const band = findBand(DOMESTIC_PRICING_BANDS, duration);
     if (band) {
       return {
-        headline: "Domestic travel protection can be added for this trip",
-        detail: `Trip cancellation, medical and baggage cover — starting from ₹${band.startingFrom} per traveller`,
+        headline: "Domestic travel protection can be added",
+        detail: `Cancellation, medical and baggage cover starting from ₹${band.startingFrom} per traveller`,
       };
     }
   }
 
   return {
-    headline: "Domestic travel protection can be added for this trip",
-    detail: "Trip cancellation, medical and baggage cover available",
+    headline: "Domestic travel protection can be added",
+    detail: "Relevant cancellation and travel protection options can be added to this trip",
   };
 }
 
