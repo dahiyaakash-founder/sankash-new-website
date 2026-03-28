@@ -39,7 +39,7 @@ const nextSteps: Record<string, { icon: typeof Upload; label: string; link?: str
   agent: [
     { icon: FileText, label: "Review an itinerary", link: "/for-travel-agents" },
     { icon: BookOpen, label: "Start agent onboarding", link: "/for-travel-agents" },
-    { icon: LogIn, label: "Agent login", href: "https://partner.sankash.in" },
+    { icon: LogIn, label: "Agent login", href: "https://app.sankash.in/agent/auth/login" },
   ],
   integrations: [
     { icon: BookOpen, label: "View documentation", link: "/developers" },
@@ -47,7 +47,7 @@ const nextSteps: Record<string, { icon: typeof Upload; label: string; link?: str
     { icon: ExternalLink, label: "Request production access", link: "/contact" },
   ],
   support: [
-    { icon: LogIn, label: "Existing partner login", href: "https://partner.sankash.in" },
+    { icon: LogIn, label: "Existing partner login", href: "https://app.sankash.in/agent/auth/login" },
     { icon: Mail, label: "Contact support", href: "mailto:support@sankash.in" },
     { icon: FileText, label: "Leave a message", href: "#demo-form" },
   ],
