@@ -33,24 +33,27 @@ import { Input } from "@/components/ui/input";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-const firstLayerInsights = [
-  {
-    label: "This quote may have room for optimisation",
-    detail: "Based on trip type, dates, and destination signals",
-  },
-  {
-    label: "EMI options may be available for this trip value",
-    detail: "Monthly outflow can be structured across 3–12 months",
-  },
-  {
-    label: "Trip cost can be broken into monthly payments",
-    detail: "No Cost EMI and low-cost EMI tenures may apply",
-  },
-  {
-    label: "A detailed review can confirm pricing and finance fit",
-    detail: "Our team can review for better-value options and structuring",
-  },
-];
+/** Build the 4 traveler insight cards — card 3 is now insurance-aware */
+function buildTravelerInsights(insurance: InsuranceInsight) {
+  return [
+    {
+      label: "This quote may have room for optimisation",
+      detail: "Based on trip type, dates, and destination signals",
+    },
+    {
+      label: "No Cost EMI may be available for this trip",
+      detail: "Monthly payments can be structured across 3–12 months",
+    },
+    {
+      label: insurance.headline,
+      detail: insurance.detail,
+    },
+    {
+      label: "A detailed review can confirm pricing and finance fit",
+      detail: "Our team can review for better-value options and structuring",
+    },
+  ];
+}
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
