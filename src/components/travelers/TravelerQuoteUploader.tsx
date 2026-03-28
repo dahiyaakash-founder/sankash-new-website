@@ -21,6 +21,7 @@ import {
   type ValidationErrorType,
   type TravelConfidence,
 } from "@/lib/upload-validation";
+import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
   Dialog,
   DialogContent,
@@ -32,24 +33,27 @@ import { Input } from "@/components/ui/input";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-const firstLayerInsights = [
-  {
-    label: "This quote may have room for optimisation",
-    detail: "Based on trip type, dates, and destination signals",
-  },
-  {
-    label: "EMI options may be available for this trip value",
-    detail: "Monthly outflow can be structured across 3–12 months",
-  },
-  {
-    label: "Trip cost can be broken into monthly payments",
-    detail: "No Cost EMI and low-cost EMI tenures may apply",
-  },
-  {
-    label: "A detailed review can confirm pricing and finance fit",
-    detail: "Our team can review for better-value options and structuring",
-  },
-];
+/** Build the 4 traveler insight cards — card 3 is now insurance-aware */
+function buildTravelerInsights(insurance: InsuranceInsight) {
+  return [
+    {
+      label: "This quote may have room for optimisation",
+      detail: "Based on trip type, dates, and destination signals",
+    },
+    {
+      label: "No Cost EMI may be available for this trip",
+      detail: "Monthly payments can be structured across 3–12 months",
+    },
+    {
+      label: insurance.headline,
+      detail: insurance.detail,
+    },
+    {
+      label: "A detailed review can confirm pricing and finance fit",
+      detail: "Our team can review for better-value options and structuring",
+    },
+  ];
+}
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
@@ -77,6 +81,7 @@ const TravelerQuoteUploader = () => {
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
+  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
@@ -105,6 +110,7 @@ const TravelerQuoteUploader = () => {
         return;
       }
 
+      setInsuranceInsight(getInsuranceInsight(file.name));
       setStage("analyzing");
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
@@ -137,6 +143,7 @@ const TravelerQuoteUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
+    setInsuranceInsight(null);
   };
 
   const handleLeadSubmit = (e: React.FormEvent) => {
@@ -433,7 +440,7 @@ const TravelerQuoteUploader = () => {
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   What We Found
                 </p>
-                {firstLayerInsights.map((insight, i) => (
+                {buildTravelerInsights(insuranceInsight ?? { headline: "Travel protection can be added", detail: "Trip cancellation, medical and baggage cover available" }).map((insight, i) => (
                   <motion.div
                     key={insight.label}
                     initial={{ opacity: 0, x: -8 }}

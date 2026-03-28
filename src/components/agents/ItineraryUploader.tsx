@@ -19,27 +19,31 @@ import {
   sampleAcceptedFiles,
   type ValidationErrorType,
 } from "@/lib/upload-validation";
+import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-const firstLayerInsights = [
-  {
-    label: "No Cost EMI opportunity detected",
-    detail: "This quote may qualify for No Cost EMI at checkout",
-  },
-  {
-    label: "Protection products may be relevant",
-    detail: "Trip type and duration suggest coverage add-ons",
-  },
-  {
-    label: "Payment collection can be streamlined",
-    detail: "Settlement and reconciliation improvements available",
-  },
-  {
-    label: "Itinerary may have room for optimisation",
-    detail: "Pricing and sourcing signals identified for review",
-  },
-];
+/** Build 4 agent insight cards — card 2 is now insurance-aware */
+function buildAgentInsights(insurance: InsuranceInsight) {
+  return [
+    {
+      label: "No Cost EMI opportunity detected",
+      detail: "This quote may qualify for No Cost EMI at checkout",
+    },
+    {
+      label: insurance.headline,
+      detail: insurance.detail,
+    },
+    {
+      label: "Payment collection can be streamlined",
+      detail: "Settlement and reconciliation improvements available",
+    },
+    {
+      label: "Itinerary may have room for optimisation",
+      detail: "Pricing and sourcing signals identified for review",
+    },
+  ];
+}
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
@@ -64,6 +68,7 @@ const ItineraryUploader = () => {
   const [errorBody, setErrorBody] = useState("");
   const [errorType, setErrorType] = useState<ValidationErrorType | null>(null);
   const [showSamples, setShowSamples] = useState(false);
+  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
@@ -92,6 +97,7 @@ const ItineraryUploader = () => {
         return;
       }
 
+      setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
@@ -124,6 +130,7 @@ const ItineraryUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
+    setInsuranceInsight(null);
   };
 
   return (
@@ -410,7 +417,7 @@ const ItineraryUploader = () => {
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 What We Found
               </p>
-              {firstLayerInsights.map((insight, i) => (
+              {buildAgentInsights(insuranceInsight ?? { headline: "Protection products may be relevant", detail: "Trip type and duration suggest coverage add-ons" }).map((insight, i) => (
                 <motion.div
                   key={insight.label}
                   initial={{ opacity: 0, x: -8 }}
