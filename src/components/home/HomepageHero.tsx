@@ -7,30 +7,26 @@ const proofCards = [
   {
     icon: FileText,
     step: "01",
-    label: "Customer Trip Quote",
-    title: "Europe Leisure Package",
-    detail: "₹2,85,000 · 6N/7D · 3 Travelers",
+    label: "Review quotes",
+    title: "Upload a holiday quote and spot pricing, value, and conversion opportunities",
   },
   {
     icon: Banknote,
     step: "02",
-    label: "No Cost EMI Available",
-    title: "₹23,750 /mo × 12 months",
-    detail: "Instant approval · 0% interest · 15+ lenders",
+    label: "Offer EMI",
+    title: "Let customers book holidays in monthly instalments at checkout",
   },
   {
     icon: ShieldCheck,
     step: "03",
-    label: "Travel Protection Added",
-    title: "Comprehensive trip cover",
-    detail: "₹1,199 per traveler · Embedded at checkout",
+    label: "Add protection",
+    title: "Embed cancellation, medical, and baggage cover into the booking flow",
   },
   {
     icon: CreditCard,
     step: "04",
-    label: "Payment Received",
-    title: "₹2,88,597 collected",
-    detail: "Settled T+1 · Auto-reconciled · GST compliant",
+    label: "Collect payments",
+    title: "Accept customer payments on-platform with direct settlement to the agent",
   },
 ];
 
