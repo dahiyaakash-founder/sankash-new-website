@@ -97,6 +97,7 @@ const ItineraryUploader = () => {
         return;
       }
 
+      setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
