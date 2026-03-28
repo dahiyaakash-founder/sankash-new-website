@@ -417,7 +417,7 @@ const ItineraryUploader = () => {
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 What We Found
               </p>
-              {firstLayerInsights.map((insight, i) => (
+              {buildAgentInsights(insuranceInsight ?? { headline: "Protection products may be relevant", detail: "Trip type and duration suggest coverage add-ons" }).map((insight, i) => (
                 <motion.div
                   key={insight.label}
                   initial={{ opacity: 0, x: -8 }}
