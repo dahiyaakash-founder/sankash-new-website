@@ -114,9 +114,11 @@ const ForTravelAgents = () => {
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
+              <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="xl">
                   Agent Login
                 </Button>
+              </a>
               </div>
             </motion.div>
 
