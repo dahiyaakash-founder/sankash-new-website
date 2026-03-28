@@ -125,6 +125,7 @@ const HomepageHero = () => {
                       <CheckCircle2 size={14} className="text-brand-green shrink-0" />
                     </div>
                     <p className="text-sm font-heading font-bold text-primary-deep mt-0.5">{card.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{card.proof}</p>
                   </div>
                 </motion.div>
               ))}
