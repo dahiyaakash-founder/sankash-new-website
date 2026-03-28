@@ -32,7 +32,7 @@ const AgentValueProp = () => {
             <ul className="space-y-3 pt-2">
               {[
                 { icon: FileSearch, text: "Upload any itinerary — get competitive improvement suggestions" },
-                { icon: TrendingUp, text: "40% higher conversion with point-of-sale financing" },
+                { icon: TrendingUp, text: "20% sales lift and 40% higher conversion with No Cost EMI at checkout" },
                 { icon: Zap, text: "Go live in days — single API or no-code dashboard" },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-3">

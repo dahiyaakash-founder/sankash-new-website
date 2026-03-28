@@ -9,15 +9,15 @@ const pillars = [
   {
     icon: Banknote,
     label: "Lending",
-    title: "Help customers afford the trip",
-    desc: "Offer No Cost EMI, BNPL, and instant credit at the point of sale. Higher ticket sizes, better conversion, and fewer drop-offs — without changing your booking workflow.",
+    title: "Offer No Cost EMI at checkout",
+    desc: "Help customers book holidays in monthly instalments without changing the booking flow. Higher ticket sizes, stronger conversion, and more customer queries.",
     points: [
       "No Cost EMI across 3 to 12-month tenures",
-      "Instant credit decisions, no paperwork",
-      "15+ lender partners for wider approval",
-      "Customers see monthly outflow, not total cost",
+      "20% increase in sales for partner agents",
+      "40% higher booking conversion",
+      "200% increase in customer queries",
     ],
-    outcome: "Agents who enable financing see measurably higher booking conversion and larger average ticket sizes.",
+    outcome: "Agents who offer No Cost EMI at checkout see 20% higher sales, 40% better conversion, and 200% more customer queries.",
     href: "/solutions/lending",
     accentBg: "bg-primary/5",
     accentBorder: "border-primary/10",
@@ -58,7 +58,7 @@ const pillars = [
 
 const workflowSteps = [
   { num: "01", label: "Quote", desc: "Agent shares itinerary or package quote with the customer" },
-  { num: "02", label: "Finance", desc: "Customer chooses No Cost EMI or credit option at checkout" },
+  { num: "02", label: "Finance", desc: "Customer chooses No Cost EMI to book in monthly instalments at checkout" },
   { num: "03", label: "Protect", desc: "Travel insurance is attached directly to the booking" },
   { num: "04", label: "Collect", desc: "Payment is collected and settled to the agent in T+1" },
 ];

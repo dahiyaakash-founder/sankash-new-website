@@ -6,20 +6,20 @@ import { motion } from "framer-motion";
 import { ArrowRight, Banknote, CheckCircle2, Users, Zap } from "lucide-react";
 
 const features = [
-  "No Cost EMI across leading banks",
-  "Instant credit decisions in under 60 seconds",
-  "Zero paperwork — fully digital flow",
-  "Multiple lender partners for high approval rates",
-  "Seamless checkout integration",
-  "Dedicated lender relationship management",
+  "No Cost EMI at checkout across leading banks",
+  "20% increase in agent sales",
+  "40% higher booking conversion",
+  "200% increase in customer queries",
+  "Seamless checkout integration — no workflow changes",
+  "Fully digital, zero-paperwork approval flow",
 ];
 
 const Lending = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Lending and No Cost EMI for Agents | SanKash"
-        description="Offer No Cost EMI and instant travel financing at point of sale. 15+ lender partners, under 60-second approvals, and zero paperwork for travel agents."
+        title="No Cost EMI for Travel Bookings | SanKash"
+        description="Offer No Cost EMI at checkout. 20% higher sales, 40% better conversion, and 200% more customer queries for travel agents."
       />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">
@@ -29,11 +29,11 @@ const Lending = () => {
             </div>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Lending</p>
             <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
-              Travel Now, Pay Later
+              No Cost EMI for travel bookings
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Offer flexible EMI options at the point of sale. Increase ticket sizes, improve 
-              conversion, and give customers the affordability they need.
+              Offer No Cost EMI at checkout. Help customers book holidays in monthly instalments 
+              and unlock 20% higher sales, 40% better conversion, and 200% more customer queries.
             </p>
             <Link to="/contact">
               <Button size="xl" className="gap-2">Get Started <ArrowRight size={18} /></Button>
@@ -46,17 +46,17 @@ const Lending = () => {
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="space-y-6">
-              <h2 className="text-3xl font-heading font-bold">How lending works with SanKash</h2>
+              <h2 className="text-3xl font-heading font-bold">How No Cost EMI works with SanKash</h2>
               <p className="text-muted-foreground leading-relaxed">
-                SanKash connects travel agents with multiple lending partners to offer customers 
-                instant financing at the point of booking. The entire flow is digital, from 
-                application to disbursement.
+                SanKash enables travel agents to offer No Cost EMI at checkout, letting customers 
+                book holidays in monthly instalments. The entire flow is digital and embedded 
+                into the booking workflow — no paperwork, no redirects.
               </p>
               <div className="grid grid-cols-3 gap-4 pt-4">
                 {[
-                  { icon: Zap, v: "<60s", l: "Approval Time" },
-                  { icon: Users, v: "15+", l: "Lender Partners" },
-                  { icon: Banknote, v: "0%", l: "No Cost EMI" },
+                  { icon: Zap, v: "20%", l: "Sales Increase" },
+                  { icon: Users, v: "40%", l: "Better Conversion" },
+                  { icon: Banknote, v: "200%", l: "More Queries" },
                 ].map((s) => (
                   <div key={s.l} className="text-center p-4 rounded-xl bg-accent">
                     <s.icon size={20} className="text-primary mx-auto mb-2" />

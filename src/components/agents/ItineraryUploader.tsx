@@ -16,8 +16,8 @@ type Stage = "upload" | "analyzing" | "results";
 const firstLayerInsights = [
   {
     icon: AlertCircle,
-    label: "Financing opportunity detected",
-    detail: "This quote value qualifies for customer EMI options",
+    label: "No Cost EMI opportunity detected",
+    detail: "This quote qualifies for No Cost EMI at checkout",
     color: "text-primary",
   },
   {
@@ -41,7 +41,7 @@ const firstLayerInsights = [
 ];
 
 const gatedInsights = [
-  { label: "Detailed EMI options & tenure breakdown", detail: "3 lender options · No Cost EMI eligible" },
+  { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · No Cost EMI eligible" },
   { label: "Recommended protection products", detail: "Cancellation + medical + baggage" },
   { label: "Competitiveness score vs. market", detail: "Partner-only benchmarking data" },
   { label: "Settlement & collection plan", detail: "T+1 payout with auto-reconciliation" },
