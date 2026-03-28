@@ -46,7 +46,7 @@ const SiteFooter = () => {
             <Link to="/" className="flex items-center" aria-label="SanKash home">
               <img src={sankashMark} alt="SanKash logo" className="h-12 w-auto object-contain" />
             </Link>
-            <p className="text-[13px] text-primary-foreground/40 leading-relaxed">
+            <p className="text-[13px] text-primary-foreground/50 leading-relaxed">
               Lending. Insurance. Payments.<br />Built for travel growth.
             </p>
           </div>
