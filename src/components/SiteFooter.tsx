@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import sankashLogo from "@/assets/sankash-logo.svg";
 
 const footerSections = [
   {
