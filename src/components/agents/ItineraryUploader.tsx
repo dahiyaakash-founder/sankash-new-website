@@ -19,6 +19,7 @@ import {
   sampleAcceptedFiles,
   type ValidationErrorType,
 } from "@/lib/upload-validation";
+import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
