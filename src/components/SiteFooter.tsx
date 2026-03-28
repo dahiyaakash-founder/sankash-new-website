@@ -44,7 +44,7 @@ const SiteFooter = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1 space-y-3">
             <Link to="/" className="flex items-center" aria-label="SanKash home">
-              <img src={sankashMark} alt="SanKash logo" className="h-11 w-auto object-contain" />
+              <img src={sankashMark} alt="SanKash logo" className="h-12 w-auto object-contain" />
             </Link>
             <p className="text-[13px] text-primary-foreground/40 leading-relaxed">
               Lending. Insurance. Payments.<br />Built for travel growth.
