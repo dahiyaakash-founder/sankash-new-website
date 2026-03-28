@@ -451,8 +451,8 @@ const ItineraryUploader = () => {
                   </motion.div>
                 );
               })}
-              <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                This is a preview. Login to access the full commercial review with detailed recommendations.
+               <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                Preview only. Login to access detailed EMI, insurance, and payment activation.
               </p>
             </div>
 
