@@ -52,8 +52,8 @@ function buildAgentInsights(insurance: InsuranceInsight) {
     },
     {
       icon: ClipboardCheck,
-      label: "This itinerary is ready for finance, protection, and payment activation",
-      detail: "Login to unlock detailed commercial recommendations",
+      label: "This itinerary is ready for commercial activation",
+      detail: "Login to unlock EMI fit, protection fit, and payment activation",
     },
   ];
 }
