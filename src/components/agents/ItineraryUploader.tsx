@@ -32,13 +32,13 @@ import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Agent-specific insight cards — commercial enablement, never quote-weakening */
+/** Agent-specific insight cards — sales-led, commercial, never quote-weakening */
 function buildAgentInsights(insurance: InsuranceInsight) {
   return [
     {
       icon: CreditCard,
-      label: "This itinerary may be eligible for No Cost EMI",
-      detail: "Offer EMI at checkout to increase conversion and ticket size",
+      label: "No Cost EMI can be offered on this itinerary",
+      detail: "6-month No Cost EMI can increase conversion and ticket size",
     },
     {
       icon: Shield,
@@ -47,13 +47,13 @@ function buildAgentInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This itinerary may be eligible for zero charge payment collection",
-      detail: "Collect digitally and settle directly without adding PG friction",
+      label: "1.5% payment gateway charges can be waived on this itinerary",
+      detail: "Collect digitally with direct settlement to the agent",
     },
     {
       icon: ClipboardCheck,
-      label: "This itinerary may be worth a detailed commercial review",
-      detail: "Login to unlock finance fit, protection fit, and payment options",
+      label: "This itinerary is ready for finance, protection, and payment activation",
+      detail: "Login to unlock detailed commercial recommendations",
     },
   ];
 }
