@@ -514,9 +514,9 @@ const TravelerQuoteUploader = () => {
                   <p className="font-heading font-bold text-sm text-foreground mb-1">
                    Unlock exact savings and EMI options
                   </p>
-                  <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                    Verify your mobile number with OTP to see exact savings, EMI breakdown, and next steps
-                  </p>
+                   <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
+                     Verify your mobile number to access exact savings, EMI options, and detailed trip recommendations
+                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
                     <Phone size={14} /> Unlock full review
                   </Button>
