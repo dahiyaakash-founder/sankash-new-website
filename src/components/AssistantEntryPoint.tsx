@@ -6,6 +6,7 @@ interface Prompt {
   label: string;
   link?: string;
   href?: string;
+  onClick?: () => void;
 }
 
 interface AssistantEntryPointProps {
