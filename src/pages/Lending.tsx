@@ -46,11 +46,11 @@ const Lending = () => {
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="space-y-6">
-              <h2 className="text-3xl font-heading font-bold">How lending works with SanKash</h2>
+              <h2 className="text-3xl font-heading font-bold">How No Cost EMI works with SanKash</h2>
               <p className="text-muted-foreground leading-relaxed">
-                SanKash connects travel agents with multiple lending partners to offer customers 
-                instant financing at the point of booking. The entire flow is digital, from 
-                application to disbursement.
+                SanKash enables travel agents to offer No Cost EMI at checkout, letting customers 
+                book holidays in monthly instalments. The entire flow is digital and embedded 
+                into the booking workflow — no paperwork, no redirects.
               </p>
               <div className="grid grid-cols-3 gap-4 pt-4">
                 {[
