@@ -6,13 +6,58 @@ import {
   FileText,
   CheckCircle2,
   Lock,
-  AlertCircle,
   ArrowRight,
   Loader2,
   Phone,
+  XCircle,
 } from "lucide-react";
 
-type Stage = "upload" | "analyzing" | "results";
+type Stage = "upload" | "validating" | "analyzing" | "results" | "error";
+
+const TRAVEL_KEYWORDS = [
+  "itinerary", "booking", "quote", "travel", "flight", "hotel", "tour",
+  "package", "trip", "holiday", "destination", "passenger", "traveller",
+  "traveler", "resort", "cruise", "visa", "airport", "airline",
+  "accommodation", "departure", "arrival", "pax", "nights", "days",
+];
+
+const ACCEPTED_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MIN_FILE_SIZE = 1024;
+
+function hasLikelyTravelContent(fileName: string): boolean {
+  const lower = fileName.toLowerCase();
+  return TRAVEL_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+function validateFile(file: File): { valid: boolean; errorTitle?: string; errorBody?: string } {
+  if (!ACCEPTED_TYPES.includes(file.type) && !file.name.match(/\.(pdf|png|jpg|jpeg|doc|docx)$/i)) {
+    return {
+      valid: false,
+      errorTitle: "Unsupported file type",
+      errorBody: "Upload a PDF, PNG, JPG, or DOC file containing your holiday quote or itinerary.",
+    };
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, errorTitle: "File is too large", errorBody: "Please upload a file under 10 MB." };
+  }
+  if (file.size < MIN_FILE_SIZE) {
+    return {
+      valid: false,
+      errorTitle: "We could not read travel details from this file",
+      errorBody: "Please upload a clearer document or image with destination, dates, traveller count, or package pricing.",
+    };
+  }
+  return { valid: true };
+}
 
 const firstLayerInsights = [
   {
@@ -44,11 +89,34 @@ const TravelerQuoteUploader = () => {
   const [stage, setStage] = useState<Stage>("upload");
   const [fileName, setFileName] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [errorTitle, setErrorTitle] = useState("");
+  const [errorBody, setErrorBody] = useState("");
 
-  const handleFile = useCallback((name: string) => {
-    setFileName(name);
-    setStage("analyzing");
-    setTimeout(() => setStage("results"), 2400);
+  const handleFile = useCallback((file: File) => {
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      setFileName(file.name);
+      setErrorTitle(validation.errorTitle!);
+      setErrorBody(validation.errorBody!);
+      setStage("error");
+      return;
+    }
+
+    setFileName(file.name);
+    setStage("validating");
+
+    setTimeout(() => {
+      if (!hasLikelyTravelContent(file.name)) {
+        setErrorTitle("This file does not look like a travel quote or itinerary");
+        setErrorBody(
+          "Upload a holiday quotation, itinerary, booking summary, or package PDF / image that includes travel details such as destination, dates, travellers, or pricing."
+        );
+        setStage("error");
+        return;
+      }
+      setStage("analyzing");
+      setTimeout(() => setStage("results"), 2400);
+    }, 800);
   }, []);
 
   const handleDrop = useCallback(
@@ -56,7 +124,7 @@ const TravelerQuoteUploader = () => {
       e.preventDefault();
       setIsDragOver(false);
       const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file.name);
+      if (file) handleFile(file);
     },
     [handleFile]
   );
@@ -64,7 +132,7 @@ const TravelerQuoteUploader = () => {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) handleFile(file.name);
+      if (file) handleFile(file);
     },
     [handleFile]
   );
@@ -72,6 +140,8 @@ const TravelerQuoteUploader = () => {
   const reset = () => {
     setStage("upload");
     setFileName("");
+    setErrorTitle("");
+    setErrorBody("");
   };
 
   return (
@@ -130,7 +200,7 @@ const TravelerQuoteUploader = () => {
           </motion.div>
         )}
 
-        {stage === "analyzing" && (
+        {(stage === "validating" || stage === "analyzing") && (
           <motion.div
             key="analyzing"
             initial={{ opacity: 0 }}
@@ -141,13 +211,13 @@ const TravelerQuoteUploader = () => {
           >
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6">
               <FileText size={14} className="text-primary" />
-              Reviewing Quote
+              {stage === "validating" ? "Checking Document" : "Reviewing Quote"}
             </div>
             <div className="flex flex-col items-center justify-center py-8 space-y-4">
               <Loader2 size={32} className="text-primary animate-spin" />
               <div className="text-center">
                 <p className="font-heading font-bold text-foreground">
-                  Reviewing your quote…
+                  {stage === "validating" ? "Checking your document…" : "Reviewing your quote…"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 truncate max-w-[240px]">
                   {fileName}
@@ -169,6 +239,44 @@ const TravelerQuoteUploader = () => {
                   />
                 ))}
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {stage === "error" && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="p-6"
+          >
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+              <FileText size={14} className="text-primary" />
+              Upload Issue
+            </div>
+            <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center">
+              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <XCircle size={22} className="text-destructive" />
+              </div>
+              <div>
+                <p className="font-heading font-bold text-sm text-foreground mb-1">
+                  {errorTitle}
+                </p>
+                <p className="text-xs text-muted-foreground max-w-[280px] leading-relaxed">
+                  {errorBody}
+                </p>
+              </div>
+              {fileName && (
+                <div className="bg-muted rounded-lg px-3 py-1.5 flex items-center gap-2 max-w-full">
+                  <FileText size={12} className="text-muted-foreground shrink-0" />
+                  <span className="text-[11px] text-muted-foreground truncate">{fileName}</span>
+                </div>
+              )}
+              <Button variant="outline" size="sm" onClick={reset} className="mt-1">
+                Try Again
+              </Button>
             </div>
           </motion.div>
         )}
@@ -203,7 +311,6 @@ const TravelerQuoteUploader = () => {
               </span>
             </div>
 
-            {/* Visible first layer */}
             <div className="space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 What We Found
@@ -225,7 +332,6 @@ const TravelerQuoteUploader = () => {
               ))}
             </div>
 
-            {/* Gated deeper layer */}
             <div className="relative">
               <div className="space-y-2">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">

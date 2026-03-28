@@ -60,13 +60,12 @@ const Developers = () => {
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
-              <Button size="xl">Get Sandbox Access</Button>
+              <Link to="/contact">
+                <Button size="xl">Get Sandbox Access</Button>
+              </Link>
               <Link to="/contact">
                 <Button variant="outline" size="xl">Request Production Access</Button>
               </Link>
-              <Button variant="ghost" size="xl" className="gap-2">
-                <BookOpen size={18} /> View Docs
-              </Button>
             </div>
           </motion.div>
         </div>
@@ -263,7 +262,9 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
             Get sandbox access or talk to our team about production integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Button size="lg" variant="secondary">Get Sandbox Access</Button>
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/contact">Get Sandbox Access</Link>
+            </Button>
             <Button size="lg" variant="ghost-dark" asChild>
               <Link to="/contact">Request Production Access</Link>
             </Button>

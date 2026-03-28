@@ -114,9 +114,11 @@ const ForTravelAgents = () => {
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
+              <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="xl">
                   Agent Login
                 </Button>
+              </a>
               </div>
             </motion.div>
 
@@ -301,8 +303,8 @@ const ForTravelAgents = () => {
       <AssistantEntryPoint
         className="py-6 md:py-8"
         prompts={[
-          { label: "Ask about onboarding", link: "/for-travel-agents" },
-          { label: "Check if SanKash fits my business", link: "/solutions" },
+          { label: "Start agent onboarding", link: "/contact" },
+          { label: "See how it works", link: "/solutions" },
         ]}
       />
 
@@ -322,9 +324,11 @@ const ForTravelAgents = () => {
                 Agent Signup <ArrowRight size={18} />
               </Button>
             </Link>
-            <Button variant="ghost-dark" size="xl">
-              Agent Login
-            </Button>
+            <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost-dark" size="xl">
+                Agent Login
+              </Button>
+            </a>
           </div>
         </div>
       </section>
