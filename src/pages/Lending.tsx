@@ -54,9 +54,9 @@ const Lending = () => {
               </p>
               <div className="grid grid-cols-3 gap-4 pt-4">
                 {[
-                  { icon: Zap, v: "<60s", l: "Approval Time" },
-                  { icon: Users, v: "15+", l: "Lender Partners" },
-                  { icon: Banknote, v: "0%", l: "No Cost EMI" },
+                  { icon: Zap, v: "20%", l: "Sales Increase" },
+                  { icon: Users, v: "40%", l: "Better Conversion" },
+                  { icon: Banknote, v: "200%", l: "More Queries" },
                 ].map((s) => (
                   <div key={s.l} className="text-center p-4 rounded-xl bg-accent">
                     <s.icon size={20} className="text-primary mx-auto mb-2" />
