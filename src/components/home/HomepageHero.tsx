@@ -8,25 +8,29 @@ const proofCards = [
     icon: FileText,
     step: "01",
     label: "Review quotes",
-    title: "Upload a holiday quote and spot pricing, value, and conversion opportunities",
+    title: "Review holiday quotes",
+    proof: "Spot pricing, value, and conversion gaps",
   },
   {
     icon: Banknote,
     step: "02",
     label: "Offer EMI",
-    title: "Let customers book holidays in monthly instalments at checkout",
+    title: "Enable travel EMI",
+    proof: "₹24,652 × 12 months at checkout",
   },
   {
     icon: ShieldCheck,
     step: "03",
     label: "Add protection",
-    title: "Embed cancellation, medical, and baggage cover into the booking flow",
+    title: "Embed travel protection",
+    proof: "Cancellation, medical, and baggage cover",
   },
   {
     icon: CreditCard,
     step: "04",
     label: "Collect payments",
-    title: "Accept customer payments on-platform with direct settlement to the agent",
+    title: "Collect customer payments",
+    proof: "₹200Cr+ payment volume enabled",
   },
 ];
 
