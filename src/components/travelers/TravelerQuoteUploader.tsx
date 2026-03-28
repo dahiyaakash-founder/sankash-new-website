@@ -41,19 +41,19 @@ import { Input } from "@/components/ui/input";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Traveler-specific insight cards */
+/** Traveler-specific insight cards — confident, value-led */
 function buildTravelerInsights(insurance: InsuranceInsight) {
   return [
     {
       icon: TrendingDown,
-      label: "This holiday quote may have room for optimisation",
+      label: "This holiday quote can be optimised",
       detail: "We may be able to improve this quote by up to 5%",
       hasBlurredValue: true,
     },
     {
       icon: CreditCard,
-      label: "This trip may be eligible for No Cost EMI",
-      detail: "6-month EMI may be available with zero interest and zero processing fee, subject to credit approval",
+      label: "This itinerary is eligible for No Cost EMI",
+      detail: "6-month No Cost EMI available, subject to credit approval",
       hasBlurredValue: false,
     },
     {
@@ -64,8 +64,8 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This booking may be eligible for zero gateway charges",
-      detail: "You may be able to pay digitally without extra PG charges, subject to applicable payment mode and offer availability",
+      label: "This booking is eligible for zero gateway charges",
+      detail: "Pay digitally without extra payment gateway charges, subject to applicable mode and offer terms",
       hasBlurredValue: false,
     },
   ];
