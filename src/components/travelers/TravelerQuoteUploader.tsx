@@ -143,6 +143,7 @@ const TravelerQuoteUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
+    setInsuranceInsight(null);
   };
 
   const handleLeadSubmit = (e: React.FormEvent) => {
