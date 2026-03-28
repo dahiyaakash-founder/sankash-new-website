@@ -32,7 +32,7 @@ const SiteNavbar = () => {
       <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center shrink-0" aria-label="SanKash home">
-          <img src={sankashLogo} alt="SanKash logo" className="h-8 lg:h-9 w-auto" />
+          <img src={sankashLogo} alt="SanKash logo" className="h-10 lg:h-11 w-auto object-contain" />
         </Link>
 
         {/* Desktop nav */}
