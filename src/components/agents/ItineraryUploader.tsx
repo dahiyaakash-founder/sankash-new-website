@@ -68,6 +68,7 @@ const ItineraryUploader = () => {
   const [errorBody, setErrorBody] = useState("");
   const [errorType, setErrorType] = useState<ValidationErrorType | null>(null);
   const [showSamples, setShowSamples] = useState(false);
+  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
