@@ -134,7 +134,7 @@ const HomepageHero = () => {
               <div className="flex items-center gap-2 pl-14 pt-1">
                 <Clock size={12} className="text-brand-green" />
                 <span className="text-[11px] font-medium text-muted-foreground">
-                  Quote → Finance → Protect → Collect — one platform
+                  Review → Finance → Protect → Collect
                 </span>
               </div>
             </div>
