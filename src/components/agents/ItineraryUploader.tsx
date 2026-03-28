@@ -32,13 +32,13 @@ import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Agent-specific insight cards — commercial enablement, never quote-weakening */
+/** Agent-specific insight cards — sales-led, commercial, never quote-weakening */
 function buildAgentInsights(insurance: InsuranceInsight) {
   return [
     {
       icon: CreditCard,
-      label: "This itinerary may be eligible for No Cost EMI",
-      detail: "Offer EMI at checkout to increase conversion and ticket size",
+      label: "No Cost EMI can be offered on this itinerary",
+      detail: "6-month No Cost EMI can increase conversion and ticket size",
     },
     {
       icon: Shield,
@@ -47,28 +47,28 @@ function buildAgentInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This itinerary may be eligible for zero charge payment collection",
-      detail: "Collect digitally and settle directly without adding PG friction",
+      label: "1.5% payment gateway charges can be waived on this itinerary",
+      detail: "Collect digitally with direct settlement to the agent",
     },
     {
       icon: ClipboardCheck,
-      label: "This itinerary may be worth a detailed commercial review",
-      detail: "Login to unlock finance fit, protection fit, and payment options",
+      label: "This itinerary is ready for finance, protection, and payment activation",
+      detail: "Login to unlock detailed commercial recommendations",
     },
   ];
 }
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
-  "No Cost EMI and protection options may be available",
-  "Login for a detailed commercial review",
+  "No Cost EMI and protection options available",
+  "Login to unlock full commercial review",
 ];
 
 const gatedInsights = [
-  { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · No Cost EMI eligible" },
-  { label: "Recommended protection products", detail: "Attach cancellation + medical + baggage cover" },
-  { label: "Settlement & collection plan", detail: "T+1 payout with auto-reconciliation" },
-  { label: "Full commercial review", detail: "Finance fit, protection fit, and payment options" },
+  { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · 6-month No Cost EMI" },
+  { label: "Protection products with revenue share", detail: "Cancellation + medical + baggage cover" },
+  { label: "Settlement & collection plan", detail: "T+1 payout · 1.5% PG waiver · auto-reconciliation" },
+  { label: "Full commercial activation plan", detail: "Finance fit, protection fit, and payment activation" },
 ];
 
 const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
@@ -392,7 +392,7 @@ const ItineraryUploader = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground/60 px-1">
-              See finance fit, protection fit, and payment collection options for this itinerary
+              See EMI fit, insurance fit, and payment activation for this itinerary
             </p>
           </motion.div>
         )}
@@ -451,8 +451,8 @@ const ItineraryUploader = () => {
                   </motion.div>
                 );
               })}
-              <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                This is a preview. Login to access the full commercial review with detailed recommendations.
+               <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                Preview only. Login to access detailed EMI, insurance, and payment activation.
               </p>
             </div>
 
@@ -481,10 +481,10 @@ const ItineraryUploader = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                 <Lock size={18} className="text-primary mb-2" />
                 <p className="font-heading font-bold text-sm text-foreground mb-1">
-                  Login to unlock full review
-                </p>
-                <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
-                  See finance fit, protection fit, and payment collection options for this itinerary
+                   Unlock detailed commercial review
+                 </p>
+                 <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
+                   See EMI fit, insurance fit, and payment activation for this itinerary
                 </p>
                 <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="gap-1.5">

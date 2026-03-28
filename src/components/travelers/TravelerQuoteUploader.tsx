@@ -41,19 +41,19 @@ import { Input } from "@/components/ui/input";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Traveler-specific insight cards */
+/** Traveler-specific insight cards — confident, value-led */
 function buildTravelerInsights(insurance: InsuranceInsight) {
   return [
     {
       icon: TrendingDown,
-      label: "This holiday quote may have room for optimisation",
+      label: "This holiday quote can be optimised",
       detail: "We may be able to improve this quote by up to 5%",
       hasBlurredValue: true,
     },
     {
       icon: CreditCard,
-      label: "This trip may be eligible for No Cost EMI",
-      detail: "6-month EMI may be available with zero interest and zero processing fee, subject to credit approval",
+      label: "This itinerary is eligible for No Cost EMI",
+      detail: "6-month No Cost EMI available, subject to credit approval",
       hasBlurredValue: false,
     },
     {
@@ -64,8 +64,8 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This booking may be eligible for zero gateway charges",
-      detail: "You may be able to pay digitally without extra PG charges, subject to applicable payment mode and offer availability",
+      label: "This booking is eligible for zero gateway charges",
+      detail: "Pay digitally without extra payment gateway charges, subject to applicable mode and offer terms",
       hasBlurredValue: false,
     },
   ];
@@ -78,9 +78,9 @@ const mediumConfidenceBullets = [
 ];
 
 const gatedInsights = [
-  { label: "Exact savings amount on this quote", detail: "Optimisation value revealed after verification" },
-  { label: "Detailed EMI tenure & lender options", detail: "3, 6, 9, 12-month plans · No Cost EMI eligibility" },
-  { label: "Travel protection recommendations", detail: "Cancellation, medical & baggage coverage" },
+  { label: "Exact savings amount on this quote", detail: "Up to 5% optimisation · revealed after verification" },
+  { label: "EMI breakdown with lender options", detail: "3, 6, 9, 12-month No Cost EMI plans" },
+  { label: "Recommended travel protection", detail: "Cancellation, medical & baggage cover with pricing" },
   { label: "Pre-approval for trip financing", detail: "Check eligibility without impacting credit score" },
 ];
 
@@ -512,10 +512,10 @@ const TravelerQuoteUploader = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                   <Lock size={18} className="text-primary mb-2" />
                   <p className="font-heading font-bold text-sm text-foreground mb-1">
-                    Unlock full review
+                   Unlock exact savings and EMI options
                   </p>
                   <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                    Verify your mobile number with OTP to see exact savings, EMI options, and next steps
+                    Verify your mobile number with OTP to see exact savings, EMI breakdown, and next steps
                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
                     <Phone size={14} /> Unlock full review
