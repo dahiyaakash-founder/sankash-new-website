@@ -392,7 +392,7 @@ const ItineraryUploader = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground/60 px-1">
-              See finance fit, protection fit, and payment collection options for this itinerary
+              See EMI fit, insurance fit, and payment activation for this itinerary
             </p>
           </motion.div>
         )}

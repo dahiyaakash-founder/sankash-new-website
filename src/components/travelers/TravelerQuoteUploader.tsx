@@ -512,10 +512,10 @@ const TravelerQuoteUploader = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                   <Lock size={18} className="text-primary mb-2" />
                   <p className="font-heading font-bold text-sm text-foreground mb-1">
-                    Unlock full review
+                   Unlock exact savings and EMI options
                   </p>
                   <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                    Verify your mobile number with OTP to see exact savings, EMI options, and next steps
+                    Verify your mobile number with OTP to see exact savings, EMI breakdown, and next steps
                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
                     <Phone size={14} /> Unlock full review
