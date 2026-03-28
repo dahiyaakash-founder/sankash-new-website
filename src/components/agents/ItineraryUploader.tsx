@@ -60,8 +60,8 @@ function buildAgentInsights(insurance: InsuranceInsight) {
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
-  "No Cost EMI and protection options may be available",
-  "Login for a detailed commercial review",
+  "No Cost EMI and protection options available",
+  "Login to unlock full commercial review",
 ];
 
 const gatedInsights = [
