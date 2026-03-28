@@ -60,13 +60,12 @@ const Developers = () => {
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
-              <Button size="xl">Get Sandbox Access</Button>
+              <Link to="/contact">
+                <Button size="xl">Get Sandbox Access</Button>
+              </Link>
               <Link to="/contact">
                 <Button variant="outline" size="xl">Request Production Access</Button>
               </Link>
-              <Button variant="ghost" size="xl" className="gap-2">
-                <BookOpen size={18} /> View Docs
-              </Button>
             </div>
           </motion.div>
         </div>
