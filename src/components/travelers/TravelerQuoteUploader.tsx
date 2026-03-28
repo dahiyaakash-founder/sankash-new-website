@@ -532,13 +532,13 @@ const TravelerQuoteUploader = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {leadSubmitted ? "Thanks!" : "Unlock your full review"}
-            </DialogTitle>
-            <DialogDescription>
-              {leadSubmitted
-                ? "Our team will contact you shortly with exact savings, EMI options, and a detailed review."
-                : "Share your details and our team will contact you with exact savings, EMI options, and a detailed review."}
-            </DialogDescription>
+               {leadSubmitted ? "Review request received" : "Unlock your full review"}
+             </DialogTitle>
+             <DialogDescription>
+               {leadSubmitted
+                 ? "Your details have been submitted successfully. We will now process your detailed review and share exact savings, EMI options, and next steps."
+                 : "Enter your details to unlock exact savings, EMI options, and a more detailed review of this holiday quote."}
+             </DialogDescription>
           </DialogHeader>
 
           {leadSubmitted ? (
