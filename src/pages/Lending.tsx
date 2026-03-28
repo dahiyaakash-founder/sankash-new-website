@@ -29,11 +29,11 @@ const Lending = () => {
             </div>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Lending</p>
             <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
-              Travel Now, Pay Later
+              No Cost EMI for travel bookings
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Offer flexible EMI options at the point of sale. Increase ticket sizes, improve 
-              conversion, and give customers the affordability they need.
+              Offer No Cost EMI at checkout. Help customers book holidays in monthly instalments 
+              and unlock 20% higher sales, 40% better conversion, and 200% more customer queries.
             </p>
             <Link to="/contact">
               <Button size="xl" className="gap-2">Get Started <ArrowRight size={18} /></Button>
