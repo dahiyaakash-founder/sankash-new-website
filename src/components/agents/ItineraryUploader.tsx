@@ -371,7 +371,7 @@ const ItineraryUploader = () => {
                 <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
                   Sign in to access full recommendations, EMI options, and coverage analysis
                 </p>
-                <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
+                <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="gap-1.5">
                     Agent Login <ArrowRight size={14} />
                   </Button>

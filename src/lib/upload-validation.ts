@@ -1,5 +1,3 @@
-import { type ReactNode } from "react";
-
 // ── Accepted types & limits ────────────────────────────────────────
 export const ACCEPTED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx"];
 
@@ -16,25 +14,51 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 export const MIN_FILE_SIZE = 512; // 0.5 KB — anything smaller is likely empty
 
 // ── Travel-content keyword signals ─────────────────────────────────
-const TRAVEL_KEYWORDS = [
-  // document types
-  "itinerary", "booking", "quote", "invoice", "confirmation", "voucher",
-  // travel concepts
-  "travel", "flight", "hotel", "tour", "package", "trip", "holiday",
-  "destination", "passenger", "traveller", "traveler", "resort", "cruise",
-  "visa", "airport", "airline", "accommodation", "sightseeing", "transfer",
-  // schedule
-  "departure", "arrival", "return", "check-in", "checkout",
-  // people
-  "pax", "adult", "child", "infant",
-  // duration
-  "nights", "days", "duration",
-  // pricing
-  "total", "price", "cost", "fare", "amount", "tariff", "rate",
-  // destinations (popular)
+// Strong travel signals — need at least 2
+const STRONG_TRAVEL_SIGNALS = [
+  // destinations / geography
   "goa", "kerala", "manali", "shimla", "dubai", "thailand", "bali",
   "maldives", "singapore", "europe", "kashmir", "rajasthan", "andaman",
   "mauritius", "sri lanka", "vietnam", "japan", "london", "paris",
+  "destination", "country", "city",
+  // travel document types
+  "itinerary", "booking summary", "holiday package", "tour package",
+  "travel quote", "travel quotation", "holiday quotation",
+  // travel concepts
+  "flight", "hotel", "resort", "cruise", "airline", "airport",
+  "sightseeing", "transfer", "accommodation", "room",
+  // schedule
+  "departure", "arrival", "check-in", "checkout",
+  // people
+  "traveller", "traveler", "passenger", "pax",
+  // duration
+  "nights", "days", "duration",
+  // trip types
+  "honeymoon", "pilgrimage", "group tour", "family trip",
+];
+
+// Commercial / booking signals — need at least 1
+const COMMERCIAL_SIGNALS = [
+  "total amount", "package cost", "fare", "quotation",
+  "booking amount", "package price", "trip cost",
+  "per person", "twin sharing", "child with bed", "child without bed",
+  "inr", "₹", "usd", "package value",
+  "inclusions", "exclusions", "package includes",
+  "cost per", "net rate", "gross rate", "selling price",
+];
+
+// Generic words that should NOT trigger a pass on their own
+// These appear in non-travel invoices too
+const NON_TRAVEL_REJECTION_SIGNALS = [
+  "refrigerator", "washing machine", "air conditioner", "microwave",
+  "television", "laptop", "mobile phone", "smartphone", "tablet",
+  "electronics", "appliance", "gadget", "warranty card",
+  "warehouse", "shipment tracking", "dispatch", "consignment",
+  "export invoice", "purchase order", "goods receipt",
+  "gst invoice", "tax invoice", "proforma invoice",
+  "hsn code", "sac code", "igst", "cgst", "sgst",
+  "product invoice", "service invoice", "vendor invoice",
+  "bill of materials", "packing list", "delivery challan",
 ];
 
 // ── Error types ────────────────────────────────────────────────────
@@ -47,7 +71,7 @@ export interface ValidationResult {
   errorBody?: string;
 }
 
-// ── Validate file ──────────────────────────────────────────────────
+// ── Validate file (type + size) ────────────────────────────────────
 export function validateFile(file: File): ValidationResult {
   const ext = file.name.toLowerCase().match(/\.[a-z]+$/)?.[0] ?? "";
 
@@ -83,10 +107,27 @@ export function validateFile(file: File): ValidationResult {
   return { valid: true };
 }
 
-// ── Check filename for travel signals ──────────────────────────────
+// ── Check filename for travel signals (strict: 2 travel + 1 commercial) ──
 export function hasLikelyTravelContent(fileName: string): boolean {
   const lower = fileName.toLowerCase().replace(/[-_]/g, " ");
-  return TRAVEL_KEYWORDS.some((kw) => lower.includes(kw));
+
+  // First check for explicit non-travel rejection signals
+  const hasRejection = NON_TRAVEL_REJECTION_SIGNALS.some((kw) => lower.includes(kw));
+  if (hasRejection) {
+    // Only allow if there are also very strong travel signals
+    const strongCount = STRONG_TRAVEL_SIGNALS.filter((kw) => lower.includes(kw)).length;
+    if (strongCount < 3) return false;
+  }
+
+  // Count strong travel signals
+  const travelCount = STRONG_TRAVEL_SIGNALS.filter((kw) => lower.includes(kw)).length;
+
+  // Count commercial signals
+  const commercialCount = COMMERCIAL_SIGNALS.filter((kw) => lower.includes(kw)).length;
+
+  // Require at least 2 strong travel signals AND at least 1 commercial signal
+  // OR at least 3 strong travel signals (very clearly travel-related)
+  return (travelCount >= 2 && commercialCount >= 1) || travelCount >= 3;
 }
 
 // ── Sample accepted files list ─────────────────────────────────────

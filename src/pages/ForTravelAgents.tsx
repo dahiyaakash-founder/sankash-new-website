@@ -324,7 +324,7 @@ const ForTravelAgents = () => {
                 Agent Signup <ArrowRight size={18} />
               </Button>
             </Link>
-            <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
+            <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
               <Button variant="ghost-dark" size="xl">
                 Agent Login
               </Button>
