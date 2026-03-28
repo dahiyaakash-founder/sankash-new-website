@@ -130,6 +130,7 @@ const ItineraryUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
+    setInsuranceInsight(null);
   };
 
   return (
