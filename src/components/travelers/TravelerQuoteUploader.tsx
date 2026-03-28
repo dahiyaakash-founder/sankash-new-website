@@ -1,3 +1,8 @@
+/**
+ * Audience-specific review logic.
+ * Traveler outputs can reveal consumer savings after OTP.
+ * Agent outputs must remain sales-enabling and must not weaken the quote.
+ */
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,13 +18,16 @@ import {
   HelpCircle,
   Info,
   AlertCircle,
+  Shield,
+  CreditCard,
+  Wallet,
+  TrendingDown,
 } from "lucide-react";
 import {
   validateFile,
   assessTravelConfidence,
   sampleAcceptedFiles,
   type ValidationErrorType,
-  type TravelConfidence,
 } from "@/lib/upload-validation";
 import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
@@ -33,24 +41,32 @@ import { Input } from "@/components/ui/input";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Build the 4 traveler insight cards — card 3 is now insurance-aware */
+/** Traveler-specific insight cards */
 function buildTravelerInsights(insurance: InsuranceInsight) {
   return [
     {
-      label: "This quote may have room for optimisation",
-      detail: "Based on trip type, dates, and destination signals",
+      icon: TrendingDown,
+      label: "This holiday quote may have room for optimisation",
+      detail: "We may be able to improve this quote by up to 5%",
+      hasBlurredValue: true,
     },
     {
-      label: "No Cost EMI may be available for this trip",
-      detail: "Monthly payments can be structured across 3–12 months",
+      icon: CreditCard,
+      label: "This trip may be eligible for No Cost EMI",
+      detail: "6-month EMI may be available with zero interest and zero processing fee, subject to credit approval",
+      hasBlurredValue: false,
     },
     {
+      icon: Shield,
       label: insurance.headline,
       detail: insurance.detail,
+      hasBlurredValue: false,
     },
     {
-      label: "A detailed review can confirm pricing and finance fit",
-      detail: "Our team can review for better-value options and structuring",
+      icon: Wallet,
+      label: "This booking may be eligible for zero gateway charges",
+      detail: "You may be able to pay digitally without extra PG charges, subject to applicable payment mode and offer availability",
+      hasBlurredValue: false,
     },
   ];
 }
@@ -62,8 +78,8 @@ const mediumConfidenceBullets = [
 ];
 
 const gatedInsights = [
+  { label: "Exact savings amount on this quote", detail: "Optimisation value revealed after verification" },
   { label: "Detailed EMI tenure & lender options", detail: "3, 6, 9, 12-month plans · No Cost EMI eligibility" },
-  { label: "Better-value itinerary suggestions", detail: "Alternative routing and package structuring" },
   { label: "Travel protection recommendations", detail: "Cancellation, medical & baggage coverage" },
   { label: "Pre-approval for trip financing", detail: "Check eligibility without impacting credit score" },
 ];
@@ -337,7 +353,7 @@ const TravelerQuoteUploader = () => {
             </motion.div>
           )}
 
-          {/* ── Medium Confidence Results ── */}
+          {/* ── Medium Confidence Results (Traveler) ── */}
           {stage === "results-medium" && (
             <motion.div
               key="results-medium"
@@ -350,7 +366,7 @@ const TravelerQuoteUploader = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <FileText size={14} className="text-primary" />
-                  Quote Detected
+                  Initial Review
                 </div>
                 <button
                   onClick={reset}
@@ -374,7 +390,7 @@ const TravelerQuoteUploader = () => {
                     This looks like a holiday quote or itinerary
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    We found enough travel signals to continue, but a detailed review may need our team to verify the file.
+                    We found travel signals to continue, but a detailed review may need our team to verify the file.
                   </p>
                 </div>
 
@@ -396,16 +412,19 @@ const TravelerQuoteUploader = () => {
 
               <div className="flex items-center gap-3 pt-1">
                 <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
-                  <Phone size={14} /> Share My Number
+                  <Phone size={14} /> Unlock full review
                 </Button>
                 <Button variant="outline" size="sm" onClick={reset}>
                   Upload another file
                 </Button>
               </div>
+              <p className="text-[10px] text-muted-foreground/60 px-1">
+                Verify your mobile number to see exact savings, EMI options, and next steps
+              </p>
             </motion.div>
           )}
 
-          {/* ── High Confidence Results ── */}
+          {/* ── High Confidence Results (Traveler) ── */}
           {stage === "results-high" && (
             <motion.div
               key="results-high"
@@ -440,23 +459,31 @@ const TravelerQuoteUploader = () => {
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   What We Found
                 </p>
-                {buildTravelerInsights(insuranceInsight ?? { headline: "Travel protection can be added", detail: "Trip cancellation, medical and baggage cover available" }).map((insight, i) => (
-                  <motion.div
-                    key={insight.label}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.12, duration: 0.3 }}
-                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
-                  >
-                    <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{insight.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                {buildTravelerInsights(insuranceInsight ?? { headline: "Travel protection can be added", detail: "Trip cancellation, medical and baggage cover available" }).map((insight, i) => {
+                  const Icon = insight.icon;
+                  return (
+                    <motion.div
+                      key={insight.label}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.12, duration: 0.3 }}
+                      className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                    >
+                      <Icon size={15} className="text-primary shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">{insight.label}</p>
+                        <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
+                        {insight.hasBlurredValue && (
+                          <span className="inline-block mt-1 text-sm font-bold text-primary select-none" style={{ filter: "blur(5px)" }} aria-hidden>
+                            Possible savings: ₹2,450
+                          </span>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
                 <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                  This is a first-pass review. Share your number to get a detailed review with specific EMI options and recommendations.
+                  This is a first-pass review. Verify your number to unlock exact savings, EMI breakdown, and detailed recommendations.
                 </p>
               </div>
 
@@ -464,7 +491,7 @@ const TravelerQuoteUploader = () => {
               <div className="relative">
                 <div className="space-y-2">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    Unlock Detailed Review
+                    Unlock Full Review
                   </p>
                   <div className="space-y-2 select-none" style={{ filter: "blur(4px)" }} aria-hidden>
                     {gatedInsights.map((item) => (
@@ -485,13 +512,13 @@ const TravelerQuoteUploader = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                   <Lock size={18} className="text-primary mb-2" />
                   <p className="font-heading font-bold text-sm text-foreground mb-1">
-                    Get your detailed review
+                    Unlock full review
                   </p>
                   <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                    Share your number to receive specific EMI options and expert recommendations
+                    Verify your mobile number with OTP to see exact savings, EMI options, and next steps
                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
-                    <Phone size={14} /> Share My Number
+                    <Phone size={14} /> Unlock full review
                   </Button>
                 </div>
               </div>
@@ -505,12 +532,12 @@ const TravelerQuoteUploader = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {leadSubmitted ? "Thanks!" : "Get your detailed review"}
+              {leadSubmitted ? "Thanks!" : "Unlock your full review"}
             </DialogTitle>
             <DialogDescription>
               {leadSubmitted
-                ? "Our team will contact you shortly with a detailed review and EMI options."
-                : "Our team will contact you with a detailed review and EMI options."}
+                ? "Our team will contact you shortly with exact savings, EMI options, and a detailed review."
+                : "Share your details and our team will contact you with exact savings, EMI options, and a detailed review."}
             </DialogDescription>
           </DialogHeader>
 
