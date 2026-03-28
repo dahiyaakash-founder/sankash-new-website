@@ -1,5 +1,5 @@
 import { useState } from "react";
-import sankashLogo from "@/assets/sankash-logo.svg";
+import sankashLogo from "@/assets/sankash-logo-primary.svg";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -31,8 +31,8 @@ const SiteNavbar = () => {
     <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
       <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
         {/* Logo */}
-        <Link to="/" className="flex items-center shrink-0" aria-label="SanKash home">
-          <img src={sankashLogo} alt="SanKash logo" className="h-10 lg:h-11 w-auto object-contain" />
+        <Link to="/" className="flex h-12 lg:h-14 items-center shrink-0 pr-2" aria-label="SanKash home">
+          <img src={sankashLogo} alt="SanKash logo" className="h-11 lg:h-12 w-auto object-contain" />
         </Link>
 
         {/* Desktop nav */}

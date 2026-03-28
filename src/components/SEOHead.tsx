@@ -78,7 +78,7 @@ export const organizationSchema = {
   "@type": "Organization",
   name: "SanKash",
   url: "https://www.sankash.in",
-  logo: "https://www.sankash.in/logo.png",
+  logo: "https://www.sankash.in/apple-touch-icon.png",
   description: "Travel financial infrastructure platform offering lending, insurance, and payments for travel businesses in India.",
   address: {
     "@type": "PostalAddress",
