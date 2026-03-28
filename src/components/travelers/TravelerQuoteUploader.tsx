@@ -547,8 +547,8 @@ const TravelerQuoteUploader = () => {
                 <CheckCircle2 size={24} className="text-brand-green" />
               </div>
               <p className="text-sm text-foreground font-medium text-center">
-                Thanks, our team will contact you shortly.
-              </p>
+                 Your detailed review request has been recorded.
+               </p>
               <Button
                 variant="outline"
                 size="sm"
