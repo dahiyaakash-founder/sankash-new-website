@@ -39,7 +39,7 @@ const nextSteps: Record<string, { icon: typeof Upload; label: string; link?: str
   agent: [
     { icon: FileText, label: "Review an itinerary", link: "/for-travel-agents" },
     { icon: BookOpen, label: "Start agent onboarding", link: "/for-travel-agents" },
-    { icon: LogIn, label: "Agent login", href: "https://partner.sankash.in" },
+    { icon: LogIn, label: "Agent login", href: "https://app.sankash.in/agent/auth/login" },
   ],
   integrations: [
     { icon: BookOpen, label: "View documentation", link: "/developers" },
