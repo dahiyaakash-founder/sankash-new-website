@@ -78,9 +78,9 @@ const mediumConfidenceBullets = [
 ];
 
 const gatedInsights = [
-  { label: "Exact savings amount on this quote", detail: "Optimisation value revealed after verification" },
-  { label: "Detailed EMI tenure & lender options", detail: "3, 6, 9, 12-month plans · No Cost EMI eligibility" },
-  { label: "Travel protection recommendations", detail: "Cancellation, medical & baggage coverage" },
+  { label: "Exact savings amount on this quote", detail: "Up to 5% optimisation · revealed after verification" },
+  { label: "EMI breakdown with lender options", detail: "3, 6, 9, 12-month No Cost EMI plans" },
+  { label: "Recommended travel protection", detail: "Cancellation, medical & baggage cover with pricing" },
   { label: "Pre-approval for trip financing", detail: "Check eligibility without impacting credit score" },
 ];
 
