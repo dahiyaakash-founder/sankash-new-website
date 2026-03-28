@@ -14,7 +14,7 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 export const MIN_FILE_SIZE = 512; // 0.5 KB — anything smaller is likely empty
 
 // ── Travel-content keyword signals ─────────────────────────────────
-// Strong travel signals — need at least 2
+// Strong travel signals
 const STRONG_TRAVEL_SIGNALS = [
   // destinations / geography
   "goa", "kerala", "manali", "shimla", "dubai", "thailand", "bali",
@@ -35,9 +35,12 @@ const STRONG_TRAVEL_SIGNALS = [
   "nights", "days", "duration",
   // trip types
   "honeymoon", "pilgrimage", "group tour", "family trip",
+  // broader travel terms
+  "holiday", "tour", "trip", "travel", "package", "vacation",
+  "excursion", "safari", "trek", "backpacking",
 ];
 
-// Commercial / booking signals — need at least 1
+// Commercial / booking signals
 const COMMERCIAL_SIGNALS = [
   "total amount", "package cost", "fare", "quotation",
   "booking amount", "package price", "trip cost",
@@ -45,10 +48,10 @@ const COMMERCIAL_SIGNALS = [
   "inr", "₹", "usd", "package value",
   "inclusions", "exclusions", "package includes",
   "cost per", "net rate", "gross rate", "selling price",
+  "price", "cost", "amount", "rate", "budget",
 ];
 
 // Generic words that should NOT trigger a pass on their own
-// These appear in non-travel invoices too
 const NON_TRAVEL_REJECTION_SIGNALS = [
   "refrigerator", "washing machine", "air conditioner", "microwave",
   "television", "laptop", "mobile phone", "smartphone", "tablet",
@@ -64,11 +67,19 @@ const NON_TRAVEL_REJECTION_SIGNALS = [
 // ── Error types ────────────────────────────────────────────────────
 export type ValidationErrorType = "unsupported" | "too-large" | "unreadable" | "not-travel";
 
+export type TravelConfidence = "invalid" | "medium" | "high";
+
 export interface ValidationResult {
   valid: boolean;
   errorType?: ValidationErrorType;
   errorTitle?: string;
   errorBody?: string;
+}
+
+export interface TravelConfidenceResult {
+  confidence: TravelConfidence;
+  travelCount: number;
+  commercialCount: number;
 }
 
 // ── Validate file (type + size) ────────────────────────────────────
@@ -107,27 +118,46 @@ export function validateFile(file: File): ValidationResult {
   return { valid: true };
 }
 
-// ── Check filename for travel signals (strict: 2 travel + 1 commercial) ──
-export function hasLikelyTravelContent(fileName: string): boolean {
+// ── Assess travel confidence (3-state) ─────────────────────────────
+export function assessTravelConfidence(fileName: string): TravelConfidenceResult {
   const lower = fileName.toLowerCase().replace(/[-_]/g, " ");
 
-  // First check for explicit non-travel rejection signals
+  // Check for explicit non-travel rejection signals
   const hasRejection = NON_TRAVEL_REJECTION_SIGNALS.some((kw) => lower.includes(kw));
   if (hasRejection) {
     // Only allow if there are also very strong travel signals
     const strongCount = STRONG_TRAVEL_SIGNALS.filter((kw) => lower.includes(kw)).length;
-    if (strongCount < 3) return false;
+    if (strongCount < 2) {
+      return { confidence: "invalid", travelCount: strongCount, commercialCount: 0 };
+    }
   }
 
-  // Count strong travel signals
+  // Count signals
   const travelCount = STRONG_TRAVEL_SIGNALS.filter((kw) => lower.includes(kw)).length;
-
-  // Count commercial signals
   const commercialCount = COMMERCIAL_SIGNALS.filter((kw) => lower.includes(kw)).length;
 
-  // Require at least 2 strong travel signals AND at least 1 commercial signal
-  // OR at least 3 strong travel signals (very clearly travel-related)
-  return (travelCount >= 2 && commercialCount >= 1) || travelCount >= 3;
+  // HIGH: 2+ travel signals AND 1+ commercial, OR 3+ travel signals
+  if ((travelCount >= 2 && commercialCount >= 1) || travelCount >= 3) {
+    return { confidence: "high", travelCount, commercialCount };
+  }
+
+  // MEDIUM: at least 1 travel signal (destination, itinerary, package, holiday, etc.)
+  if (travelCount >= 1) {
+    return { confidence: "medium", travelCount, commercialCount };
+  }
+
+  // MEDIUM: commercial signal alone with travel-like extension/context
+  if (commercialCount >= 1) {
+    return { confidence: "medium", travelCount, commercialCount };
+  }
+
+  // INVALID: no travel or commercial signals at all
+  return { confidence: "invalid", travelCount, commercialCount };
+}
+
+// ── Legacy helper (kept for backward compat) ───────────────────────
+export function hasLikelyTravelContent(fileName: string): boolean {
+  return assessTravelConfidence(fileName).confidence !== "invalid";
 }
 
 // ── Sample accepted files list ─────────────────────────────────────
