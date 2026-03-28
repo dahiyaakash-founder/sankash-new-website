@@ -16,8 +16,8 @@ type Stage = "upload" | "analyzing" | "results";
 const firstLayerInsights = [
   {
     icon: AlertCircle,
-    label: "Financing opportunity detected",
-    detail: "This quote value qualifies for customer EMI options",
+    label: "No Cost EMI opportunity detected",
+    detail: "This quote qualifies for No Cost EMI at checkout",
     color: "text-primary",
   },
   {
