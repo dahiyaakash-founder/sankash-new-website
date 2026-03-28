@@ -21,6 +21,7 @@ import {
   type ValidationErrorType,
   type TravelConfidence,
 } from "@/lib/upload-validation";
+import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
   Dialog,
   DialogContent,
