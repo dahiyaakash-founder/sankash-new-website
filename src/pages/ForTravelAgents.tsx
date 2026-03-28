@@ -303,8 +303,8 @@ const ForTravelAgents = () => {
       <AssistantEntryPoint
         className="py-6 md:py-8"
         prompts={[
-          { label: "Ask about onboarding", link: "/for-travel-agents" },
-          { label: "Check if SanKash fits my business", link: "/solutions" },
+          { label: "Start agent onboarding", link: "/contact" },
+          { label: "See how it works", link: "/solutions" },
         ]}
       />
 
