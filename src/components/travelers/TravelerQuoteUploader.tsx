@@ -599,12 +599,12 @@ const TravelerQuoteUploader = () => {
                   maxLength={255}
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Our team will contact you with a detailed review and EMI options.
-              </p>
-              <Button type="submit" className="w-full gap-2">
-                Submit for detailed review <ArrowRight size={14} />
-              </Button>
+               <p className="text-[11px] text-muted-foreground">
+                 We will verify your details and share your detailed review.
+               </p>
+               <Button type="submit" className="w-full gap-2">
+                 Unlock detailed review <ArrowRight size={14} />
+               </Button>
             </form>
           )}
         </DialogContent>
