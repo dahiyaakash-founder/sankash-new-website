@@ -262,7 +262,9 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
             Get sandbox access or talk to our team about production integration.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Button size="lg" variant="secondary">Get Sandbox Access</Button>
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/contact">Get Sandbox Access</Link>
+            </Button>
             <Button size="lg" variant="ghost-dark" asChild>
               <Link to="/contact">Request Production Access</Link>
             </Button>

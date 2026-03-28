@@ -324,9 +324,11 @@ const ForTravelAgents = () => {
                 Agent Signup <ArrowRight size={18} />
               </Button>
             </Link>
-            <Button variant="ghost-dark" size="xl">
-              Agent Login
-            </Button>
+            <a href="https://partner.sankash.in" target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost-dark" size="xl">
+                Agent Login
+              </Button>
+            </a>
           </div>
         </div>
       </section>

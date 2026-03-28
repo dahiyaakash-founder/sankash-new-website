@@ -38,18 +38,18 @@ const nextSteps: Record<string, { icon: typeof Upload; label: string; link?: str
   ],
   agent: [
     { icon: FileText, label: "Review an itinerary", link: "/for-travel-agents" },
-    { icon: BookOpen, label: "Understand onboarding", link: "/for-travel-agents" },
-    { icon: LogIn, label: "Sign up / Login", href: "#" },
+    { icon: BookOpen, label: "Start agent onboarding", link: "/for-travel-agents" },
+    { icon: LogIn, label: "Agent login", href: "https://partner.sankash.in" },
   ],
   integrations: [
     { icon: BookOpen, label: "View documentation", link: "/developers" },
     { icon: Code, label: "Get sandbox access", link: "/developers" },
-    { icon: ExternalLink, label: "Request production access", link: "/developers" },
+    { icon: ExternalLink, label: "Request production access", link: "/contact" },
   ],
   support: [
-    { icon: LogIn, label: "Existing partner login", href: "#" },
+    { icon: LogIn, label: "Existing partner login", href: "https://partner.sankash.in" },
     { icon: Mail, label: "Contact support", href: "mailto:support@sankash.in" },
-    { icon: FileText, label: "Continue with form", href: "#demo-form" },
+    { icon: FileText, label: "Leave a message", href: "#demo-form" },
   ],
 };
 
@@ -62,7 +62,7 @@ const routeLabels: Record<string, string> = {
 
 const promptStarters = [
   "I'm a travel agent, where do I start?",
-  "I want to understand EMI options",
+  "I want to understand No Cost EMI",
   "I need sandbox access",
   "I need help with an existing issue",
 ];
@@ -117,7 +117,7 @@ const SanKashAssistant = () => {
           transition={{ duration: 0.5 }}
           className="rounded-2xl border bg-card overflow-hidden"
         >
-          {/* Header — always visible */}
+          {/* Header */}
           <div className="px-8 pt-8 md:px-10 md:pt-10 text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
               <Sparkles size={12} />
@@ -131,7 +131,6 @@ const SanKashAssistant = () => {
           {/* State content */}
           <div className="px-8 pb-8 md:px-10 md:pb-10 pt-5">
             <AnimatePresence mode="wait">
-              {/* DEFAULT STATE */}
               {state === "default" && (
                 <motion.div
                   key="default"
@@ -166,13 +165,12 @@ const SanKashAssistant = () => {
                       onClick={() => setState("routing")}
                     >
                       <MessageSquare size={16} />
-                      Start a conversation
+                      See next steps
                     </Button>
                   </div>
                 </motion.div>
               )}
 
-              {/* ROUTING STATE */}
               {state === "routing" && (
                 <motion.div
                   key="routing"
@@ -215,7 +213,6 @@ const SanKashAssistant = () => {
                 </motion.div>
               )}
 
-              {/* NEXT-STEP STATE */}
               {state === "next-step" && route && (
                 <motion.div
                   key="next-step"
@@ -256,7 +253,7 @@ const SanKashAssistant = () => {
                         );
                       }
                       return (
-                        <a key={step.label} href={step.href} className="block">
+                        <a key={step.label} href={step.href} target={step.href?.startsWith("http") ? "_blank" : undefined} rel={step.href?.startsWith("http") ? "noopener noreferrer" : undefined} className="block">
                           {content}
                         </a>
                       );
