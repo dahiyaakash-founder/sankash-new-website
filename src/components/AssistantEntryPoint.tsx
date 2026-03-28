@@ -45,6 +45,13 @@ const AssistantEntryPoint = ({ prompts, className = "" }: AssistantEntryPointPro
                 </span>
               );
 
+              if (prompt.onClick) {
+                return (
+                  <button key={prompt.label} onClick={prompt.onClick}>
+                    {inner}
+                  </button>
+                );
+              }
               if (prompt.link) {
                 return (
                   <Link key={prompt.label} to={prompt.link}>
