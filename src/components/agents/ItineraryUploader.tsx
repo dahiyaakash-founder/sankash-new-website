@@ -65,10 +65,10 @@ const mediumConfidenceBullets = [
 ];
 
 const gatedInsights = [
-  { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · No Cost EMI eligible" },
-  { label: "Recommended protection products", detail: "Attach cancellation + medical + baggage cover" },
-  { label: "Settlement & collection plan", detail: "T+1 payout with auto-reconciliation" },
-  { label: "Full commercial review", detail: "Finance fit, protection fit, and payment options" },
+  { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · 6-month No Cost EMI" },
+  { label: "Protection products with revenue share", detail: "Cancellation + medical + baggage cover" },
+  { label: "Settlement & collection plan", detail: "T+1 payout · 1.5% PG waiver · auto-reconciliation" },
+  { label: "Full commercial activation plan", detail: "Finance fit, protection fit, and payment activation" },
 ];
 
 const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
