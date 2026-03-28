@@ -47,7 +47,7 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     {
       icon: TrendingDown,
       label: "This holiday quote can be optimised",
-      detail: "We may be able to improve this quote by up to 5%",
+      detail: "We have identified potential room for savings of up to 5%",
       hasBlurredValue: true,
     },
     {
@@ -64,8 +64,8 @@ function buildTravelerInsights(insurance: InsuranceInsight) {
     },
     {
       icon: Wallet,
-      label: "This booking is eligible for zero gateway charges",
-      detail: "Pay digitally without extra payment gateway charges, subject to applicable mode and offer terms",
+      label: "This booking may qualify for zero online payment charges",
+      detail: "Pay digitally without extra online payment charges, subject to payment mode and offer terms",
       hasBlurredValue: false,
     },
   ];
@@ -514,9 +514,9 @@ const TravelerQuoteUploader = () => {
                   <p className="font-heading font-bold text-sm text-foreground mb-1">
                    Unlock exact savings and EMI options
                   </p>
-                  <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                    Verify your mobile number with OTP to see exact savings, EMI breakdown, and next steps
-                  </p>
+                   <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
+                     Verify your mobile number to access exact savings, EMI options, and detailed trip recommendations
+                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
                     <Phone size={14} /> Unlock full review
                   </Button>
@@ -532,13 +532,13 @@ const TravelerQuoteUploader = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {leadSubmitted ? "Thanks!" : "Unlock your full review"}
-            </DialogTitle>
-            <DialogDescription>
-              {leadSubmitted
-                ? "Our team will contact you shortly with exact savings, EMI options, and a detailed review."
-                : "Share your details and our team will contact you with exact savings, EMI options, and a detailed review."}
-            </DialogDescription>
+               {leadSubmitted ? "Review request received" : "Unlock your full review"}
+             </DialogTitle>
+             <DialogDescription>
+               {leadSubmitted
+                 ? "Your details have been submitted successfully. We will now process your detailed review and share exact savings, EMI options, and next steps."
+                 : "Enter your details to unlock exact savings, EMI options, and a more detailed review of this holiday quote."}
+             </DialogDescription>
           </DialogHeader>
 
           {leadSubmitted ? (
@@ -547,8 +547,8 @@ const TravelerQuoteUploader = () => {
                 <CheckCircle2 size={24} className="text-brand-green" />
               </div>
               <p className="text-sm text-foreground font-medium text-center">
-                Thanks, our team will contact you shortly.
-              </p>
+                 Your detailed review request has been recorded.
+               </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -599,12 +599,12 @@ const TravelerQuoteUploader = () => {
                   maxLength={255}
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Our team will contact you with a detailed review and EMI options.
-              </p>
-              <Button type="submit" className="w-full gap-2">
-                Submit for detailed review <ArrowRight size={14} />
-              </Button>
+               <p className="text-[11px] text-muted-foreground">
+                 We will verify your details and share your detailed review.
+               </p>
+               <Button type="submit" className="w-full gap-2">
+                 Unlock detailed review <ArrowRight size={14} />
+               </Button>
             </form>
           )}
         </DialogContent>

@@ -52,8 +52,8 @@ function buildAgentInsights(insurance: InsuranceInsight) {
     },
     {
       icon: ClipboardCheck,
-      label: "This itinerary is ready for finance, protection, and payment activation",
-      detail: "Login to unlock detailed commercial recommendations",
+      label: "This itinerary is ready for commercial activation",
+      detail: "Login to unlock EMI fit, protection fit, and payment activation",
     },
   ];
 }
@@ -480,11 +480,11 @@ const ItineraryUploader = () => {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                 <Lock size={18} className="text-primary mb-2" />
-                <p className="font-heading font-bold text-sm text-foreground mb-1">
+                 <p className="font-heading font-bold text-sm text-foreground mb-1">
                    Unlock detailed commercial review
                  </p>
                  <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
-                   See EMI fit, insurance fit, and payment activation for this itinerary
+                   Login to access EMI fit, protection fit, and payment activation for this itinerary
                 </p>
                 <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="gap-1.5">
