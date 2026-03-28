@@ -81,6 +81,7 @@ const TravelerQuoteUploader = () => {
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
+  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
