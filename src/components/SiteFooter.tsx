@@ -43,13 +43,8 @@ const SiteFooter = () => {
       <div className="container py-14">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1 space-y-3">
-            <Link to="/" className="flex items-center gap-1.5" aria-label="SanKash home">
-              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center" aria-hidden="true">
-                <span className="text-primary-foreground font-heading font-bold text-xs">S</span>
-              </div>
-              <span className="text-lg font-heading font-bold text-primary-foreground tracking-tight">
-                SanKash
-              </span>
+            <Link to="/" className="flex items-center" aria-label="SanKash home">
+              <img src={sankashLogo} alt="SanKash logo" className="h-7 w-auto brightness-0 invert" />
             </Link>
             <p className="text-[13px] text-primary-foreground/40 leading-relaxed">
               Lending. Insurance. Payments.<br />Built for travel growth.
