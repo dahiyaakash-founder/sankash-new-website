@@ -1,3 +1,8 @@
+/**
+ * Audience-specific review logic.
+ * Agent outputs must remain sales-enabling and must not weaken the quote.
+ * Never say "your quote has room for reduction" or suggest lower pricing.
+ */
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -12,6 +17,10 @@ import {
   XCircle,
   HelpCircle,
   Info,
+  CreditCard,
+  Shield,
+  Wallet,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   validateFile,
@@ -23,39 +32,43 @@ import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
-/** Build 4 agent insight cards — card 2 is now insurance-aware */
+/** Agent-specific insight cards — commercial enablement, never quote-weakening */
 function buildAgentInsights(insurance: InsuranceInsight) {
   return [
     {
-      label: "No Cost EMI opportunity detected",
-      detail: "This quote may qualify for No Cost EMI at checkout",
+      icon: CreditCard,
+      label: "This itinerary may be eligible for No Cost EMI",
+      detail: "Offer EMI at checkout to increase conversion and ticket size",
     },
     {
+      icon: Shield,
       label: insurance.headline,
       detail: insurance.detail,
     },
     {
-      label: "Payment collection can be streamlined",
-      detail: "Settlement and reconciliation improvements available",
+      icon: Wallet,
+      label: "This itinerary may be eligible for zero charge payment collection",
+      detail: "Collect digitally and settle directly without adding PG friction",
     },
     {
-      label: "Itinerary may have room for optimisation",
-      detail: "Pricing and sourcing signals identified for review",
+      icon: ClipboardCheck,
+      label: "This itinerary may be worth a detailed commercial review",
+      detail: "Login to unlock finance fit, protection fit, and payment options",
     },
   ];
 }
 
 const mediumConfidenceBullets = [
   "Travel quote or itinerary detected",
-  "EMI options may be available",
-  "Our team can review this in more detail",
+  "No Cost EMI and protection options may be available",
+  "Login for a detailed commercial review",
 ];
 
 const gatedInsights = [
   { label: "No Cost EMI options & tenure breakdown", detail: "3 lender options · No Cost EMI eligible" },
-  { label: "Recommended protection products", detail: "Cancellation + medical + baggage" },
-  { label: "Competitiveness score vs. market", detail: "Partner-only benchmarking data" },
+  { label: "Recommended protection products", detail: "Attach cancellation + medical + baggage cover" },
   { label: "Settlement & collection plan", detail: "T+1 payout with auto-reconciliation" },
+  { label: "Full commercial review", detail: "Finance fit, protection fit, and payment options" },
 ];
 
 const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
@@ -171,7 +184,7 @@ const ItineraryUploader = () => {
                   Drop an itinerary, quote, or screenshot
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Get a first-pass review of financing, protection & collection opportunities
+                  See EMI, protection, and collection opportunities for this booking
                 </p>
               </div>
               <input
@@ -205,13 +218,13 @@ const ItineraryUploader = () => {
           >
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6">
               <FileText size={14} className="text-primary" />
-              {stage === "validating" ? "Checking Document" : "Reviewing Quote"}
+              {stage === "validating" ? "Checking Document" : "Reviewing Itinerary"}
             </div>
             <div className="flex flex-col items-center justify-center py-8 space-y-4">
               <Loader2 size={32} className="text-primary animate-spin" />
               <div className="text-center">
                 <p className="font-heading font-bold text-foreground">
-                  {stage === "validating" ? "Checking your document…" : "Running first-pass review…"}
+                  {stage === "validating" ? "Checking your document…" : "Running commercial review…"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 truncate max-w-[240px]">
                   {fileName}
@@ -311,7 +324,7 @@ const ItineraryUploader = () => {
           </motion.div>
         )}
 
-        {/* ── Medium Confidence Results ── */}
+        {/* ── Medium Confidence Results (Agent) ── */}
         {stage === "results-medium" && (
           <motion.div
             key="results-medium"
@@ -324,7 +337,7 @@ const ItineraryUploader = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 <FileText size={14} className="text-primary" />
-                Quote Detected
+                Commercial Review Preview
               </div>
               <button
                 onClick={reset}
@@ -345,10 +358,10 @@ const ItineraryUploader = () => {
             <div className="space-y-3">
               <div>
                 <p className="font-heading font-bold text-sm text-foreground mb-1">
-                  This looks like a holiday quote or itinerary
+                  This looks like a travel itinerary
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  We found enough travel signals to continue, but a detailed review may need our team to verify the file.
+                  We found travel signals and this itinerary may be eligible for EMI, protection, and payment collection options.
                 </p>
               </div>
 
@@ -371,17 +384,20 @@ const ItineraryUploader = () => {
             <div className="flex items-center gap-3 pt-1">
               <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
                 <Button size="sm" className="gap-1.5">
-                  Agent Login <ArrowRight size={14} />
+                  Login to unlock full review <ArrowRight size={14} />
                 </Button>
               </a>
               <Button variant="outline" size="sm" onClick={reset}>
                 Upload another file
               </Button>
             </div>
+            <p className="text-[10px] text-muted-foreground/60 px-1">
+              See finance fit, protection fit, and payment collection options for this itinerary
+            </p>
           </motion.div>
         )}
 
-        {/* ── High Confidence Results ── */}
+        {/* ── High Confidence Results (Agent) ── */}
         {stage === "results-high" && (
           <motion.div
             key="results-high"
@@ -394,7 +410,7 @@ const ItineraryUploader = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 <FileText size={14} className="text-primary" />
-                Initial Review
+                Commercial Review Preview
               </div>
               <button
                 onClick={reset}
@@ -412,36 +428,39 @@ const ItineraryUploader = () => {
               </span>
             </div>
 
-            {/* What we found */}
+            {/* What we found — agent commercial cards */}
             <div className="space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                What We Found
+                Opportunities Identified
               </p>
-              {buildAgentInsights(insuranceInsight ?? { headline: "Protection products may be relevant", detail: "Trip type and duration suggest coverage add-ons" }).map((insight, i) => (
-                <motion.div
-                  key={insight.label}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.12, duration: 0.3 }}
-                  className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
-                >
-                  <CheckCircle2 size={15} className="text-brand-green shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">{insight.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
-                  </div>
-                </motion.div>
-              ))}
+              {buildAgentInsights(insuranceInsight ?? { headline: "Protection products may be relevant", detail: "Attach travel protection to increase ancillary revenue on this itinerary" }).map((insight, i) => {
+                const Icon = insight.icon;
+                return (
+                  <motion.div
+                    key={insight.label}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.12, duration: 0.3 }}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                  >
+                    <Icon size={15} className="text-primary shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{insight.label}</p>
+                      <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
               <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                This is a first-pass review. A detailed review can confirm pricing, financing fit, and specific recommendations.
+                This is a preview. Login to access the full commercial review with detailed recommendations.
               </p>
             </div>
 
-            {/* Unlock detailed review */}
+            {/* Unlock detailed review — behind agent login */}
             <div className="relative">
               <div className="space-y-2">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Unlock Detailed Review
+                  Full Commercial Review
                 </p>
                 <div className="space-y-2 select-none" style={{ filter: "blur(4px)" }} aria-hidden>
                   {gatedInsights.map((item) => (
@@ -462,10 +481,10 @@ const ItineraryUploader = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
                 <Lock size={18} className="text-primary mb-2" />
                 <p className="font-heading font-bold text-sm text-foreground mb-1">
-                  Get your detailed review
+                  Login to unlock full review
                 </p>
-                <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[220px]">
-                  Sign in to access full recommendations, EMI options, and coverage analysis
+                <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
+                  See finance fit, protection fit, and payment collection options for this itinerary
                 </p>
                 <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="gap-1.5">
