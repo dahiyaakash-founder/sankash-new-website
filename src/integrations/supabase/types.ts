@@ -1,0 +1,314 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.4"
+  }
+  public: {
+    Tables: {
+      leads: {
+        Row: {
+          assigned_to: string | null
+          audience_type: Database["public"]["Enums"]["audience_type"] | null
+          city: string | null
+          company_name: string | null
+          created_at: string
+          destination_type: string | null
+          email: string | null
+          emi_flag: boolean | null
+          full_name: string
+          id: string
+          insurance_flag: boolean | null
+          lead_source_page: string | null
+          lead_source_type:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message: string | null
+          metadata_json: Json | null
+          mobile_number: string | null
+          next_follow_up_at: string | null
+          notes: string | null
+          outcome: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag: boolean | null
+          quote_file_name: string | null
+          quote_file_url: string | null
+          quote_validation_status: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          destination_type?: string | null
+          email?: string | null
+          emi_flag?: boolean | null
+          full_name: string
+          id?: string
+          insurance_flag?: boolean | null
+          lead_source_page?: string | null
+          lead_source_type?:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message?: string | null
+          metadata_json?: Json | null
+          mobile_number?: string | null
+          next_follow_up_at?: string | null
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag?: boolean | null
+          quote_file_name?: string | null
+          quote_file_url?: string | null
+          quote_validation_status?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          destination_type?: string | null
+          email?: string | null
+          emi_flag?: boolean | null
+          full_name?: string
+          id?: string
+          insurance_flag?: boolean | null
+          lead_source_page?: string | null
+          lead_source_type?:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message?: string | null
+          metadata_json?: Json | null
+          mobile_number?: string | null
+          next_follow_up_at?: string | null
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag?: boolean | null
+          quote_file_name?: string | null
+          quote_file_url?: string | null
+          quote_validation_status?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      app_role: "admin" | "team_member"
+      audience_type: "traveler" | "agent" | "developer" | "partner" | "other"
+      lead_outcome: "open" | "won" | "lost"
+      lead_source_type:
+        | "contact_form"
+        | "traveler_quote_unlock"
+        | "agent_quote_review"
+        | "sandbox_access_request"
+        | "production_access_request"
+        | "demo_request"
+        | "support_request"
+        | "integration_query"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "waiting_for_customer"
+        | "demo_scheduled"
+        | "sandbox_issued"
+        | "production_review"
+        | "converted"
+        | "closed_lost"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "team_member"],
+      audience_type: ["traveler", "agent", "developer", "partner", "other"],
+      lead_outcome: ["open", "won", "lost"],
+      lead_source_type: [
+        "contact_form",
+        "traveler_quote_unlock",
+        "agent_quote_review",
+        "sandbox_access_request",
+        "production_access_request",
+        "demo_request",
+        "support_request",
+        "integration_query",
+      ],
+      lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "waiting_for_customer",
+        "demo_scheduled",
+        "sandbox_issued",
+        "production_review",
+        "converted",
+        "closed_lost",
+      ],
+    },
+  },
+} as const

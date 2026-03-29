@@ -29,21 +29,20 @@ interface ProductionLeadPayload {
 }
 
 /**
- * TODO: Replace with actual backend endpoint.
- * Connect to SanKash lead capture API or CRM webhook.
- * Expected endpoint: POST /api/leads or equivalent.
- * Payload schema: ProductionLeadPayload
- * 
- * After integration, this is where lead status tracking should begin.
- * Initial status: "New"
+ * Submits production lead to Supabase leads table.
  */
 async function submitProductionLead(payload: ProductionLeadPayload): Promise<void> {
-  // --- BACKEND INTEGRATION POINT ---
-  // Replace with: await fetch('https://api.sankash.in/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  // --- CRM INTEGRATION POINT ---
-  // Attach CRM webhook or database insert here.
-  console.log("[SanKash Lead Capture] Production access request:", payload);
-  await new Promise((r) => setTimeout(r, 600));
+  const { createLead } = await import("@/lib/leads-service");
+  await createLead({
+    full_name: payload.fullName,
+    email: payload.workEmail,
+    company_name: payload.companyName,
+    message: payload.useCase,
+    lead_source_page: payload.sourcePage,
+    lead_source_type: "production_access_request",
+    audience_type: "developer",
+    metadata_json: { apiGoingLive: payload.apiGoingLive, sandboxStatus: payload.sandboxStatus, timeline: payload.timeline },
+  });
 }
 
 const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProps) => {
