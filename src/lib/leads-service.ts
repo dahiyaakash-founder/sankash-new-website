@@ -49,12 +49,15 @@ export async function fetchLeads(opts: {
   sourceType?: LeadSourceType;
   audience?: AudienceType;
   priority?: LeadPriority;
+  assignedTo?: string;
+  unassigned?: boolean;
+  overdueFollowUp?: boolean;
   page?: number;
   pageSize?: number;
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
 
