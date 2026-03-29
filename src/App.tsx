@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import OpsLogin from "./pages/ops/OpsLogin";
+import OpsSetup from "./pages/ops/OpsSetup";
 import OpsDashboard from "./pages/ops/OpsDashboard";
 import OpsLeads from "./pages/ops/OpsLeads";
 import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
