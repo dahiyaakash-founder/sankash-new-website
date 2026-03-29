@@ -20,10 +20,10 @@ const fade = {
 };
 
 const gettingStartedSteps = [
-  { num: "01", label: "Explore the docs", desc: "Browse the full API reference, request and response examples, and integration guides — no account needed." },
-  { num: "02", label: "Get sandbox credentials", desc: "Sign up for test credentials instantly. Use them to explore endpoints in a safe sandbox environment." },
-  { num: "03", label: "Build and test", desc: "Integrate SanKash APIs into your platform using sandbox mode. Test quotes, payments, and workflows with sample data." },
-  { num: "04", label: "Request production approval", desc: "When you're ready, request production credentials. Our team reviews and approves within 2 business days." },
+  { num: "01", label: "Explore the docs", desc: "Browse the full API reference, request and response examples, and integration guides — no account needed.", action: "docs" as const },
+  { num: "02", label: "Request sandbox access", desc: "Request test credentials to explore SanKash APIs in a sandbox environment.", action: "sandbox" as const },
+  { num: "03", label: "Build and test", desc: "Integrate SanKash APIs into your platform using sandbox mode. Test quotes, payments, and workflows with sample data.", action: "docs" as const },
+  { num: "04", label: "Request production access", desc: "Once testing is complete, request production access for review and go-live.", action: "production" as const },
 ];
 
 const lendingEndpoints = [
