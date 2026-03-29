@@ -14,6 +14,27 @@ type AudienceType = Database["public"]["Enums"]["audience_type"];
 
 export type { LeadRow, LeadInsert, LeadUpdate, LeadStatus, LeadSourceType, AudienceType };
 
+// Extended types for new tables (not yet in auto-generated types)
+export interface LeadNote {
+  id: string;
+  lead_id: string;
+  note_text: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface LeadStatusHistoryEntry {
+  id: string;
+  lead_id: string;
+  old_status: string | null;
+  new_status: string;
+  changed_by: string;
+  changed_at: string;
+}
+
+export type LeadPriority = "low" | "medium" | "high" | "urgent";
+export type LeadStage = "new" | "reviewed" | "contacted" | "qualified" | "follow_up_scheduled" | "in_progress" | "won" | "lost" | "archived";
+
 /** Insert a lead from a public website form (anon) */
 export async function createLead(lead: LeadInsert) {
   const { data, error } = await supabase.from("leads").insert(lead).select().single();
@@ -27,12 +48,13 @@ export async function fetchLeads(opts: {
   status?: LeadStatus;
   sourceType?: LeadSourceType;
   audience?: AudienceType;
+  priority?: LeadPriority;
   page?: number;
   pageSize?: number;
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
 
@@ -42,6 +64,7 @@ export async function fetchLeads(opts: {
   if (status) query = query.eq("status", status);
   if (sourceType) query = query.eq("lead_source_type", sourceType);
   if (audience) query = query.eq("audience_type", audience);
+  if (priority) query = query.eq("priority" as any, priority);
 
   query = query.order(sortBy, { ascending: sortAsc });
   query = query.range((page - 1) * pageSize, page * pageSize - 1);
@@ -93,6 +116,70 @@ export async function fetchLeadKPIs() {
   };
 }
 
+/** Fetch leads grouped by source for dashboard chart */
+export async function fetchLeadsBySource() {
+  const { data, error } = await supabase.from("leads").select("lead_source_type");
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  (data ?? []).forEach((r: any) => {
+    const src = r.lead_source_type ?? "unknown";
+    counts[src] = (counts[src] ?? 0) + 1;
+  });
+  return counts;
+}
+
+/** Fetch leads grouped by status */
+export async function fetchLeadsByStatus() {
+  const { data, error } = await supabase.from("leads").select("status");
+  if (error) throw error;
+  const counts: Record<string, number> = {};
+  (data ?? []).forEach((r: any) => {
+    counts[r.status] = (counts[r.status] ?? 0) + 1;
+  });
+  return counts;
+}
+
+// ── Lead Notes ──
+
+export async function fetchLeadNotes(leadId: string): Promise<LeadNote[]> {
+  const { data, error } = await supabase
+    .from("lead_notes" as any)
+    .select("*")
+    .eq("lead_id", leadId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as LeadNote[];
+}
+
+export async function addLeadNote(leadId: string, noteText: string, userId: string): Promise<LeadNote> {
+  const { data, error } = await supabase
+    .from("lead_notes" as any)
+    .insert({ lead_id: leadId, note_text: noteText, created_by: userId } as any)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as unknown as LeadNote;
+}
+
+// ── Lead Status History ──
+
+export async function fetchLeadHistory(leadId: string): Promise<LeadStatusHistoryEntry[]> {
+  const { data, error } = await supabase
+    .from("lead_status_history" as any)
+    .select("*")
+    .eq("lead_id", leadId)
+    .order("changed_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as LeadStatusHistoryEntry[];
+}
+
+export async function addStatusHistory(leadId: string, oldStatus: string | null, newStatus: string, userId: string) {
+  const { error } = await supabase
+    .from("lead_status_history" as any)
+    .insert({ lead_id: leadId, old_status: oldStatus, new_status: newStatus, changed_by: userId } as any);
+  if (error) throw error;
+}
+
 /** Upload a quote file to storage */
 export async function uploadQuoteFile(file: File) {
   const ext = file.name.split(".").pop();
@@ -107,14 +194,22 @@ export async function uploadQuoteFile(file: File) {
 export function leadsToCSV(leads: LeadRow[]): string {
   const headers = [
     "ID", "Created", "Name", "Email", "Mobile", "Company", "City",
-    "Source Page", "Source Type", "Audience", "Status", "Outcome",
+    "Source Page", "Source Type", "Audience", "Status", "Stage", "Priority", "Outcome",
     "Assigned To", "Next Follow Up", "Notes", "Message",
   ];
-  const rows = leads.map((l) => [
+  const rows = leads.map((l: any) => [
     l.id, l.created_at, l.full_name, l.email ?? "", l.mobile_number ?? "",
     l.company_name ?? "", l.city ?? "", l.lead_source_page ?? "",
-    l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.outcome,
+    l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.stage ?? "", l.priority ?? "", l.outcome,
     l.assigned_to ?? "", l.next_follow_up_at ?? "", l.notes ?? "", l.message ?? "",
   ]);
   return [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+}
+
+// ── Team / User Roles ──
+
+export async function fetchTeamMembers() {
+  const { data, error } = await supabase.from("user_roles").select("*");
+  if (error) throw error;
+  return data ?? [];
 }

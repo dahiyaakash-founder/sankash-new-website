@@ -2,11 +2,12 @@ import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Shield } from "lucide-react";
 
 const navItems = [
   { to: "/ops/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/ops/leads", label: "Leads", icon: Users },
+  { to: "/ops/team", label: "Team", icon: Shield },
 ];
 
 const OpsLayout = ({ children }: { children: ReactNode }) => {

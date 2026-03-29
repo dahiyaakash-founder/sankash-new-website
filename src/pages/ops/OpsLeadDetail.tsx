@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
-import { fetchLead, updateLead, type LeadRow, type LeadStatus } from "@/lib/leads-service";
+import {
+  fetchLead, updateLead, fetchLeadNotes, addLeadNote, fetchLeadHistory, addStatusHistory,
+  type LeadRow, type LeadStatus, type LeadNote, type LeadStatusHistoryEntry, type LeadPriority,
+} from "@/lib/leads-service";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, ExternalLink, FileText, Clock, MessageSquare, History, Send } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -28,50 +32,125 @@ const OUTCOME_OPTIONS = [
   { value: "lost", label: "Lost" },
 ];
 
+const PRIORITY_OPTIONS: { value: LeadPriority; label: string }[] = [
+  { value: "urgent", label: "Urgent" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
+const statusColors: Record<string, string> = {
+  new: "bg-blue-100 text-blue-800",
+  contacted: "bg-yellow-100 text-yellow-800",
+  qualified: "bg-green-100 text-green-800",
+  waiting_for_customer: "bg-orange-100 text-orange-800",
+  converted: "bg-emerald-100 text-emerald-800",
+  closed_lost: "bg-red-100 text-red-800",
+};
+
 const OpsLeadDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [lead, setLead] = useState<LeadRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string>("");
   const [outcome, setOutcome] = useState<string>("");
+  const [priority, setPriority] = useState<string>("medium");
   const [notes, setNotes] = useState("");
   const [followUp, setFollowUp] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
 
-  useEffect(() => {
+  // Notes & History
+  const [leadNotes, setLeadNotes] = useState<LeadNote[]>([]);
+  const [history, setHistory] = useState<LeadStatusHistoryEntry[]>([]);
+  const [newNote, setNewNote] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
+  const [activeTab, setActiveTab] = useState<"notes" | "history">("notes");
+
+  const loadLead = useCallback(async () => {
     if (!id) return;
-    fetchLead(id).then((l) => {
+    try {
+      const l = await fetchLead(id);
       setLead(l);
       setStatus(l.status);
       setOutcome(l.outcome);
+      setPriority((l as any).priority ?? "medium");
       setNotes(l.notes ?? "");
       setFollowUp(l.next_follow_up_at ? l.next_follow_up_at.split("T")[0] : "");
-      setAssignedTo(l.assigned_to ?? "");
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    } catch {
+      // handle error
+    }
+    setLoading(false);
   }, [id]);
 
-  const handleSave = async () => {
+  const loadNotesAndHistory = useCallback(async () => {
     if (!id) return;
+    try {
+      const [n, h] = await Promise.all([fetchLeadNotes(id), fetchLeadHistory(id)]);
+      setLeadNotes(n);
+      setHistory(h);
+    } catch {
+      // fail silently
+    }
+  }, [id]);
+
+  useEffect(() => { loadLead(); loadNotesAndHistory(); }, [loadLead, loadNotesAndHistory]);
+
+  const handleSave = async () => {
+    if (!id || !lead) return;
     setSaving(true);
     try {
-      const updated = await updateLead(id, {
+      // Track status change
+      if (status !== lead.status && user) {
+        await addStatusHistory(id, lead.status, status, user.id);
+      }
+
+      const updates: any = {
         status: status as LeadStatus,
         outcome: outcome as "open" | "won" | "lost",
+        priority,
         notes,
         next_follow_up_at: followUp ? new Date(followUp).toISOString() : null,
-      });
+      };
+
+      if (status === "converted" || outcome === "won") {
+        updates.closed_at = new Date().toISOString();
+      }
+      if (status === "closed_lost" || outcome === "lost") {
+        updates.closed_at = new Date().toISOString();
+      }
+      if (status === "contacted" && lead.status === "new") {
+        updates.last_contacted_at = new Date().toISOString();
+      }
+
+      const updated = await updateLead(id, updates);
       setLead(updated as LeadRow);
       toast.success("Lead updated");
+      loadNotesAndHistory();
     } catch (e: any) {
       toast.error(e.message ?? "Failed to update");
     }
     setSaving(false);
   };
 
+  const handleAddNote = async () => {
+    if (!id || !user || !newNote.trim()) return;
+    setAddingNote(true);
+    try {
+      await addLeadNote(id, newNote.trim(), user.id);
+      setNewNote("");
+      await loadNotesAndHistory();
+      toast.success("Note added");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to add note");
+    }
+    setAddingNote(false);
+  };
+
   if (loading) return <OpsLayout><div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={28} /></div></OpsLayout>;
   if (!lead) return <OpsLayout><div className="py-20 text-center text-muted-foreground">Lead not found</div></OpsLayout>;
+
+  const leadAny = lead as any;
 
   const infoRows = [
     { label: "Full name", value: lead.full_name },
@@ -83,27 +162,37 @@ const OpsLeadDetail = () => {
     { label: "Source type", value: lead.lead_source_type?.replace(/_/g, " ") },
     { label: "Audience", value: lead.audience_type },
     { label: "Destination", value: lead.destination_type },
+    { label: "Trip type", value: leadAny.detected_trip_type },
+    { label: "Quote amount", value: leadAny.quote_amount ? `₹${Number(leadAny.quote_amount).toLocaleString()}` : null },
     { label: "EMI flag", value: lead.emi_flag ? "Yes" : "No" },
+    { label: "EMI tenure", value: leadAny.emi_tenure },
     { label: "Insurance flag", value: lead.insurance_flag ? "Yes" : "No" },
     { label: "PG flag", value: lead.pg_flag ? "Yes" : "No" },
     { label: "Validation status", value: lead.quote_validation_status },
+    { label: "Website", value: leadAny.website_url },
     { label: "Created", value: format(new Date(lead.created_at), "dd MMM yyyy, HH:mm") },
     { label: "Updated", value: format(new Date(lead.updated_at), "dd MMM yyyy, HH:mm") },
+    { label: "Last contacted", value: leadAny.last_contacted_at ? format(new Date(leadAny.last_contacted_at), "dd MMM yyyy") : null },
+    { label: "Closed at", value: leadAny.closed_at ? format(new Date(leadAny.closed_at), "dd MMM yyyy") : null },
   ];
 
   return (
     <OpsLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6 max-w-5xl">
         <div className="flex items-center gap-3">
           <Link to="/ops/leads">
             <Button variant="ghost" size="sm" className="gap-1.5 text-xs"><ArrowLeft size={14} /> Back</Button>
           </Link>
           <h1 className="text-lg font-heading font-bold">{lead.full_name}</h1>
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[lead.status] ?? "bg-muted text-muted-foreground"}`}>
+            {lead.status.replace(/_/g, " ")}
+          </span>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Info panel */}
+          {/* Left: Info + Notes */}
           <div className="lg:col-span-2 space-y-4">
+            {/* Submission details */}
             <div className="border rounded-xl bg-card p-5 space-y-3">
               <h2 className="text-sm font-heading font-semibold">Submission details</h2>
               <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
@@ -143,9 +232,82 @@ const OpsLeadDetail = () => {
                 </pre>
               </div>
             )}
+
+            {/* Notes & History tabs */}
+            <div className="border rounded-xl bg-card overflow-hidden">
+              <div className="flex border-b">
+                <button
+                  onClick={() => setActiveTab("notes")}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === "notes" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <MessageSquare size={13} /> Notes ({leadNotes.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("history")}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === "history" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <History size={13} /> Status History ({history.length})
+                </button>
+              </div>
+
+              <div className="p-4">
+                {activeTab === "notes" && (
+                  <div className="space-y-3">
+                    {/* Add note */}
+                    <div className="flex gap-2">
+                      <Textarea
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
+                        placeholder="Add an internal note…"
+                        rows={2}
+                        className="text-sm flex-1 min-h-[60px]"
+                      />
+                      <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()} className="self-end gap-1">
+                        {addingNote ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                      </Button>
+                    </div>
+                    {/* Notes list */}
+                    {leadNotes.length === 0 && <p className="text-xs text-muted-foreground py-2">No notes yet</p>}
+                    {leadNotes.map((note) => (
+                      <div key={note.id} className="bg-muted/50 rounded-lg p-3 space-y-1">
+                        <p className="text-sm whitespace-pre-wrap">{note.note_text}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {format(new Date(note.created_at), "dd MMM yyyy, HH:mm")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === "history" && (
+                  <div className="space-y-2">
+                    {history.length === 0 && <p className="text-xs text-muted-foreground py-2">No status changes recorded</p>}
+                    {history.map((entry) => (
+                      <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
+                        <Clock size={12} className="text-muted-foreground shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-xs">
+                            <span className={`font-semibold px-1.5 py-0.5 rounded ${statusColors[entry.old_status ?? ""] ?? "bg-muted text-muted-foreground"}`}>
+                              {entry.old_status?.replace(/_/g, " ") ?? "—"}
+                            </span>
+                            <span className="mx-1.5 text-muted-foreground">→</span>
+                            <span className={`font-semibold px-1.5 py-0.5 rounded ${statusColors[entry.new_status] ?? "bg-muted text-muted-foreground"}`}>
+                              {entry.new_status.replace(/_/g, " ")}
+                            </span>
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                          {format(new Date(entry.changed_at), "dd MMM, HH:mm")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Action panel */}
+          {/* Right: Action panel */}
           <div className="space-y-4">
             <div className="border rounded-xl bg-card p-5 space-y-4">
               <h2 className="text-sm font-heading font-semibold">Update lead</h2>
@@ -168,17 +330,46 @@ const OpsLeadDetail = () => {
                 </Select>
               </div>
               <div className="space-y-1.5">
+                <label className="text-xs text-muted-foreground">Priority</label>
+                <Select value={priority} onValueChange={setPriority}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRIORITY_OPTIONS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Next follow-up</label>
                 <Input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} className="h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground">Internal notes</label>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="text-sm" placeholder="Add notes…" />
+                <label className="text-xs text-muted-foreground">Internal notes (summary)</label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="text-sm" placeholder="Quick summary…" />
               </div>
               <Button onClick={handleSave} className="w-full" disabled={saving}>
                 {saving ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
                 Save changes
               </Button>
+            </div>
+
+            {/* Quick info card */}
+            <div className="border rounded-xl bg-card p-4 space-y-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Source</p>
+              <span className="text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full capitalize">
+                {lead.lead_source_type?.replace(/_/g, " ") ?? "—"}
+              </span>
+              {lead.next_follow_up_at && (
+                <div className="pt-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Follow-up</p>
+                  <p className="text-xs font-medium flex items-center gap-1.5 mt-0.5">
+                    <Clock size={12} className={new Date(lead.next_follow_up_at) < new Date() ? "text-amber-500" : "text-muted-foreground"} />
+                    {format(new Date(lead.next_follow_up_at), "dd MMM yyyy")}
+                    {new Date(lead.next_follow_up_at) < new Date() && (
+                      <span className="text-[10px] text-amber-600 font-semibold">OVERDUE</span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
