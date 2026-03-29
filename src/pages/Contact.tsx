@@ -266,6 +266,7 @@ const Contact = () => {
                 </div>
               ) : (
                 <form
+                  ref={formRef}
                   onSubmit={handleSubmit}
                   className="p-8 rounded-2xl border bg-card space-y-5"
                 >
@@ -279,51 +280,27 @@ const Contact = () => {
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+                      <label className="block text-xs font-medium mb-1.5">Full Name</label>
+                      <input name="fullName" type="text" required className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">
-                        Work Email
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+                      <label className="block text-xs font-medium mb-1.5">Work Email</label>
+                      <input name="email" type="email" required className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+                      <label className="block text-xs font-medium mb-1.5">Phone</label>
+                      <input name="phone" type="tel" className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1.5">
-                        Company
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
+                      <label className="block text-xs font-medium mb-1.5">Company</label>
+                      <input name="company" type="text" className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1.5">
-                      I am a...
-                    </label>
-                    <select className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    <label className="block text-xs font-medium mb-1.5">I am a...</label>
+                    <select name="audience" className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                       <option>Travel Agent / OTA</option>
                       <option>Distribution Partner</option>
                       <option>Developer / Integration Partner</option>
@@ -332,13 +309,8 @@ const Contact = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1.5">
-                      Message
-                    </label>
-                    <textarea
-                      rows={3}
-                      className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                    />
+                    <label className="block text-xs font-medium mb-1.5">Message</label>
+                    <textarea name="message" rows={3} className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                   </div>
                   <Button type="submit" size="lg" className="w-full gap-2">
                     Submit <ArrowRight size={16} />
