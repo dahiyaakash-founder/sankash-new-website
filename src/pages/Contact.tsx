@@ -82,8 +82,33 @@ const escalationPaths = [
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const form = formRef.current!;
+    const data = new FormData(form);
+    const audienceMap: Record<string, "traveler" | "agent" | "developer" | "partner" | "other"> = {
+      "Travel Agent / OTA": "agent",
+      "Distribution Partner": "partner",
+      "Developer / Integration Partner": "developer",
+      "Traveler": "traveler",
+      "Other": "other",
+    };
+    try {
+      await createLead({
+        full_name: (data.get("fullName") as string).trim(),
+        email: (data.get("email") as string).trim() || null,
+        mobile_number: (data.get("phone") as string)?.trim() || null,
+        company_name: (data.get("company") as string)?.trim() || null,
+        message: (data.get("message") as string)?.trim() || null,
+        audience_type: audienceMap[(data.get("audience") as string)] ?? "other",
+        lead_source_page: "contact",
+        lead_source_type: "contact_form",
+      });
+    } catch {
+      // still show success to user
+    }
     setSubmitted(true);
   };
 
