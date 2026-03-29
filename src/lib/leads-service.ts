@@ -49,12 +49,15 @@ export async function fetchLeads(opts: {
   sourceType?: LeadSourceType;
   audience?: AudienceType;
   priority?: LeadPriority;
+  assignedTo?: string;
+  unassigned?: boolean;
+  overdueFollowUp?: boolean;
   page?: number;
   pageSize?: number;
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
 
@@ -65,6 +68,11 @@ export async function fetchLeads(opts: {
   if (sourceType) query = query.eq("lead_source_type", sourceType);
   if (audience) query = query.eq("audience_type", audience);
   if (priority) query = query.filter("priority", "eq", priority);
+  if (assignedTo) query = query.eq("assigned_to", assignedTo);
+  if (unassigned) query = query.is("assigned_to", null);
+  if (overdueFollowUp) {
+    query = query.not("next_follow_up_at", "is", null).lte("next_follow_up_at", new Date().toISOString());
+  }
 
   query = query.order(sortBy, { ascending: sortAsc });
   query = query.range((page - 1) * pageSize, page * pageSize - 1);
