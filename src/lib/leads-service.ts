@@ -64,7 +64,7 @@ export async function fetchLeads(opts: {
   if (status) query = query.eq("status", status);
   if (sourceType) query = query.eq("lead_source_type", sourceType);
   if (audience) query = query.eq("audience_type", audience);
-  if (priority) query = query.eq("priority" as any, priority);
+  if (priority) query = query.filter("priority", "eq", priority);
 
   query = query.order(sortBy, { ascending: sortAsc });
   query = query.range((page - 1) * pageSize, page * pageSize - 1);

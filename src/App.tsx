@@ -20,6 +20,7 @@ import OpsLogin from "./pages/ops/OpsLogin";
 import OpsDashboard from "./pages/ops/OpsDashboard";
 import OpsLeads from "./pages/ops/OpsLeads";
 import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
+import OpsTeamManagement from "./pages/ops/OpsTeamManagement";
 import ProtectedOpsRoute from "./components/ops/ProtectedOpsRoute";
 
 const queryClient = new QueryClient();
