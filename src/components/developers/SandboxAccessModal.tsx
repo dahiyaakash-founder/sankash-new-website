@@ -6,91 +6,144 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
+import { SANKASH_DOCS_URL } from "@/lib/constants";
 
 interface SandboxAccessModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+// Lead payload structure for CRM / backend integration
+// Status lifecycle: New → Contacted → Sandbox Shared → Integration In Progress → Live → Lost
+interface SandboxLeadPayload {
+  fullName: string;
+  workEmail: string;
+  companyName: string;
+  apiNeeded: string;
+  useCase: string;
+  sourcePage: "integrations";
+  sourceCTA: "sandbox_access";
+  leadType: "sandbox_request";
+  createdAt: string;
+}
+
+/**
+ * TODO: Replace with actual backend endpoint.
+ * Connect to SanKash lead capture API or CRM webhook.
+ * Expected endpoint: POST /api/leads or equivalent.
+ * Payload schema: SandboxLeadPayload
+ */
+async function submitSandboxLead(payload: SandboxLeadPayload): Promise<void> {
+  // --- BACKEND INTEGRATION POINT ---
+  // Replace this with: await fetch('https://api.sankash.in/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  console.log("[SanKash Lead Capture] Sandbox access request:", payload);
+  await new Promise((r) => setTimeout(r, 600));
+}
+
 const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [apiNeeded, setApiNeeded] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    const payload: SandboxLeadPayload = {
+      fullName: (data.get("fullName") as string).trim(),
+      workEmail: (data.get("workEmail") as string).trim(),
+      companyName: (data.get("companyName") as string).trim(),
+      apiNeeded,
+      useCase: (data.get("useCase") as string).trim(),
+      sourcePage: "integrations",
+      sourceCTA: "sandbox_access",
+      leadType: "sandbox_request",
+      createdAt: new Date().toISOString(),
+    };
+
+    setSubmitting(true);
+    try {
+      await submitSandboxLead(payload);
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setSubmitted(false);
+    setApiNeeded("");
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         {submitted ? (
-          <div className="text-center py-6 space-y-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <CheckCircle2 size={24} className="text-primary" />
+          <div className="text-center py-4 space-y-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CheckCircle2 size={20} className="text-primary" />
             </div>
             <DialogHeader className="sm:text-center">
-              <DialogTitle className="text-xl font-heading">Sandbox request received</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-2">
-                Our team will review your request and share sandbox access details on your work email.
+              <DialogTitle className="text-lg font-heading">Request received</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1.5">
+                Our team will review your request and share sandbox credentials shortly.
               </DialogDescription>
             </DialogHeader>
-            <Button onClick={handleClose} variant="outline" className="mt-4">Close</Button>
+            <p className="text-xs text-muted-foreground">
+              You can also{" "}
+              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+                explore the public docs
+              </a>{" "}
+              while we review your request.
+            </p>
+            <Button onClick={handleClose} variant="outline" size="sm" className="mt-2">Close</Button>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-xl font-heading">Request sandbox access</DialogTitle>
+              <DialogTitle className="text-lg font-heading">Request sandbox access</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                Get test credentials to explore SanKash APIs and checkout flows in a sandbox environment.
+                Get test credentials for SanKash APIs.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="sb-name">Full Name</Label>
-                  <Input id="sb-name" required placeholder="Your name" />
+            <form onSubmit={handleSubmit} className="space-y-3 mt-1">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="sb-name" className="text-xs">Full Name</Label>
+                  <Input id="sb-name" name="fullName" required placeholder="Your name" className="h-9 text-sm" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="sb-company">Company Name</Label>
-                  <Input id="sb-company" required placeholder="Company" />
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="sb-email">Work Email</Label>
-                  <Input id="sb-email" type="email" required placeholder="you@company.com" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="sb-phone">Phone Number</Label>
-                  <Input id="sb-phone" type="tel" required placeholder="+91 98765 43210" />
+                <div className="space-y-1">
+                  <Label htmlFor="sb-email" className="text-xs">Work Email</Label>
+                  <Input id="sb-email" name="workEmail" type="email" required placeholder="you@company.com" className="h-9 text-sm" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>I want access to</Label>
-                <Select required>
-                  <SelectTrigger><SelectValue placeholder="Select API" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lending">Lending API</SelectItem>
-                    <SelectItem value="insurance">Insurance API</SelectItem>
-                    <SelectItem value="payments">Payments API</SelectItem>
-                    <SelectItem value="multiple">Multiple APIs</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="sb-company" className="text-xs">Company Name</Label>
+                  <Input id="sb-company" name="companyName" required placeholder="Company" className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">API Needed</Label>
+                  <Select required value={apiNeeded} onValueChange={setApiNeeded}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select API" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lending">Lending API</SelectItem>
+                      <SelectItem value="insurance">Insurance API</SelectItem>
+                      <SelectItem value="payments">Payments API</SelectItem>
+                      <SelectItem value="multiple">Multiple APIs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="sb-usecase">Use case / integration note</Label>
-                <Textarea id="sb-usecase" required placeholder="Describe what you plan to build or test" rows={3} />
+              <div className="space-y-1">
+                <Label htmlFor="sb-usecase" className="text-xs">Use Case</Label>
+                <Textarea id="sb-usecase" name="useCase" required placeholder="What you plan to build or test" rows={2} className="text-sm min-h-[60px]" />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="sb-url">Website or app URL <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                <Input id="sb-url" type="url" placeholder="https://yourplatform.com" />
-              </div>
-              <Button type="submit" size="lg" className="w-full">Request Sandbox Access</Button>
+              <Button type="submit" className="w-full h-9 text-sm" disabled={submitting}>
+                {submitting ? "Submitting…" : "Request access"}
+              </Button>
             </form>
           </>
         )}
