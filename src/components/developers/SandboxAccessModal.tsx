@@ -28,16 +28,20 @@ interface SandboxLeadPayload {
 }
 
 /**
- * TODO: Replace with actual backend endpoint.
- * Connect to SanKash lead capture API or CRM webhook.
- * Expected endpoint: POST /api/leads or equivalent.
- * Payload schema: SandboxLeadPayload
+ * Submits sandbox lead to Supabase leads table.
  */
 async function submitSandboxLead(payload: SandboxLeadPayload): Promise<void> {
-  // --- BACKEND INTEGRATION POINT ---
-  // Replace this with: await fetch('https://api.sankash.in/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  console.log("[SanKash Lead Capture] Sandbox access request:", payload);
-  await new Promise((r) => setTimeout(r, 600));
+  const { createLead } = await import("@/lib/leads-service");
+  await createLead({
+    full_name: payload.fullName,
+    email: payload.workEmail,
+    company_name: payload.companyName,
+    message: payload.useCase,
+    lead_source_page: payload.sourcePage,
+    lead_source_type: "sandbox_access_request",
+    audience_type: "developer",
+    metadata_json: { apiNeeded: payload.apiNeeded },
+  });
 }
 
 const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => {
