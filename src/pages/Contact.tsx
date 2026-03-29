@@ -106,10 +106,12 @@ const Contact = () => {
         lead_source_page: "contact",
         lead_source_type: "contact_form",
       });
+      setSubmitted(true);
     } catch {
-      // still show success to user
+      // Show error feedback instead of fake success
+      const { toast } = await import("sonner");
+      toast.error("Failed to submit. Please try again.");
     }
-    setSubmitted(true);
   };
 
   return (
