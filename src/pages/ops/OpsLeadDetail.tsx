@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ArrowLeft, ExternalLink, FileText, Clock, MessageSquare, History, Send } from "lucide-react";
+import {
+  Loader2, ArrowLeft, ExternalLink, FileText, Clock, MessageSquare, History, Send,
+  Phone, Mail, MessageCircle, Copy, ChevronDown, ChevronUp,
+} from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -44,8 +47,16 @@ const statusColors: Record<string, string> = {
   contacted: "bg-yellow-100 text-yellow-800",
   qualified: "bg-green-100 text-green-800",
   waiting_for_customer: "bg-orange-100 text-orange-800",
+  demo_scheduled: "bg-purple-100 text-purple-800",
+  sandbox_issued: "bg-violet-100 text-violet-800",
+  production_review: "bg-indigo-100 text-indigo-800",
   converted: "bg-emerald-100 text-emerald-800",
   closed_lost: "bg-red-100 text-red-800",
+};
+
+const copyToClipboard = (text: string, label: string) => {
+  navigator.clipboard.writeText(text);
+  toast.success(`${label} copied`);
 };
 
 const OpsLeadDetail = () => {
@@ -59,8 +70,8 @@ const OpsLeadDetail = () => {
   const [priority, setPriority] = useState<string>("medium");
   const [notes, setNotes] = useState("");
   const [followUp, setFollowUp] = useState("");
+  const [metadataExpanded, setMetadataExpanded] = useState(false);
 
-  // Notes & History
   const [leadNotes, setLeadNotes] = useState<LeadNote[]>([]);
   const [history, setHistory] = useState<LeadStatusHistoryEntry[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -74,12 +85,10 @@ const OpsLeadDetail = () => {
       setLead(l);
       setStatus(l.status);
       setOutcome(l.outcome);
-      setPriority((l as any).priority ?? "medium");
+      setPriority(l.priority ?? "medium");
       setNotes(l.notes ?? "");
       setFollowUp(l.next_follow_up_at ? l.next_follow_up_at.split("T")[0] : "");
-    } catch {
-      // handle error
-    }
+    } catch { /* handle */ }
     setLoading(false);
   }, [id]);
 
@@ -89,9 +98,7 @@ const OpsLeadDetail = () => {
       const [n, h] = await Promise.all([fetchLeadNotes(id), fetchLeadHistory(id)]);
       setLeadNotes(n);
       setHistory(h);
-    } catch {
-      // fail silently
-    }
+    } catch { /* fail silently */ }
   }, [id]);
 
   useEffect(() => { loadLead(); loadNotesAndHistory(); }, [loadLead, loadNotesAndHistory]);
@@ -100,9 +107,11 @@ const OpsLeadDetail = () => {
     if (!id || !lead) return;
     setSaving(true);
     try {
-      // Track status change
       if (status !== lead.status && user) {
         await addStatusHistory(id, lead.status, status, user.id);
+      }
+      if (priority !== (lead.priority ?? "medium") && user) {
+        await addStatusHistory(id, `priority:${lead.priority ?? "medium"}`, `priority:${priority}`, user.id);
       }
 
       const updates: any = {
@@ -113,10 +122,7 @@ const OpsLeadDetail = () => {
         next_follow_up_at: followUp ? new Date(followUp).toISOString() : null,
       };
 
-      if (status === "converted" || outcome === "won") {
-        updates.closed_at = new Date().toISOString();
-      }
-      if (status === "closed_lost" || outcome === "lost") {
+      if (status === "converted" || outcome === "won" || status === "closed_lost" || outcome === "lost") {
         updates.closed_at = new Date().toISOString();
       }
       if (status === "contacted" && lead.status === "new") {
@@ -150,36 +156,15 @@ const OpsLeadDetail = () => {
   if (loading) return <OpsLayout><div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={28} /></div></OpsLayout>;
   if (!lead) return <OpsLayout><div className="py-20 text-center text-muted-foreground">Lead not found</div></OpsLayout>;
 
-  const leadAny = lead as any;
-
-  const infoRows = [
-    { label: "Full name", value: lead.full_name },
-    { label: "Email", value: lead.email },
-    { label: "Mobile", value: lead.mobile_number },
-    { label: "Company", value: lead.company_name },
-    { label: "City", value: lead.city },
-    { label: "Source page", value: lead.lead_source_page },
-    { label: "Source type", value: lead.lead_source_type?.replace(/_/g, " ") },
-    { label: "Audience", value: lead.audience_type },
-    { label: "Destination", value: lead.destination_type },
-    { label: "Trip type", value: leadAny.detected_trip_type },
-    { label: "Quote amount", value: leadAny.quote_amount ? `₹${Number(leadAny.quote_amount).toLocaleString()}` : null },
-    { label: "EMI flag", value: lead.emi_flag ? "Yes" : "No" },
-    { label: "EMI tenure", value: leadAny.emi_tenure },
-    { label: "Insurance flag", value: lead.insurance_flag ? "Yes" : "No" },
-    { label: "PG flag", value: lead.pg_flag ? "Yes" : "No" },
-    { label: "Validation status", value: lead.quote_validation_status },
-    { label: "Website", value: leadAny.website_url },
-    { label: "Created", value: format(new Date(lead.created_at), "dd MMM yyyy, HH:mm") },
-    { label: "Updated", value: format(new Date(lead.updated_at), "dd MMM yyyy, HH:mm") },
-    { label: "Last contacted", value: leadAny.last_contacted_at ? format(new Date(leadAny.last_contacted_at), "dd MMM yyyy") : null },
-    { label: "Closed at", value: leadAny.closed_at ? format(new Date(leadAny.closed_at), "dd MMM yyyy") : null },
-  ];
+  const meta = lead.metadata_json && typeof lead.metadata_json === "object" && Object.keys(lead.metadata_json as object).length > 0
+    ? lead.metadata_json as Record<string, any>
+    : null;
 
   return (
     <OpsLayout>
       <div className="space-y-6 max-w-5xl">
-        <div className="flex items-center gap-3">
+        {/* Header */}
+        <div className="flex items-center gap-3 flex-wrap">
           <Link to="/ops/leads">
             <Button variant="ghost" size="sm" className="gap-1.5 text-xs"><ArrowLeft size={14} /> Back</Button>
           </Link>
@@ -189,14 +174,76 @@ const OpsLeadDetail = () => {
           </span>
         </div>
 
+        {/* Quick actions */}
+        <div className="flex flex-wrap gap-2">
+          {lead.mobile_number && (
+            <>
+              <a href={`tel:${lead.mobile_number}`}>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Phone size={13} /> Call</Button>
+              </a>
+              <a href={`https://wa.me/${lead.mobile_number.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs"><MessageCircle size={13} /> WhatsApp</Button>
+              </a>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => copyToClipboard(lead.mobile_number!, "Phone")}>
+                <Copy size={13} /> Copy phone
+              </Button>
+            </>
+          )}
+          {lead.email && (
+            <>
+              <a href={`mailto:${lead.email}`}>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Mail size={13} /> Email</Button>
+              </a>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => copyToClipboard(lead.email!, "Email")}>
+                <Copy size={13} /> Copy email
+              </Button>
+            </>
+          )}
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left: Info + Notes */}
+          {/* Left column */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Submission details */}
+            {/* A. Contact */}
             <div className="border rounded-xl bg-card p-5 space-y-3">
-              <h2 className="text-sm font-heading font-semibold">Submission details</h2>
+              <h2 className="text-sm font-heading font-semibold">Contact</h2>
               <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
-                {infoRows.map((r) => (
+                {[
+                  { label: "Full name", value: lead.full_name },
+                  { label: "Mobile", value: lead.mobile_number },
+                  { label: "Email", value: lead.email },
+                  { label: "Company", value: lead.company_name },
+                  { label: "City", value: lead.city },
+                  { label: "Website", value: lead.website_url },
+                ].map((r) => (
+                  <div key={r.label} className="flex justify-between py-1 border-b border-border/50">
+                    <span className="text-xs text-muted-foreground">{r.label}</span>
+                    <span className="text-xs font-medium text-right">{r.value ?? "—"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* B. Lead context */}
+            <div className="border rounded-xl bg-card p-5 space-y-3">
+              <h2 className="text-sm font-heading font-semibold">Lead context</h2>
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+                {[
+                  { label: "Source type", value: lead.lead_source_type?.replace(/_/g, " ") },
+                  { label: "Source page", value: lead.lead_source_page },
+                  { label: "Audience", value: lead.audience_type },
+                  { label: "Destination", value: lead.destination_type },
+                  { label: "Trip type", value: lead.detected_trip_type },
+                  { label: "Quote amount", value: lead.quote_amount ? `₹${Number(lead.quote_amount).toLocaleString()}` : null },
+                  { label: "EMI flag", value: lead.emi_flag ? "Yes" : "No" },
+                  { label: "Insurance flag", value: lead.insurance_flag ? "Yes" : "No" },
+                  { label: "PG flag", value: lead.pg_flag ? "Yes" : "No" },
+                  { label: "Validation status", value: lead.quote_validation_status },
+                  { label: "Created", value: format(new Date(lead.created_at), "dd MMM yyyy, HH:mm") },
+                  { label: "Updated", value: format(new Date(lead.updated_at), "dd MMM yyyy, HH:mm") },
+                  { label: "Last contacted", value: lead.last_contacted_at ? format(new Date(lead.last_contacted_at), "dd MMM yyyy") : null },
+                  { label: "Closed at", value: lead.closed_at ? format(new Date(lead.closed_at), "dd MMM yyyy") : null },
+                ].map((r) => (
                   <div key={r.label} className="flex justify-between py-1 border-b border-border/50">
                     <span className="text-xs text-muted-foreground">{r.label}</span>
                     <span className="text-xs font-medium text-right capitalize">{r.value ?? "—"}</span>
@@ -213,27 +260,59 @@ const OpsLeadDetail = () => {
               </div>
             )}
 
-            {/* File */}
+            {/* C. Uploaded file */}
             {lead.quote_file_url && (
               <div className="border rounded-xl bg-card p-5 space-y-2">
                 <h2 className="text-sm font-heading font-semibold">Uploaded file</h2>
-                <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
-                  <FileText size={14} /> {lead.quote_file_name ?? "View file"} <ExternalLink size={12} />
-                </a>
+                <div className="flex items-center gap-3">
+                  <FileText size={16} className="text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{lead.quote_file_name ?? "Attachment"}</p>
+                    <p className="text-[10px] text-muted-foreground capitalize">
+                      Source: {lead.lead_source_type?.replace(/_/g, " ") ?? "Unknown"}
+                    </p>
+                  </div>
+                  <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                      <ExternalLink size={12} /> Open file
+                    </Button>
+                  </a>
+                </div>
               </div>
             )}
 
             {/* Metadata */}
-            {lead.metadata_json && Object.keys(lead.metadata_json as object).length > 0 && (
+            {meta && (
               <div className="border rounded-xl bg-card p-5 space-y-2">
-                <h2 className="text-sm font-heading font-semibold">Metadata</h2>
-                <pre className="text-xs text-muted-foreground bg-muted rounded-lg p-3 overflow-auto max-h-40">
-                  {JSON.stringify(lead.metadata_json, null, 2)}
-                </pre>
+                <button
+                  onClick={() => setMetadataExpanded(!metadataExpanded)}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <h2 className="text-sm font-heading font-semibold flex-1">Parsed metadata</h2>
+                  {metadataExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {!metadataExpanded && (
+                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
+                    {Object.entries(meta).slice(0, 6).map(([k, v]) => (
+                      <div key={k} className="flex justify-between py-0.5">
+                        <span className="text-[10px] text-muted-foreground capitalize">{k.replace(/_/g, " ")}</span>
+                        <span className="text-[10px] font-medium text-right truncate max-w-[140px]">{String(v)}</span>
+                      </div>
+                    ))}
+                    {Object.keys(meta).length > 6 && (
+                      <p className="text-[10px] text-muted-foreground">+{Object.keys(meta).length - 6} more fields</p>
+                    )}
+                  </div>
+                )}
+                {metadataExpanded && (
+                  <pre className="text-xs text-muted-foreground bg-muted rounded-lg p-3 overflow-auto max-h-60">
+                    {JSON.stringify(meta, null, 2)}
+                  </pre>
+                )}
               </div>
             )}
 
-            {/* Notes & History tabs */}
+            {/* Notes & History */}
             <div className="border rounded-xl bg-card overflow-hidden">
               <div className="flex border-b">
                 <button
@@ -246,14 +325,12 @@ const OpsLeadDetail = () => {
                   onClick={() => setActiveTab("history")}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === "history" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  <History size={13} /> Status History ({history.length})
+                  <History size={13} /> Activity ({history.length})
                 </button>
               </div>
-
               <div className="p-4">
                 {activeTab === "notes" && (
                   <div className="space-y-3">
-                    {/* Add note */}
                     <div className="flex gap-2">
                       <Textarea
                         value={newNote}
@@ -266,22 +343,20 @@ const OpsLeadDetail = () => {
                         {addingNote ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
                       </Button>
                     </div>
-                    {/* Notes list */}
                     {leadNotes.length === 0 && <p className="text-xs text-muted-foreground py-2">No notes yet</p>}
                     {leadNotes.map((note) => (
                       <div key={note.id} className="bg-muted/50 rounded-lg p-3 space-y-1">
                         <p className="text-sm whitespace-pre-wrap">{note.note_text}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {format(new Date(note.created_at), "dd MMM yyyy, HH:mm")}
+                          {note.created_by.slice(0, 8)}… · {format(new Date(note.created_at), "dd MMM yyyy, HH:mm")}
                         </p>
                       </div>
                     ))}
                   </div>
                 )}
-
                 {activeTab === "history" && (
                   <div className="space-y-2">
-                    {history.length === 0 && <p className="text-xs text-muted-foreground py-2">No status changes recorded</p>}
+                    {history.length === 0 && <p className="text-xs text-muted-foreground py-2">No activity recorded</p>}
                     {history.map((entry) => (
                       <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                         <Clock size={12} className="text-muted-foreground shrink-0" />
@@ -343,7 +418,7 @@ const OpsLeadDetail = () => {
                 <Input type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} className="h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground">Internal notes (summary)</label>
+                <label className="text-xs text-muted-foreground">Quick summary</label>
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="text-sm" placeholder="Quick summary…" />
               </div>
               <Button onClick={handleSave} className="w-full" disabled={saving}>
@@ -352,7 +427,7 @@ const OpsLeadDetail = () => {
               </Button>
             </div>
 
-            {/* Quick info card */}
+            {/* Source & follow-up card */}
             <div className="border rounded-xl bg-card p-4 space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Source</p>
               <span className="text-xs font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full capitalize">

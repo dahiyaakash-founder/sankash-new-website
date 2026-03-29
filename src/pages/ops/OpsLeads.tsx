@@ -2,10 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
 import { fetchLeads, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority } from "@/lib/leads-service";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { format } from "date-fns";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
@@ -46,17 +47,17 @@ const PRIORITY_OPTIONS: { value: LeadPriority; label: string }[] = [
   { value: "low", label: "Low" },
 ];
 
-const VIEW_PRESETS: { label: string; filter: Partial<{ status: LeadStatus; sourceType: LeadSourceType; audience: AudienceType }> }[] = [
+const VIEW_PRESETS: { label: string; filter: Partial<{ status: LeadStatus; sourceType: LeadSourceType; audience: AudienceType; special: string }> }[] = [
   { label: "All", filter: {} },
+  { label: "My Leads", filter: { special: "my_leads" } },
+  { label: "Unassigned", filter: { special: "unassigned" } },
+  { label: "Overdue", filter: { special: "overdue" } },
   { label: "New", filter: { status: "new" } },
   { label: "Traveler", filter: { audience: "traveler" } },
   { label: "Agent", filter: { audience: "agent" } },
-  { label: "Integrations", filter: { audience: "developer" } },
-  { label: "Demo", filter: { sourceType: "demo_request" } },
   { label: "Sandbox", filter: { sourceType: "sandbox_access_request" } },
   { label: "Production", filter: { sourceType: "production_access_request" } },
   { label: "Converted", filter: { status: "converted" } },
-  { label: "Closed", filter: { status: "closed_lost" } },
 ];
 
 const statusColors: Record<string, string> = {
@@ -82,6 +83,7 @@ const PAGE_SIZE = 25;
 
 const OpsLeads = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -91,6 +93,7 @@ const OpsLeads = () => {
   const [sourceFilter, setSourceFilter] = useState<LeadSourceType | "">(searchParams.get("source") as LeadSourceType ?? "");
   const [audienceFilter, setAudienceFilter] = useState<AudienceType | "">(searchParams.get("audience") as AudienceType ?? "");
   const [priorityFilter, setPriorityFilter] = useState<LeadPriority | "">("");
+  const [specialFilter, setSpecialFilter] = useState<string>("");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [activePreset, setActivePreset] = useState("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -104,6 +107,9 @@ const OpsLeads = () => {
         sourceType: (sourceFilter || undefined) as LeadSourceType | undefined,
         audience: (audienceFilter || undefined) as AudienceType | undefined,
         priority: (priorityFilter || undefined) as LeadPriority | undefined,
+        assignedTo: specialFilter === "my_leads" ? user?.id : undefined,
+        unassigned: specialFilter === "unassigned" ? true : undefined,
+        overdueFollowUp: specialFilter === "overdue" ? true : undefined,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -113,7 +119,7 @@ const OpsLeads = () => {
       // fail silently
     }
     setLoading(false);
-  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, page]);
+  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -123,6 +129,7 @@ const OpsLeads = () => {
     setSourceFilter((preset.filter.sourceType ?? "") as LeadSourceType | "");
     setAudienceFilter((preset.filter.audience ?? "") as AudienceType | "");
     setPriorityFilter("");
+    setSpecialFilter(preset.filter.special ?? "");
     setPage(1);
     setSelected(new Set());
   };
@@ -146,11 +153,8 @@ const OpsLeads = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selected.size === leads.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(leads.map(l => l.id)));
-    }
+    if (selected.size === leads.length) setSelected(new Set());
+    else setSelected(new Set(leads.map(l => l.id)));
   };
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -188,7 +192,7 @@ const OpsLeads = () => {
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search name, email, company…"
+              placeholder="Search name, email, company, phone…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="pl-9 h-9 text-sm"
@@ -235,20 +239,29 @@ const OpsLeads = () => {
                   </th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Date</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Name</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden md:table-cell">Email</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden md:table-cell">Company</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Phone</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Source</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden xl:table-cell">Owner</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Status</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Priority</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Audience</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden xl:table-cell">Follow-up</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={9} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
+                  <tr><td colSpan={10} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
                 )}
                 {!loading && leads.length === 0 && (
-                  <tr><td colSpan={9} className="px-4 py-12 text-center text-muted-foreground text-xs">No leads match your filters</td></tr>
+                  <tr>
+                    <td colSpan={10} className="px-4 py-16 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <Inbox size={28} className="text-muted-foreground/50" />
+                        <p className="text-sm font-medium text-muted-foreground">No leads yet</p>
+                        <p className="text-xs text-muted-foreground/70">Leads from website forms and gated actions will appear here automatically.</p>
+                      </div>
+                    </td>
+                  </tr>
                 )}
                 {!loading && leads.map((lead: any) => (
                   <tr
@@ -261,8 +274,16 @@ const OpsLeads = () => {
                     </td>
                     <td className="px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap">{format(new Date(lead.created_at), "dd MMM")}</td>
                     <td className="px-3 py-2.5 font-medium whitespace-nowrap">{lead.full_name}</td>
-                    <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.email ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-xs hidden lg:table-cell font-mono">{lead.mobile_number ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-xs hidden xl:table-cell">
+                      {lead.assigned_to ? (
+                        <span className="text-xs font-mono text-muted-foreground">{lead.assigned_to.slice(0, 8)}…</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">Unassigned</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${statusColors[lead.status] ?? "bg-muted text-muted-foreground"}`}>
                         {lead.status.replace(/_/g, " ")}
@@ -274,9 +295,6 @@ const OpsLeads = () => {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-xs capitalize hidden lg:table-cell">{lead.audience_type ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs text-muted-foreground hidden xl:table-cell">
-                      {lead.next_follow_up_at ? format(new Date(lead.next_follow_up_at), "dd MMM") : "—"}
-                    </td>
                   </tr>
                 ))}
               </tbody>
