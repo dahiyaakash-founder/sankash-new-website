@@ -12,69 +12,125 @@ interface ProductionAccessModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Lead payload structure for CRM / backend integration
+// Status lifecycle: New → Contacted → Docs Sent → Sandbox Shared → Integration In Progress → Production Review → Live → Lost
+interface ProductionLeadPayload {
+  fullName: string;
+  workEmail: string;
+  companyName: string;
+  apiGoingLive: string;
+  sandboxStatus: string;
+  useCase: string;
+  timeline: string;
+  sourcePage: "integrations";
+  sourceCTA: "production_access";
+  leadType: "production_request";
+  createdAt: string;
+}
+
+/**
+ * TODO: Replace with actual backend endpoint.
+ * Connect to SanKash lead capture API or CRM webhook.
+ * Expected endpoint: POST /api/leads or equivalent.
+ * Payload schema: ProductionLeadPayload
+ * 
+ * After integration, this is where lead status tracking should begin.
+ * Initial status: "New"
+ */
+async function submitProductionLead(payload: ProductionLeadPayload): Promise<void> {
+  // --- BACKEND INTEGRATION POINT ---
+  // Replace with: await fetch('https://api.sankash.in/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  // --- CRM INTEGRATION POINT ---
+  // Attach CRM webhook or database insert here.
+  console.log("[SanKash Lead Capture] Production access request:", payload);
+  await new Promise((r) => setTimeout(r, 600));
+}
+
 const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProps) => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [apiGoingLive, setApiGoingLive] = useState("");
+  const [sandboxStatus, setSandboxStatus] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    const payload: ProductionLeadPayload = {
+      fullName: (data.get("fullName") as string).trim(),
+      workEmail: (data.get("workEmail") as string).trim(),
+      companyName: (data.get("companyName") as string).trim(),
+      apiGoingLive,
+      sandboxStatus,
+      useCase: (data.get("useCase") as string).trim(),
+      timeline: (data.get("timeline") as string)?.trim() || "",
+      sourcePage: "integrations",
+      sourceCTA: "production_access",
+      leadType: "production_request",
+      createdAt: new Date().toISOString(),
+    };
+
+    setSubmitting(true);
+    try {
+      await submitProductionLead(payload);
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setSubmitted(false);
+    setApiGoingLive("");
+    setSandboxStatus("");
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         {submitted ? (
-          <div className="text-center py-6 space-y-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <CheckCircle2 size={24} className="text-primary" />
+          <div className="text-center py-4 space-y-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CheckCircle2 size={20} className="text-primary" />
             </div>
             <DialogHeader className="sm:text-center">
-              <DialogTitle className="text-xl font-heading">Production access request received</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-2">
-                Our team will review your production request and reach out with the next steps.
+              <DialogTitle className="text-lg font-heading">Production request received</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1.5">
+                Our team will review your integration and respond with next steps for production access.
               </DialogDescription>
             </DialogHeader>
-            <Button onClick={handleClose} variant="outline" className="mt-4">Close</Button>
+            <Button onClick={handleClose} variant="outline" size="sm" className="mt-2">Close</Button>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-xl font-heading">Request production access</DialogTitle>
+              <DialogTitle className="text-lg font-heading">Request production access</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                Share your integration details and our team will review production access for your platform.
+                Share your integration details for production review.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-name">Full Name</Label>
-                  <Input id="prod-name" required placeholder="Your name" />
+            <form onSubmit={handleSubmit} className="space-y-3 mt-1">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="prod-name" className="text-xs">Full Name</Label>
+                  <Input id="prod-name" name="fullName" required placeholder="Your name" className="h-9 text-sm" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-company">Company Name</Label>
-                  <Input id="prod-company" required placeholder="Company" />
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-email">Work Email</Label>
-                  <Input id="prod-email" type="email" required placeholder="you@company.com" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-phone">Phone Number</Label>
-                  <Input id="prod-phone" type="tel" required placeholder="+91 98765 43210" />
+                <div className="space-y-1">
+                  <Label htmlFor="prod-email" className="text-xs">Work Email</Label>
+                  <Input id="prod-email" name="workEmail" type="email" required placeholder="you@company.com" className="h-9 text-sm" />
                 </div>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Product needed</Label>
-                  <Select required>
-                    <SelectTrigger><SelectValue placeholder="Select API" /></SelectTrigger>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="prod-company" className="text-xs">Company Name</Label>
+                  <Input id="prod-company" name="companyName" required placeholder="Company" className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">API / Product Going Live</Label>
+                  <Select required value={apiGoingLive} onValueChange={setApiGoingLive}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select API" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="lending">Lending API</SelectItem>
                       <SelectItem value="insurance">Insurance API</SelectItem>
@@ -83,38 +139,30 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Integration status</Label>
-                  <Select required>
-                    <SelectTrigger><SelectValue placeholder="Current stage" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="exploring">Exploring</SelectItem>
-                      <SelectItem value="in-development">In development</SelectItem>
-                      <SelectItem value="ready">Ready to go live</SelectItem>
-                      <SelectItem value="sandbox-tested">Already tested in sandbox</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="prod-volume">Expected monthly volume</Label>
-                <Input id="prod-volume" required placeholder="e.g. 500 transactions / month" />
+              <div className="space-y-1">
+                <Label className="text-xs">Current Sandbox Status</Label>
+                <Select required value={sandboxStatus} onValueChange={setSandboxStatus}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-started">Not started yet</SelectItem>
+                    <SelectItem value="in-progress">Testing in progress</SelectItem>
+                    <SelectItem value="completed">Sandbox testing completed</SelectItem>
+                    <SelectItem value="skipped">Skipping sandbox</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="prod-usecase">Business use case</Label>
-                <Textarea id="prod-usecase" required placeholder="Describe your integration and business context" rows={3} />
+              <div className="space-y-1">
+                <Label htmlFor="prod-usecase" className="text-xs">Go-Live Use Case</Label>
+                <Textarea id="prod-usecase" name="useCase" required placeholder="Describe your integration and go-live plan" rows={2} className="text-sm min-h-[60px]" />
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-tech-name">Technical contact name <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                  <Input id="prod-tech-name" placeholder="Technical lead" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="prod-tech-email">Technical contact email <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                  <Input id="prod-tech-email" type="email" placeholder="tech@company.com" />
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="prod-timeline" className="text-xs">Expected Timeline <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Input id="prod-timeline" name="timeline" placeholder="e.g. Q1 2026" className="h-9 text-sm" />
               </div>
-              <Button type="submit" size="lg" className="w-full">Request Production Access</Button>
+              <Button type="submit" className="w-full h-9 text-sm" disabled={submitting}>
+                {submitting ? "Submitting…" : "Request production access"}
+              </Button>
             </form>
           </>
         )}

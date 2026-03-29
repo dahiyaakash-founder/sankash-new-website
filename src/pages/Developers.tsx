@@ -107,20 +107,27 @@ const Developers = () => {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {gettingStartedSteps.map((step, i) => (
-              <motion.div key={step.num} {...fade} transition={{ delay: i * 0.08, duration: 0.4 }} className="relative">
-                <div className="bg-card border rounded-xl p-6 shadow-card h-full">
-                  <span className="text-3xl font-heading font-bold text-primary/15">{step.num}</span>
-                  <h3 className="text-base font-heading font-bold text-primary-deep mt-2">{step.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{step.desc}</p>
-                </div>
-                {i < gettingStartedSteps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-2 -translate-y-1/2 z-10">
-                    <ArrowRight size={14} className="text-primary/30" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
+            {gettingStartedSteps.map((step, i) => {
+              const handleClick = () => {
+                if (step.action === "docs") window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer");
+                else if (step.action === "sandbox") setSandboxOpen(true);
+                else if (step.action === "production") setProductionOpen(true);
+              };
+              return (
+                <motion.div key={step.num} {...fade} transition={{ delay: i * 0.08, duration: 0.4 }} className="relative">
+                  <button onClick={handleClick} className="bg-card border rounded-xl p-6 shadow-card h-full text-left w-full hover:border-primary/30 transition-colors group">
+                    <span className="text-3xl font-heading font-bold text-primary/15">{step.num}</span>
+                    <h3 className="text-base font-heading font-bold text-primary-deep mt-2 group-hover:text-primary transition-colors">{step.label}</h3>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{step.desc}</p>
+                  </button>
+                  {i < gettingStartedSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-2 -translate-y-1/2 z-10">
+                      <ArrowRight size={14} className="text-primary/30" />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
