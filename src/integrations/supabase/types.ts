@@ -14,16 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          assigned_to: string | null
+          audience_type: Database["public"]["Enums"]["audience_type"] | null
+          city: string | null
+          company_name: string | null
+          created_at: string
+          destination_type: string | null
+          email: string | null
+          emi_flag: boolean | null
+          full_name: string
+          id: string
+          insurance_flag: boolean | null
+          lead_source_page: string | null
+          lead_source_type:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message: string | null
+          metadata_json: Json | null
+          mobile_number: string | null
+          next_follow_up_at: string | null
+          notes: string | null
+          outcome: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag: boolean | null
+          quote_file_name: string | null
+          quote_file_url: string | null
+          quote_validation_status: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          destination_type?: string | null
+          email?: string | null
+          emi_flag?: boolean | null
+          full_name: string
+          id?: string
+          insurance_flag?: boolean | null
+          lead_source_page?: string | null
+          lead_source_type?:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message?: string | null
+          metadata_json?: Json | null
+          mobile_number?: string | null
+          next_follow_up_at?: string | null
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag?: boolean | null
+          quote_file_name?: string | null
+          quote_file_url?: string | null
+          quote_validation_status?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          destination_type?: string | null
+          email?: string | null
+          emi_flag?: boolean | null
+          full_name?: string
+          id?: string
+          insurance_flag?: boolean | null
+          lead_source_page?: string | null
+          lead_source_type?:
+            | Database["public"]["Enums"]["lead_source_type"]
+            | null
+          message?: string | null
+          metadata_json?: Json | null
+          mobile_number?: string | null
+          next_follow_up_at?: string | null
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["lead_outcome"]
+          pg_flag?: boolean | null
+          quote_file_name?: string | null
+          quote_file_url?: string | null
+          quote_validation_status?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "team_member"
+      audience_type: "traveler" | "agent" | "developer" | "partner" | "other"
+      lead_outcome: "open" | "won" | "lost"
+      lead_source_type:
+        | "contact_form"
+        | "traveler_quote_unlock"
+        | "agent_quote_review"
+        | "sandbox_access_request"
+        | "production_access_request"
+        | "demo_request"
+        | "support_request"
+        | "integration_query"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "waiting_for_customer"
+        | "demo_scheduled"
+        | "sandbox_issued"
+        | "production_review"
+        | "converted"
+        | "closed_lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +284,31 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "team_member"],
+      audience_type: ["traveler", "agent", "developer", "partner", "other"],
+      lead_outcome: ["open", "won", "lost"],
+      lead_source_type: [
+        "contact_form",
+        "traveler_quote_unlock",
+        "agent_quote_review",
+        "sandbox_access_request",
+        "production_access_request",
+        "demo_request",
+        "support_request",
+        "integration_query",
+      ],
+      lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "waiting_for_customer",
+        "demo_scheduled",
+        "sandbox_issued",
+        "production_review",
+        "converted",
+        "closed_lost",
+      ],
+    },
   },
 } as const
