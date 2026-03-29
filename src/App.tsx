@@ -46,6 +46,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             {/* Ops Dashboard — protected */}
+            <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
             <Route path="/ops/dashboard" element={<ProtectedOpsRoute><OpsDashboard /></ProtectedOpsRoute>} />
             <Route path="/ops/leads" element={<ProtectedOpsRoute><OpsLeads /></ProtectedOpsRoute>} />
