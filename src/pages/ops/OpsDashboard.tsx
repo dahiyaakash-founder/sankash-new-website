@@ -143,7 +143,15 @@ const OpsDashboard = () => {
                 </thead>
                 <tbody>
                   {recentLeads.length === 0 && (
-                    <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-xs">No leads yet</td></tr>
+                    <tr>
+                      <td colSpan={6} className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <Users size={24} className="text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground">No leads yet</p>
+                          <p className="text-xs text-muted-foreground/70">Submissions from website forms will appear here.</p>
+                        </div>
+                      </td>
+                    </tr>
                   )}
                   {recentLeads.map((lead: any) => (
                     <tr key={lead.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => window.location.href = `/ops/leads/${lead.id}`}>
