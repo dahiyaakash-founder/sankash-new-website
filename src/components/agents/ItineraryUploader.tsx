@@ -113,7 +113,19 @@ const ItineraryUploader = () => {
       setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
       setTimeout(() => {
-        setStage(result.confidence === "high" ? "results-high" : "results-medium");
+        const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
+        setStage(finalStage);
+        // Save agent_quote_review lead to database
+        import("@/lib/leads-service").then(({ createLead }) => {
+          createLead({
+            full_name: "Agent (anonymous)",
+            lead_source_page: "for-travel-agents",
+            lead_source_type: "agent_quote_review",
+            audience_type: "agent",
+            quote_file_name: file.name,
+            metadata_json: { confidence: result.confidence },
+          }).catch(() => { /* silent */ });
+        });
       }, 2200);
     }, 800);
   }, []);
