@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import OpsLogin from "./pages/ops/OpsLogin";
+import OpsSetup from "./pages/ops/OpsSetup";
 import OpsDashboard from "./pages/ops/OpsDashboard";
 import OpsLeads from "./pages/ops/OpsLeads";
 import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             {/* Ops Dashboard — protected */}
+            <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
             <Route path="/ops/dashboard" element={<ProtectedOpsRoute><OpsDashboard /></ProtectedOpsRoute>} />
             <Route path="/ops/leads" element={<ProtectedOpsRoute><OpsLeads /></ProtectedOpsRoute>} />
