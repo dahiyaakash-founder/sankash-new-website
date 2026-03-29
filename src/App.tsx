@@ -20,6 +20,7 @@ import OpsLogin from "./pages/ops/OpsLogin";
 import OpsDashboard from "./pages/ops/OpsDashboard";
 import OpsLeads from "./pages/ops/OpsLeads";
 import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
+import OpsTeamManagement from "./pages/ops/OpsTeamManagement";
 import ProtectedOpsRoute from "./components/ops/ProtectedOpsRoute";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/ops/dashboard" element={<ProtectedOpsRoute><OpsDashboard /></ProtectedOpsRoute>} />
             <Route path="/ops/leads" element={<ProtectedOpsRoute><OpsLeads /></ProtectedOpsRoute>} />
             <Route path="/ops/leads/:id" element={<ProtectedOpsRoute><OpsLeadDetail /></ProtectedOpsRoute>} />
+            <Route path="/ops/team" element={<ProtectedOpsRoute><OpsTeamManagement /></ProtectedOpsRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

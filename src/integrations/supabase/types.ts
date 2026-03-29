@@ -14,19 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      lead_notes: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          lead_id: string
+          note_text: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          lead_id: string
+          note_text: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          lead_id?: string
+          note_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          id: string
+          lead_id: string
+          new_status: string
+          old_status: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by: string
+          id?: string
+          lead_id: string
+          new_status: string
+          old_status?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          id?: string
+          lead_id?: string
+          new_status?: string
+          old_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_status_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
           audience_type: Database["public"]["Enums"]["audience_type"] | null
           city: string | null
+          closed_at: string | null
           company_name: string | null
           created_at: string
           destination_type: string | null
+          detected_trip_type: string | null
           email: string | null
           emi_flag: boolean | null
+          emi_tenure: string | null
+          estimated_savings_amount: number | null
+          estimated_savings_percent: number | null
           full_name: string
           id: string
           insurance_flag: boolean | null
+          last_contacted_at: string | null
           lead_source_page: string | null
           lead_source_type:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -38,24 +111,34 @@ export type Database = {
           notes: string | null
           outcome: Database["public"]["Enums"]["lead_outcome"]
           pg_flag: boolean | null
+          priority: Database["public"]["Enums"]["lead_priority"] | null
+          quote_amount: number | null
           quote_file_name: string | null
           quote_file_url: string | null
           quote_validation_status: string | null
+          stage: Database["public"]["Enums"]["lead_stage"] | null
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           assigned_to?: string | null
           audience_type?: Database["public"]["Enums"]["audience_type"] | null
           city?: string | null
+          closed_at?: string | null
           company_name?: string | null
           created_at?: string
           destination_type?: string | null
+          detected_trip_type?: string | null
           email?: string | null
           emi_flag?: boolean | null
+          emi_tenure?: string | null
+          estimated_savings_amount?: number | null
+          estimated_savings_percent?: number | null
           full_name: string
           id?: string
           insurance_flag?: boolean | null
+          last_contacted_at?: string | null
           lead_source_page?: string | null
           lead_source_type?:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -67,24 +150,34 @@ export type Database = {
           notes?: string | null
           outcome?: Database["public"]["Enums"]["lead_outcome"]
           pg_flag?: boolean | null
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
+          quote_amount?: number | null
           quote_file_name?: string | null
           quote_file_url?: string | null
           quote_validation_status?: string | null
+          stage?: Database["public"]["Enums"]["lead_stage"] | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           assigned_to?: string | null
           audience_type?: Database["public"]["Enums"]["audience_type"] | null
           city?: string | null
+          closed_at?: string | null
           company_name?: string | null
           created_at?: string
           destination_type?: string | null
+          detected_trip_type?: string | null
           email?: string | null
           emi_flag?: boolean | null
+          emi_tenure?: string | null
+          estimated_savings_amount?: number | null
+          estimated_savings_percent?: number | null
           full_name?: string
           id?: string
           insurance_flag?: boolean | null
+          last_contacted_at?: string | null
           lead_source_page?: string | null
           lead_source_type?:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -96,11 +189,15 @@ export type Database = {
           notes?: string | null
           outcome?: Database["public"]["Enums"]["lead_outcome"]
           pg_flag?: boolean | null
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
+          quote_amount?: number | null
           quote_file_name?: string | null
           quote_file_url?: string | null
           quote_validation_status?: string | null
+          stage?: Database["public"]["Enums"]["lead_stage"] | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -139,6 +236,7 @@ export type Database = {
       app_role: "admin" | "team_member"
       audience_type: "traveler" | "agent" | "developer" | "partner" | "other"
       lead_outcome: "open" | "won" | "lost"
+      lead_priority: "low" | "medium" | "high" | "urgent"
       lead_source_type:
         | "contact_form"
         | "traveler_quote_unlock"
@@ -148,6 +246,16 @@ export type Database = {
         | "demo_request"
         | "support_request"
         | "integration_query"
+      lead_stage:
+        | "new"
+        | "reviewed"
+        | "contacted"
+        | "qualified"
+        | "follow_up_scheduled"
+        | "in_progress"
+        | "won"
+        | "lost"
+        | "archived"
       lead_status:
         | "new"
         | "contacted"
@@ -288,6 +396,7 @@ export const Constants = {
       app_role: ["admin", "team_member"],
       audience_type: ["traveler", "agent", "developer", "partner", "other"],
       lead_outcome: ["open", "won", "lost"],
+      lead_priority: ["low", "medium", "high", "urgent"],
       lead_source_type: [
         "contact_form",
         "traveler_quote_unlock",
@@ -297,6 +406,17 @@ export const Constants = {
         "demo_request",
         "support_request",
         "integration_query",
+      ],
+      lead_stage: [
+        "new",
+        "reviewed",
+        "contacted",
+        "qualified",
+        "follow_up_scheduled",
+        "in_progress",
+        "won",
+        "lost",
+        "archived",
       ],
       lead_status: [
         "new",
