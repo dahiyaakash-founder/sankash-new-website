@@ -194,31 +194,31 @@ const OpsLeads = () => {
               className="pl-9 h-9 text-sm"
             />
           </div>
-          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as LeadStatus); setPage(1); setActivePreset(""); }}>
+          <Select value={statusFilter || "__all__"} onValueChange={(v) => { setStatusFilter(v === "__all__" ? "" : v as LeadStatus); setPage(1); setActivePreset(""); }}>
             <SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value="__all__">All statuses</SelectItem>
               {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v as LeadSourceType); setPage(1); setActivePreset(""); }}>
+          <Select value={sourceFilter || "__all__"} onValueChange={(v) => { setSourceFilter(v === "__all__" ? "" : v as LeadSourceType); setPage(1); setActivePreset(""); }}>
             <SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Source" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All sources</SelectItem>
+              <SelectItem value="__all__">All sources</SelectItem>
               {SOURCE_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={audienceFilter} onValueChange={(v) => { setAudienceFilter(v as AudienceType); setPage(1); setActivePreset(""); }}>
+          <Select value={audienceFilter || "__all__"} onValueChange={(v) => { setAudienceFilter(v === "__all__" ? "" : v as AudienceType); setPage(1); setActivePreset(""); }}>
             <SelectTrigger className="w-[130px] h-9 text-xs"><SelectValue placeholder="Audience" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All audiences</SelectItem>
+              <SelectItem value="__all__">All audiences</SelectItem>
               {AUDIENCE_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v as LeadPriority); setPage(1); setActivePreset(""); }}>
+          <Select value={priorityFilter || "__all__"} onValueChange={(v) => { setPriorityFilter(v === "__all__" ? "" : v as LeadPriority); setPage(1); setActivePreset(""); }}>
             <SelectTrigger className="w-[120px] h-9 text-xs"><SelectValue placeholder="Priority" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All priorities</SelectItem>
+              <SelectItem value="__all__">All priorities</SelectItem>
               {PRIORITY_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
