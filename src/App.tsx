@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/ops/dashboard" element={<ProtectedOpsRoute><OpsDashboard /></ProtectedOpsRoute>} />
             <Route path="/ops/leads" element={<ProtectedOpsRoute><OpsLeads /></ProtectedOpsRoute>} />
             <Route path="/ops/leads/:id" element={<ProtectedOpsRoute><OpsLeadDetail /></ProtectedOpsRoute>} />
+            <Route path="/ops/team" element={<ProtectedOpsRoute><OpsTeamManagement /></ProtectedOpsRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
