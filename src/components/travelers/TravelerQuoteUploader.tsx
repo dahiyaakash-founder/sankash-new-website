@@ -162,9 +162,24 @@ const TravelerQuoteUploader = () => {
     setInsuranceInsight(null);
   };
 
-  const handleLeadSubmit = (e: React.FormEvent) => {
+  const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName.trim() || !leadPhone.trim()) return;
+    try {
+      const { createLead } = await import("@/lib/leads-service");
+      await createLead({
+        full_name: leadName.trim(),
+        mobile_number: leadPhone.trim(),
+        email: leadEmail.trim() || null,
+        lead_source_page: "for-travelers",
+        lead_source_type: "traveler_quote_unlock",
+        audience_type: "traveler",
+        quote_file_name: fileName,
+        metadata_json: { confidence: stage === "results-high" ? "high" : "medium" },
+      });
+    } catch {
+      // still show success
+    }
     setLeadSubmitted(true);
   };
 
