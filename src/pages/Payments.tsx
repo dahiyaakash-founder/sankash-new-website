@@ -33,7 +33,7 @@ const Payments = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-28">
+      <section className="py-12 md:py-28">
         <div className="container">
           <h2 className="text-3xl font-heading font-bold mb-14">Key capabilities</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
