@@ -162,7 +162,7 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="text-center p-4 rounded-xl"
+                className="text-center p-3 sm:p-4 rounded-xl"
               >
                 <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
                   {step.num}
