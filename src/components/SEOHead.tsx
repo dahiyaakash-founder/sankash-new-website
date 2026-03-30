@@ -9,6 +9,7 @@ interface SEOHeadProps {
   description: string;
   canonical?: string;
   ogImage?: string;
+  noindex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
