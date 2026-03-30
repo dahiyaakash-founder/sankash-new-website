@@ -36,7 +36,7 @@ const TravelerTeaser = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center space-y-4 mb-12"
+            className="text-center space-y-3 mb-8 md:mb-12"
           >
             <p className="text-[11px] font-semibold text-brand-coral uppercase tracking-[0.1em]">For Travelers</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
