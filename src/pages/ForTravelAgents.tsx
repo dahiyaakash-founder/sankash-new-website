@@ -127,7 +127,7 @@ const ForTravelAgents = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travel Agents & Businesses
               </p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              <h1 className="text-[1.75rem] sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Review your itinerary
                 <br />
                 <span className="text-gradient-brand">before you send it.</span>
