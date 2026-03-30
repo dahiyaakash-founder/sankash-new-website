@@ -435,14 +435,14 @@ const ForTravelAgents = () => {
           <p className="text-sm text-primary-foreground/50 max-w-md mx-auto">
             Join 8,000+ travel partners using SanKash to grow revenue and collect faster.
           </p>
-          <div className="flex justify-center gap-3 pt-1">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
-              <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90 w-full sm:w-auto">
                 Agent Signup <ArrowRight size={18} />
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost-dark" size="xl">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button variant="ghost-dark" size="xl" className="w-full sm:w-auto">
                 Agent Login
               </Button>
             </a>

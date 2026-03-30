@@ -61,7 +61,7 @@ const EmiCalculator = () => {
               EMI Calculator
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight text-foreground">
             Travel EMI Calculator
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">

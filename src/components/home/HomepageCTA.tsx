@@ -20,7 +20,7 @@ const HomepageCTA = () => {
           transition={{ duration: 0.5 }}
           className="max-w-2xl mx-auto text-center space-y-6"
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
             Ready to grow your travel business?
           </h2>
           <p className="text-primary-foreground/50 text-base">

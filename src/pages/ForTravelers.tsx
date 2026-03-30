@@ -354,7 +354,7 @@ const ForTravelers = () => {
           }}
         />
         <div className="container relative max-w-3xl text-center space-y-5">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">

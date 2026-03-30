@@ -88,7 +88,7 @@ const HomepageHero = () => {
                 { v: "T+1", l: "Agent Settlements" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-xl font-heading font-bold text-primary-deep">{s.v}</div>
+                  <div className="text-base sm:text-xl font-heading font-bold text-primary-deep">{s.v}</div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">{s.l}</p>
                 </div>
               ))}
