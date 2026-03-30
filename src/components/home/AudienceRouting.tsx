@@ -28,7 +28,7 @@ const audiences = [
 
 const AudienceRouting = () => {
   return (
-    <section className="py-16 md:py-20">
+    <section className="py-12 md:py-20">
       <div className="container">
         <div className="max-w-lg mb-10">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.1em] mb-3">Who it's for</p>
@@ -48,7 +48,7 @@ const AudienceRouting = () => {
             >
               <Link
                 to={a.href}
-                className="group flex flex-col h-full p-6 rounded-2xl border bg-card hover:shadow-card-hover hover:border-primary/15 transition-all"
+                className="group flex flex-col h-full p-5 sm:p-6 rounded-2xl border bg-card hover:shadow-card-hover hover:border-primary/15 transition-all"
               >
                 <div className={`w-11 h-11 rounded-xl ${a.accent} flex items-center justify-center mb-5`}>
                   <a.icon size={20} />

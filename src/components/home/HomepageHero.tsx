@@ -39,14 +39,14 @@ const HomepageHero = () => {
     <section className="relative overflow-hidden bg-hero-gradient">
       <div className="h-0.5 bg-primary" />
 
-      <div className="container py-16 md:py-24 lg:py-28">
+      <div className="container py-10 md:py-24 lg:py-28">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* Left — Copy */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="lg:col-span-6 space-y-7"
+            className="lg:col-span-6 space-y-5 md:space-y-7"
           >
             <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
@@ -112,7 +112,7 @@ const HomepageHero = () => {
                   initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25 + i * 0.1, duration: 0.4, ease: "easeOut" }}
-                  className="relative flex items-start gap-4 p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm"
+                  className="relative flex items-start gap-3 p-3 sm:p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm"
                 >
                   {/* Step number */}
                   <div className="relative z-10 w-10 h-10 rounded-lg bg-accent/60 border border-border/40 flex items-center justify-center shrink-0">

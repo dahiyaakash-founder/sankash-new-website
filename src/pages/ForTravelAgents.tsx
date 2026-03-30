@@ -176,7 +176,7 @@ const ForTravelAgents = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06, duration: 0.35 }}
-                className="p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                className="p-4 sm:p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
               >
                 <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
                   <r.icon size={18} className="text-primary" />
@@ -349,7 +349,7 @@ const ForTravelAgents = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="p-5 rounded-2xl border bg-card"
+              className="p-4 sm:p-5 rounded-2xl border bg-card"
             >
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Try now</p>
               <div className="space-y-3">
@@ -372,7 +372,7 @@ const ForTravelAgents = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="p-5 rounded-2xl border bg-card"
+              className="p-4 sm:p-5 rounded-2xl border bg-card"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Lock size={11} className="text-primary" />
@@ -397,14 +397,14 @@ const ForTravelAgents = () => {
       </section>
 
       {/* FAQ section */}
-      <section className="py-10 md:py-14 bg-section-alt">
+      <section className="py-8 md:py-14 bg-section-alt">
         <div className="container max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground mb-6">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground mb-4 md:mb-6">
             Frequently asked questions
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {agentFaqs.map((faq) => (
-              <details key={faq.q} className="group bg-card rounded-xl border p-3.5 cursor-pointer">
+              <details key={faq.q} className="group bg-card rounded-xl border p-3 sm:p-3.5 cursor-pointer">
                 <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
                   {faq.q}
                 </summary>

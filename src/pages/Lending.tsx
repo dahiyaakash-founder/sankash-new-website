@@ -21,7 +21,7 @@ const Lending = () => {
         title="No Cost EMI for Travel Bookings | SanKash Lending"
         description="Offer No Cost EMI and standard travel EMI at checkout to improve sales, conversion and customer queries."
       />
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-14 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -42,7 +42,7 @@ const Lending = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-28">
+      <section className="py-12 md:py-28">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="space-y-6">

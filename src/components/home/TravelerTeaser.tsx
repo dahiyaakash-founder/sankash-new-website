@@ -28,7 +28,7 @@ const steps = [
 
 const TravelerTeaser = () => {
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-14 md:py-28">
       <div className="container">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -36,7 +36,7 @@ const TravelerTeaser = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center space-y-4 mb-12"
+            className="text-center space-y-3 mb-8 md:mb-12"
           >
             <p className="text-[11px] font-semibold text-brand-coral uppercase tracking-[0.1em]">For Travelers</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
@@ -56,7 +56,7 @@ const TravelerTeaser = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-                className="p-6 rounded-xl border bg-card hover:shadow-card transition-shadow space-y-3"
+                className="p-4 sm:p-6 rounded-xl border bg-card hover:shadow-card transition-shadow space-y-2.5"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-brand-coral/10 flex items-center justify-center">

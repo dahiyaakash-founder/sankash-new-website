@@ -12,7 +12,7 @@ const Payments = () => {
         title="Travel Payment Collection and T+1 Settlement | SanKash Payments"
         description="Collect payments faster, reconcile better and manage travel settlement complexity with SanKash Payments."
       />
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-14 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
             <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center">
@@ -33,7 +33,7 @@ const Payments = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-28">
+      <section className="py-12 md:py-28">
         <div className="container">
           <h2 className="text-3xl font-heading font-bold mb-14">Key capabilities</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
@@ -48,7 +48,7 @@ const Payments = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="p-8 rounded-2xl border bg-card text-center space-y-4"
+                className="p-5 sm:p-8 rounded-2xl border bg-card text-center space-y-3 sm:space-y-4"
               >
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
                   <f.icon size={24} className="text-primary" />

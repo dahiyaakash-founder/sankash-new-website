@@ -94,7 +94,7 @@ const ForTravelers = () => {
         jsonLd={createFAQSchema(faqs)}
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-14 md:py-20">
+      <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <motion.div
@@ -144,9 +144,9 @@ const ForTravelers = () => {
       </section>
 
       {/* How Quote Review Works */}
-      <section className="py-14 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container">
-          <div className="max-w-2xl mx-auto text-center mb-10">
+          <div className="max-w-2xl mx-auto text-center mb-7 md:mb-10">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               How It Works
             </p>
@@ -162,7 +162,7 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="text-center p-4 rounded-xl"
+                className="text-center p-3 sm:p-4 rounded-xl"
               >
                 <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
                   {step.num}
@@ -179,7 +179,7 @@ const ForTravelers = () => {
       </section>
 
       {/* EMI & Affordability */}
-      <section id="emi-section" className="py-16 md:py-22 bg-section-alt">
+      <section id="emi-section" className="py-12 md:py-22 bg-section-alt">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
@@ -247,9 +247,9 @@ const ForTravelers = () => {
       </section>
 
       {/* Why Use SanKash */}
-      <section className="py-16 md:py-22">
+      <section className="py-12 md:py-22">
         <div className="container">
-          <div className="max-w-2xl mb-10">
+          <div className="max-w-2xl mb-7 md:mb-10">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               Why Use SanKash
             </p>
@@ -265,7 +265,7 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                className="p-4 sm:p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
               >
                 <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
                   <r.icon size={18} className="text-primary" />
@@ -279,9 +279,9 @@ const ForTravelers = () => {
       </section>
 
       {/* Trust & FAQ */}
-      <section className="py-16 md:py-22 bg-section-alt">
+      <section className="py-12 md:py-22 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-10">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-10">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -323,7 +323,7 @@ const ForTravelers = () => {
               {faqs.map((faq) => (
                 <details
                   key={faq.q}
-                  className="group bg-card rounded-xl border p-3.5 cursor-pointer"
+                  className="group bg-card rounded-xl border p-3 sm:p-3.5 cursor-pointer"
                 >
                   <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
                     {faq.q}
@@ -345,7 +345,7 @@ const ForTravelers = () => {
       ]} />
 
       {/* Final CTA */}
-      <section className="py-14 md:py-20 bg-brand-deep relative overflow-hidden">
+      <section className="py-12 md:py-20 bg-brand-deep relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{

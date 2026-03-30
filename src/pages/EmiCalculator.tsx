@@ -53,7 +53,7 @@ const EmiCalculator = () => {
       />
 
       {/* Hero */}
-      <section className="bg-hero-gradient py-14 md:py-20">
+      <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container max-w-3xl text-center space-y-4">
           <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
             <Calculator size={12} className="text-primary" />
@@ -75,7 +75,7 @@ const EmiCalculator = () => {
         <div className="container max-w-4xl">
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Input panel */}
-            <div className="lg:col-span-2 space-y-5 p-6 rounded-2xl border bg-card">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-5 p-4 sm:p-6 rounded-2xl border bg-card">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trip Amount</label>
                 <div className="relative">
@@ -231,10 +231,10 @@ const EmiCalculator = () => {
       </section>
 
       {/* CTA section */}
-      <section className="py-10 md:py-14 bg-section-alt">
+      <section className="py-8 md:py-14 bg-section-alt">
         <div className="container max-w-3xl">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="p-6 rounded-2xl border bg-card space-y-3">
+          <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="p-4 sm:p-6 rounded-2xl border bg-card space-y-3">
               <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
                 <Upload size={18} className="text-primary" />
               </div>
@@ -248,7 +248,7 @@ const EmiCalculator = () => {
                 </Button>
               </Link>
             </div>
-            <div className="p-6 rounded-2xl border bg-card space-y-3">
+            <div className="p-4 sm:p-6 rounded-2xl border bg-card space-y-3">
               <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
                 <Users size={18} className="text-primary" />
               </div>
@@ -267,7 +267,7 @@ const EmiCalculator = () => {
       </section>
 
       {/* SEO Content / FAQ */}
-      <section className="py-14 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container max-w-3xl space-y-8">
           {emiFaqs.map((faq) => (
             <div key={faq.q}>

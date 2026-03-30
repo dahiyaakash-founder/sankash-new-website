@@ -5,7 +5,7 @@ import { FileSearch, TrendingUp, Zap, ArrowRight } from "lucide-react";
 
 const AgentValueProp = () => {
   return (
-    <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
+    <section className="py-14 md:py-28 bg-brand-deep relative overflow-hidden">
       {/* Subtle texture */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
@@ -16,7 +16,7 @@ const AgentValueProp = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className="space-y-4 md:space-y-6"
           >
             <p className="text-[11px] font-semibold text-primary-foreground/50 uppercase tracking-[0.1em]">For Travel Agents</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-foreground leading-tight">
