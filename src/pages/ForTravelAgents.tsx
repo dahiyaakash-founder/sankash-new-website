@@ -372,7 +372,7 @@ const ForTravelAgents = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="p-5 rounded-2xl border bg-card"
+              className="p-4 sm:p-5 rounded-2xl border bg-card"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Lock size={11} className="text-primary" />
