@@ -124,6 +124,15 @@ const OpsLeads = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  // Load team members for owner display
+  useEffect(() => {
+    fetchTeamMembers().then((members) => {
+      const emailMap: Record<string, string> = {};
+      if (user) emailMap[user.id] = user.email ?? user.id.slice(0, 8) + "…";
+      setTeamEmails(emailMap);
+    }).catch(() => {});
+  }, [user]);
+
   const applyPreset = (preset: typeof VIEW_PRESETS[number]) => {
     setActivePreset(preset.label);
     setStatusFilter((preset.filter.status ?? "") as LeadStatus | "");
