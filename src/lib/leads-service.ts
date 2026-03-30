@@ -39,6 +39,8 @@ export interface TeamMember {
   user_id: string;
   role: string;
   email?: string;
+  full_name?: string;
+  status?: string;
 }
 
 /** Insert a lead from a public website form (anon) */
@@ -223,22 +225,36 @@ export function leadsToCSV(leads: LeadRow[]): string {
 // ── Team / User Roles ──
 
 export async function fetchTeamMembers(): Promise<TeamMember[]> {
-  const { data, error } = await supabase.from("user_roles").select("*");
+  const { data: roles, error } = await supabase.from("user_roles").select("*");
   if (error) throw error;
-  return (data ?? []) as TeamMember[];
+
+  // Fetch profiles for display names and status
+  const { data: profiles } = await supabase.from("profiles" as any).select("*") as any;
+  const profileMap: Record<string, { full_name: string; status: string }> = {};
+  (profiles ?? []).forEach((p: any) => {
+    profileMap[p.user_id] = { full_name: p.full_name, status: p.status };
+  });
+
+  return (roles ?? []).map((r: any) => ({
+    id: r.id,
+    user_id: r.user_id,
+    role: r.role,
+    full_name: profileMap[r.user_id]?.full_name,
+    status: profileMap[r.user_id]?.status ?? "active",
+  }));
 }
 
 /**
- * Resolve team member emails by looking up the current user and matching IDs.
- * Since we can't query auth.users, we build a map from what's available.
+ * Resolve team member display names from profiles.
  */
 export function buildTeamEmailMap(members: TeamMember[], currentUserId: string | undefined, currentUserEmail: string | undefined): Record<string, string> {
   const map: Record<string, string> = {};
   members.forEach((m) => {
-    if (m.user_id === currentUserId && currentUserEmail) {
+    if (m.full_name) {
+      map[m.user_id] = m.full_name;
+    } else if (m.user_id === currentUserId && currentUserEmail) {
       map[m.user_id] = currentUserEmail;
     }
-    // For other users, we'll show a truncated ID unless we have more info
   });
   return map;
 }
