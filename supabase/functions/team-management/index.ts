@@ -1,0 +1,198 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+
+    // Verify caller identity
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: caller } } = await callerClient.auth.getUser();
+    if (!caller) {
+      return new Response(JSON.stringify({ error: "Invalid session" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Admin client for privileged operations
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Check caller is super_admin
+    const { data: isSuperAdmin } = await adminClient.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "super_admin",
+    });
+    if (!isSuperAdmin) {
+      return new Response(JSON.stringify({ error: "Only super admins can manage team" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const { action } = body;
+
+    // ── INVITE ──
+    if (action === "invite") {
+      const { email, full_name, role } = body;
+      if (!email || !full_name || !role) {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Validate role
+      const validRoles = ["admin", "team_supervisor", "team_member"];
+      if (!validRoles.includes(role)) {
+        return new Response(JSON.stringify({ error: "Invalid role" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Create user via admin API with invite
+      const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+        data: { full_name },
+      });
+      if (createError) {
+        return new Response(JSON.stringify({ error: createError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const userId = userData.user.id;
+
+      // Assign role
+      await adminClient.from("user_roles").insert({ user_id: userId, role });
+
+      // Create profile
+      await adminClient.from("profiles").insert({
+        user_id: userId,
+        full_name,
+        status: "invited",
+      });
+
+      return new Response(JSON.stringify({ success: true, user_id: userId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── UPDATE ROLE ──
+    if (action === "update_role") {
+      const { user_id, new_role } = body;
+      if (!user_id || !new_role) {
+        return new Response(JSON.stringify({ error: "Missing fields" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Prevent changing super_admin role
+      const { data: targetIsSuperAdmin } = await adminClient.rpc("has_role", {
+        _user_id: user_id,
+        _role: "super_admin",
+      });
+      if (targetIsSuperAdmin) {
+        return new Response(JSON.stringify({ error: "Cannot change super_admin role" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Cannot assign super_admin
+      if (new_role === "super_admin") {
+        return new Response(JSON.stringify({ error: "Cannot assign super_admin role" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      await adminClient.from("user_roles").update({ role: new_role }).eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── DISABLE USER ──
+    if (action === "disable") {
+      const { user_id } = body;
+
+      // Prevent disabling self or super_admin
+      if (user_id === caller.id) {
+        return new Response(JSON.stringify({ error: "Cannot disable yourself" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: targetIsSuperAdmin } = await adminClient.rpc("has_role", {
+        _user_id: user_id,
+        _role: "super_admin",
+      });
+      if (targetIsSuperAdmin) {
+        return new Response(JSON.stringify({ error: "Cannot disable super_admin" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Ban user in auth
+      await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "876000h" });
+
+      // Update profile status
+      await adminClient.from("profiles").update({ status: "disabled" }).eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── REACTIVATE USER ──
+    if (action === "reactivate") {
+      const { user_id } = body;
+
+      // Unban user
+      await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
+
+      // Update profile status
+      await adminClient.from("profiles").update({ status: "active" }).eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Unknown action" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

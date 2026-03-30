@@ -46,7 +46,7 @@ const OpsSetup = () => {
       if (signUpError) throw signUpError;
       if (!signUpData.user) throw new Error("User creation failed");
 
-      // 2. Assign admin role via bootstrap function
+      // 2. Assign super_admin role via bootstrap function
       const { data: bootstrapped, error: rpcError } = await supabase.rpc("bootstrap_first_admin", {
         _user_id: signUpData.user.id,
       });
@@ -58,7 +58,15 @@ const OpsSetup = () => {
         return;
       }
 
-      // 3. Sign in immediately
+      // 3. Create profile record
+      // Use service-level insert since the user just got super_admin role
+      await supabase.from("profiles" as any).insert({
+        user_id: signUpData.user.id,
+        full_name: fullName,
+        status: "active",
+      } as any);
+
+      // 4. Sign in immediately
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) throw signInError;
 
@@ -77,19 +85,19 @@ const OpsSetup = () => {
           <div className="flex justify-center">
             <ShieldCheck className="text-primary" size={36} />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">First Admin Setup</h1>
+          <h1 className="text-2xl font-heading font-bold text-foreground">First Super Admin Setup</h1>
           <p className="text-sm text-muted-foreground">
-            No admin account exists yet. Create the first admin to access SanKash Ops.
+            No admin account exists yet. Create the super admin to access SanKash Ops.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 p-6 rounded-2xl border bg-card">
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Full Name</label>
-            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Your full name" />
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Akash Dahiya" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Email</label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@sankash.in" />
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="akash@sankash.in" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium">Password</label>
@@ -97,11 +105,11 @@ const OpsSetup = () => {
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Creating admin…</> : "Create Admin & Sign In"}
+            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Creating super admin…</> : "Create Super Admin & Sign In"}
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground">
-          This page is only available once. After the first admin is created, it will be disabled.
+          This page is only available once. After the first super admin is created, it will be disabled.
         </p>
       </div>
     </div>

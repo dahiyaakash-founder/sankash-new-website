@@ -201,6 +201,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -233,9 +257,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ops_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "team_member"
+      app_role: "admin" | "team_member" | "super_admin" | "team_supervisor"
       audience_type: "traveler" | "agent" | "developer" | "partner" | "other"
       lead_outcome: "open" | "won" | "lost"
       lead_priority: "low" | "medium" | "high" | "urgent"
@@ -395,7 +420,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "team_member"],
+      app_role: ["admin", "team_member", "super_admin", "team_supervisor"],
       audience_type: ["traveler", "agent", "developer", "partner", "other"],
       lead_outcome: ["open", "won", "lost"],
       lead_priority: ["low", "medium", "high", "urgent"],
