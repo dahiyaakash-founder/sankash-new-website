@@ -94,7 +94,7 @@ const ForTravelers = () => {
         jsonLd={createFAQSchema(faqs)}
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-14 md:py-20">
+      <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <motion.div
