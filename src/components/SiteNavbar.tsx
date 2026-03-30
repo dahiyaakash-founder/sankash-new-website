@@ -82,11 +82,11 @@ const SiteNavbar = () => {
 
         {/* Right CTAs */}
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/contact">
+          <a href="https://app.sankash.in/agent/onboarding/signup" target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
               Agent Signup
             </Button>
-          </Link>
+          </a>
           <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
             <Button size="sm" className="text-[13px]">Agent Login</Button>
           </a>
@@ -139,9 +139,9 @@ const SiteNavbar = () => {
               )
             )}
             <div className="flex gap-2 pt-3 px-3 border-t mt-2">
-              <Link to="/contact" onClick={() => setMobileOpen(false)} className="flex-1">
+              <a href="https://app.sankash.in/agent/onboarding/signup" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex-1">
                 <Button variant="outline" size="sm" className="w-full text-sm">Agent Signup</Button>
-              </Link>
+              </a>
               <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer" className="flex-1">
                 <Button size="sm" className="w-full text-sm">Agent Login</Button>
               </a>

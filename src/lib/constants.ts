@@ -10,4 +10,4 @@ export const SANKASH_DOCS_URL = "https://docs.sankash.in";
 export const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
 
 /** Agent platform signup */
-export const AGENT_SIGNUP_URL = "https://app.sankash.in/agent/auth/register";
+export const AGENT_SIGNUP_URL = "https://app.sankash.in/agent/onboarding/signup";
