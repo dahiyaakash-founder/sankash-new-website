@@ -53,7 +53,7 @@ const EmiCalculator = () => {
       />
 
       {/* Hero */}
-      <section className="bg-hero-gradient py-14 md:py-20">
+      <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container max-w-3xl text-center space-y-4">
           <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
             <Calculator size={12} className="text-primary" />
