@@ -81,7 +81,7 @@ const HomepageHero = () => {
             </div>
 
             {/* Trust stats inline */}
-            <div className="flex gap-8 pt-4 border-t border-border/60">
+            <div className="grid grid-cols-3 gap-4 sm:flex sm:gap-8 pt-4 border-t border-border/60">
               {[
                 { v: "8,000+", l: "Travel Partners" },
                 { v: "5 Million+", l: "Travelers Served" },
