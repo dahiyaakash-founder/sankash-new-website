@@ -113,7 +113,7 @@ const Solutions = () => {
               {...fade}
               transition={{ delay: i * 0.08, duration: 0.45 }}
             >
-              <div className={`rounded-2xl border ${p.accentBorder} ${p.accentBg} p-8 md:p-12`}>
+              <div className={`rounded-2xl border ${p.accentBorder} ${p.accentBg} p-5 sm:p-8 md:p-12`}>
                 <div className="grid md:grid-cols-[1fr_340px] gap-10 items-start">
                   <div className="space-y-5">
                     <div className="flex items-center gap-3">
