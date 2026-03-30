@@ -88,6 +88,7 @@ const OpsLeads = () => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">(searchParams.get("status") as LeadStatus ?? "");
   const [sourceFilter, setSourceFilter] = useState<LeadSourceType | "">(searchParams.get("source") as LeadSourceType ?? "");
