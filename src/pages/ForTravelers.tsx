@@ -265,7 +265,7 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                className="p-4 sm:p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
               >
                 <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
                   <r.icon size={18} className="text-primary" />
