@@ -248,7 +248,7 @@ const EmiCalculator = () => {
                 </Button>
               </Link>
             </div>
-            <div className="p-6 rounded-2xl border bg-card space-y-3">
+            <div className="p-4 sm:p-6 rounded-2xl border bg-card space-y-3">
               <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
                 <Users size={18} className="text-primary" />
               </div>
