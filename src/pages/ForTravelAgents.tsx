@@ -1,6 +1,6 @@
 import React from "react";
 import SiteLayout from "@/components/SiteLayout";
-import SEOHead from "@/components/SEOHead";
+import SEOHead, { createFAQSchema } from "@/components/SEOHead";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -81,6 +81,25 @@ const pillars = [
 // Sample EMI for agent display — ₹85,000 trip
 const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 9, 12, 18, 24].includes(r.tenure));
 
+const agentFaqs = [
+  {
+    q: "How does No Cost EMI work for travel agents?",
+    a: "When a customer books through your agency with SanKash No Cost EMI, the lender pays you the full trip amount upfront. The customer repays the lender in monthly instalments with zero interest. You bear no credit risk and get paid immediately.",
+  },
+  {
+    q: "Does offering EMI slow down the booking process?",
+    a: "No. SanKash EMI is embedded into the booking workflow. Customer approval is fully digital and takes minutes — no paperwork, no branch visits, no delays to your booking confirmation.",
+  },
+  {
+    q: "What does it cost the travel agent to offer SanKash?",
+    a: "There is no upfront cost to the travel agent. SanKash works on a transaction-based model. You earn more by converting more bookings and upselling premium packages through EMI availability.",
+  },
+  {
+    q: "Can I offer travel insurance through SanKash too?",
+    a: "Yes. SanKash provides embedded travel insurance at the point of booking — covering trip cancellation, medical emergencies, and baggage. You earn ancillary revenue on every policy sold, with zero manual work.",
+  },
+];
+
 const ForTravelAgents = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
 
@@ -91,8 +110,9 @@ const ForTravelAgents = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Agent EMI, Insurance and Payments | SanKash"
-        description="Offer No Cost EMI, embedded insurance, and faster settlements to your travel customers. Upload a quote and review financing opportunities with SanKash."
+        title="For Travel Agents — No Cost EMI, Insurance and Faster Collections | SanKash"
+        description="Help customers book with No Cost EMI, add travel protection and collect payments faster with SanKash for travel agents."
+        jsonLd={createFAQSchema(agentFaqs)}
       />
       {/* Hero — compact decision block */}
       <section className="bg-hero-gradient py-10 md:py-14">
@@ -372,6 +392,25 @@ const ForTravelAgents = () => {
                 ))}
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ section */}
+      <section className="py-10 md:py-14 bg-section-alt">
+        <div className="container max-w-3xl">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground mb-6">
+            Frequently asked questions
+          </h2>
+          <div className="space-y-3">
+            {agentFaqs.map((faq) => (
+              <details key={faq.q} className="group bg-card rounded-xl border p-3.5 cursor-pointer">
+                <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
+                  {faq.q}
+                </summary>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-2.5 pr-6">{faq.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

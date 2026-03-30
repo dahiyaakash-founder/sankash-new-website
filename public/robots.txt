@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+Disallow: /ops/
+Disallow: /ops/*
+
 Sitemap: https://www.sankash.in/sitemap.xml

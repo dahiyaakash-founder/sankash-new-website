@@ -18,6 +18,10 @@ const OpsLogin = () => {
     supabase.rpc("admin_exists").then(({ data }) => {
       if (!data) setNoAdmin(true);
     });
+    // Noindex for internal ops pages
+    let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!el) { el = document.createElement("meta"); el.setAttribute("name", "robots"); document.head.appendChild(el); }
+    el.setAttribute("content", "noindex, nofollow");
   }, []);
 
   if (loading) return (

@@ -9,10 +9,11 @@ interface SEOHeadProps {
   description: string;
   canonical?: string;
   ogImage?: string;
+  noindex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const SEOHead = ({ title, description, canonical, ogImage, jsonLd }: SEOHeadProps) => {
+const SEOHead = ({ title, description, canonical, ogImage, noindex, jsonLd }: SEOHeadProps) => {
   const location = useLocation();
   const canonicalUrl = canonical || `${SITE_URL}${location.pathname}`;
   const image = ogImage || DEFAULT_OG_IMAGE;
@@ -31,6 +32,7 @@ const SEOHead = ({ title, description, canonical, ogImage, jsonLd }: SEOHeadProp
     };
 
     setMeta("description", description);
+    setMeta("robots", noindex ? "noindex, nofollow" : "index, follow");
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
     setMeta("og:url", canonicalUrl, "property");
@@ -120,5 +122,16 @@ export const contactPageSchema = {
   url: "https://www.sankash.in/contact",
   description: "Get in touch with SanKash for demos, support, or integration help.",
 };
+
+export const createBreadcrumbSchema = (items: { name: string; url: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: item.name,
+    item: item.url,
+  })),
+});
 
 export default SEOHead;

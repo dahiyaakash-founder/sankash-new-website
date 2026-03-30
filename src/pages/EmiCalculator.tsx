@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
-import SEOHead from "@/components/SEOHead";
+import SEOHead, { createFAQSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -24,6 +24,13 @@ import {
 } from "@/lib/emi-calculator";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
 
+const emiFaqs = [
+  { q: "What is a travel EMI calculator?", a: "A travel EMI calculator helps you estimate the monthly instalment for a holiday or travel booking. Enter your trip cost, choose a tenure between 3 and 24 months, and see what your booking would cost per month — with or without interest." },
+  { q: "How does No Cost EMI work for holidays?", a: "No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures, making it ideal for holidays in the ₹30,000 to ₹2,00,000 range." },
+  { q: "What is the difference between No Cost EMI and Standard EMI?", a: "No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee." },
+  { q: "Why do travel agents use EMI during checkout?", a: "Travel agents offering No Cost EMI at checkout see 20% higher sales and 40% better booking conversion. EMI removes the upfront cost barrier, helping customers choose premium packages and complete bookings faster. Agents get paid in full by the lender, so there's no collection risk." },
+];
+
 const EmiCalculator = () => {
   const [amount, setAmount] = useState(85000);
   const [selectedTenure, setSelectedTenure] = useState(6);
@@ -40,8 +47,9 @@ const EmiCalculator = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel EMI Calculator — No Cost EMI for Holidays | SanKash"
-        description="Calculate monthly EMI for your holiday or travel booking. Compare No Cost EMI and standard EMI across 3 to 24-month tenures. Indicative estimates from SanKash."
+        title="Travel EMI Calculator — Holiday and Tour Package EMI Calculator | SanKash"
+        description="Estimate monthly EMI for holidays and tour packages across 3, 6, 9, 12, 18 and 24-month tenures with SanKash's travel EMI calculator."
+        jsonLd={createFAQSchema(emiFaqs)}
       />
 
       {/* Hero */}
@@ -258,28 +266,15 @@ const EmiCalculator = () => {
         </div>
       </section>
 
-      {/* SEO Content */}
+      {/* SEO Content / FAQ */}
       <section className="py-14 md:py-20">
-        <div className="container max-w-3xl prose prose-sm">
-          <h2 className="text-2xl font-heading font-bold text-foreground">What is a travel EMI calculator?</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            A travel EMI calculator helps you estimate the monthly instalment for a holiday or travel booking. Enter your trip cost, choose a tenure between 3 and 24 months, and see what your booking would cost per month — with or without interest.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">How does No Cost EMI work for holidays?</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures, making it ideal for holidays in the ₹30,000 to ₹2,00,000 range.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">Difference between No Cost EMI and Standard EMI</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">Why travel agents use EMI during checkout</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Travel agents offering No Cost EMI at checkout see 20% higher sales and 40% better booking conversion. EMI removes the upfront cost barrier, helping customers choose premium packages and complete bookings faster. Agents get paid in full by the lender, so there's no collection risk.
-          </p>
+        <div className="container max-w-3xl space-y-8">
+          {emiFaqs.map((faq) => (
+            <div key={faq.q}>
+              <h2 className="text-2xl font-heading font-bold text-foreground">{faq.q}</h2>
+              <p className="text-muted-foreground leading-relaxed mt-2">{faq.a}</p>
+            </div>
+          ))}
         </div>
       </section>
     </SiteLayout>

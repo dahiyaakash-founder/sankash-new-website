@@ -15,8 +15,8 @@ const Insurance = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Embedded Travel Insurance for Agents | SanKash"
-        description="Embed travel insurance into your booking flow. Trip cancellation, medical, and baggage cover issued instantly with ancillary revenue on every policy."
+        title="Embedded Travel Insurance for Travel Businesses | SanKash Insurance"
+        description="Add travel protection at checkout with embedded insurance for trip cancellation, medical and baggage coverage."
       />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">

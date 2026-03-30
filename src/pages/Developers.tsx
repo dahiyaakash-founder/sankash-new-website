@@ -56,8 +56,8 @@ const Developers = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel APIs for Lending, Insurance and Payments | SanKash"
-        description="Integrate SanKash APIs for travel lending, insurance, and payments. Get sandbox access, explore docs, and go live in days with simple Basic Authentication."
+        title="Travel API Integrations for EMI, Insurance and Payments | SanKash"
+        description="Integrate SanKash APIs for travel lending, insurance and payments into your booking flow with sandbox and production access."
       />
 
       {/* Modals */}
