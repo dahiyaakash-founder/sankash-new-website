@@ -13,7 +13,7 @@ interface SEOHeadProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const SEOHead = ({ title, description, canonical, ogImage, jsonLd }: SEOHeadProps) => {
+const SEOHead = ({ title, description, canonical, ogImage, noindex, jsonLd }: SEOHeadProps) => {
   const location = useLocation();
   const canonicalUrl = canonical || `${SITE_URL}${location.pathname}`;
   const image = ogImage || DEFAULT_OG_IMAGE;
