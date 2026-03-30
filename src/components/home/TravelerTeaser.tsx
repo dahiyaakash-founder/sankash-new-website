@@ -28,7 +28,7 @@ const steps = [
 
 const TravelerTeaser = () => {
   return (
-    <section className="py-14 md:py-28">
+    <section className="py-12 md:py-28">
       <div className="container">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -36,7 +36,7 @@ const TravelerTeaser = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center space-y-3 mb-8 md:mb-12"
+              className="text-center space-y-3 mb-7 md:mb-12"
           >
             <p className="text-[11px] font-semibold text-brand-coral uppercase tracking-[0.1em]">For Travelers</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
@@ -70,7 +70,7 @@ const TravelerTeaser = () => {
             ))}
           </div>
 
-          <div className="text-center mt-8">
+           <div className="text-center mt-7 md:mt-8">
             <Link to="/for-travelers">
               <Button variant="outline" size="lg" className="gap-2 text-sm border-primary/20 text-primary hover:bg-accent">
                 Explore Traveler Tools <ArrowRight size={14} />

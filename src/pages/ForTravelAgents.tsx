@@ -33,22 +33,22 @@ const whyReasons = [
   {
     icon: Banknote,
     title: "No Cost EMI at checkout",
-    desc: "20% sales lift, 40% better conversion. You get paid upfront.",
+    desc: "3 and 6 month No Cost EMI. 20% sales lift, 40% better conversion.",
   },
   {
     icon: ShieldCheck,
     title: "Insurance at checkout",
-    desc: "Embedded travel protection. Ancillary revenue, zero manual work.",
+    desc: "Attach cancellation, medical, and baggage cover right at checkout.",
   },
   {
     icon: CreditCard,
     title: "Faster collections",
-    desc: "Accept payments, auto-reconcile, settle T+1.",
+    desc: "T+1 collections, direct settlement, and auto-reconciliation.",
   },
   {
     icon: Zap,
-    title: "No paperwork",
-    desc: "Works inside your existing booking workflow.",
+    title: "Lower payment cost",
+    desc: "In eligible flows, 1.5% PG charges can be waived.",
   },
 ];
 
@@ -190,9 +190,9 @@ const ForTravelAgents = () => {
       </section>
 
       {/* EMI & Sales Tool — agent-specific */}
-      <section className="py-10 md:py-14 bg-section-alt">
+      <section className="py-8 md:py-14 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -209,13 +209,13 @@ const ForTravelAgents = () => {
               <p className="text-muted-foreground leading-relaxed">
                 Show your customer what their trip could cost per month. Use SanKash's indicative EMI calculator to present 3, 6, 9, 12, 18, and 24‑month options during the sales conversation.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Link to="/emi-calculator">
-                  <Button size="lg" className="gap-2">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link to="/emi-calculator" className="w-full sm:w-auto">
+                  <Button size="lg" className="gap-2 w-full sm:w-auto">
                     <Calculator size={16} /> Open EMI Calculator
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="gap-2" onClick={scrollToUploader}>
+                <Button variant="outline" size="lg" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
                   Upload a Quote
                 </Button>
               </div>
@@ -227,7 +227,7 @@ const ForTravelAgents = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="bg-card rounded-2xl border shadow-card p-5 space-y-3">
+              <div className="bg-card rounded-2xl border shadow-card p-4 sm:p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
                   Indicative EMI · ₹85,000 trip

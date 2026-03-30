@@ -34,9 +34,9 @@ const pillars = [
 
 const ThreePillars = () => {
   return (
-    <section className="py-20 md:py-28 bg-section-alt">
+    <section className="py-12 md:py-28 bg-section-alt">
       <div className="container">
-        <div className="max-w-2xl mb-14">
+        <div className="max-w-2xl mb-8 md:mb-14">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.1em] mb-3">Platform</p>
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
             Three growth engines. One platform.
@@ -58,9 +58,9 @@ const ThreePillars = () => {
             >
               <Link
                 to={pillar.href}
-                className={`group block p-6 md:p-8 rounded-2xl border ${pillar.accent} hover:shadow-card-hover transition-all`}
+                className={`group block rounded-2xl border p-4 md:p-8 ${pillar.accent} hover:shadow-card-hover transition-all`}
               >
-                <div className="flex flex-col md:flex-row md:items-start gap-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                   <div className="flex-1 space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center shadow-card">

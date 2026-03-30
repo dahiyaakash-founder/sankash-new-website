@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const HomepageCTA = () => {
   return (
-    <section className="relative py-14 md:py-28 bg-brand-deep overflow-hidden">
+    <section className="relative py-12 md:py-28 bg-brand-deep overflow-hidden">
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 opacity-[0.04]" style={{
         backgroundImage: 'linear-gradient(hsl(189 99% 35%) 1px, transparent 1px), linear-gradient(90deg, hsl(189 99% 35%) 1px, transparent 1px)',
@@ -24,7 +24,7 @@ const HomepageCTA = () => {
             Ready to grow your travel business?
           </h2>
           <p className="text-primary-foreground/50 text-base">
-            Join 8,000+ travel partners using SanKash to convert more, collect faster, and protect every booking.
+            Turn quote review, EMI, protection, and collections into one cleaner booking workflow for your travel business.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
             <Link to="/solutions">

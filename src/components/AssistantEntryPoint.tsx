@@ -16,16 +16,16 @@ interface AssistantEntryPointProps {
 
 const AssistantEntryPoint = ({ prompts, className = "" }: AssistantEntryPointProps) => {
   return (
-    <section className={`py-8 md:py-16 ${className}`}>
+    <section className={`py-6 md:py-16 ${className}`}>
       <div className="container max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="rounded-2xl border bg-card p-5 md:p-8"
+          className="rounded-2xl border bg-card p-4 md:p-8"
         >
-          <div className="flex items-center gap-2.5 mb-5">
+          <div className="mb-4 flex items-center gap-2.5 md:mb-5">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Sparkles size={14} className="text-primary" />
             </div>

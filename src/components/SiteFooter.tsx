@@ -41,8 +41,8 @@ const footerSections = [
 const SiteFooter = () => {
   return (
     <footer className="bg-brand-deep">
-      <div className="container py-10 md:py-14">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
+      <div className="container py-8 md:py-14">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-5 md:gap-8">
           <div className="col-span-2 md:col-span-1 space-y-3">
             <Link to="/" className="flex items-center" aria-label="SanKash home">
               <img src={sankashMark} alt="SanKash logo" className="h-12 w-auto object-contain" />
@@ -54,8 +54,8 @@ const SiteFooter = () => {
 
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h4 className="font-heading font-semibold text-primary-foreground/80 text-[13px] mb-4">{section.title}</h4>
-              <ul className="space-y-2">
+              <h4 className="font-heading font-semibold text-primary-foreground/80 text-[13px] mb-3">{section.title}</h4>
+              <ul className="space-y-1.5">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -71,7 +71,7 @@ const SiteFooter = () => {
           ))}
         </div>
 
-        <div className="border-t border-primary-foreground/8 mt-10 pt-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="border-t border-primary-foreground/8 mt-8 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-[11px] text-primary-foreground/25">© {new Date().getFullYear()} SanKash. All rights reserved.</p>
           <p className="text-[11px] text-primary-foreground/25">Made in India 🇮🇳</p>
         </div>

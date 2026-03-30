@@ -5,14 +5,14 @@ const proofPoints = [
   { icon: Users, value: "8,000+", label: "Active Partners" },
   { icon: ArrowLeftRight, value: "T+1", label: "Settlement Cycle" },
   { icon: Plane, value: "5 Million+", label: "Travelers Served" },
-  { icon: FileCheck, value: "15+", label: "Lending Partners" },
+  { icon: FileCheck, value: "₹200Cr+", label: "Payment Volume Enabled" },
 ];
 
 const TrustBar = () => {
   return (
-    <section className="py-7 md:py-12 border-b bg-brand-deep">
+    <section className="py-6 md:py-12 border-b bg-brand-deep">
       <div className="container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
           {proofPoints.map((point, i) => (
             <motion.div
               key={point.label}
