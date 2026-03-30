@@ -91,8 +91,8 @@ const ForTravelAgents = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Agent EMI, Insurance and Payments | SanKash"
-        description="Offer No Cost EMI, embedded insurance, and faster settlements to your travel customers. Upload a quote and review financing opportunities with SanKash."
+        title="For Travel Agents — No Cost EMI, Insurance and Faster Collections | SanKash"
+        description="Help customers book with No Cost EMI, add travel protection and collect payments faster with SanKash for travel agents."
       />
       {/* Hero — compact decision block */}
       <section className="bg-hero-gradient py-10 md:py-14">

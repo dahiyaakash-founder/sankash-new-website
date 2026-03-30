@@ -80,8 +80,8 @@ const Solutions = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Lending, Insurance and Payment Solutions | SanKash"
-        description="Explore SanKash's three core solutions for travel businesses: No Cost EMI lending, embedded travel insurance, and T+1 payment settlements."
+        title="Travel Business Solutions — EMI, Insurance and Payments | SanKash"
+        description="Explore SanKash solutions for travel businesses, including No Cost EMI at checkout, embedded insurance and faster payment collection."
       />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">

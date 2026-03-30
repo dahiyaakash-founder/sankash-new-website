@@ -9,8 +9,8 @@ const Payments = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Payment Settlement and Collections | SanKash"
-        description="T+1 settlements, all payment modes, and automated reconciliation built for travel businesses. Accept UPI, cards, wallets, and NEFT with SanKash."
+        title="Travel Payment Collection and T+1 Settlement | SanKash Payments"
+        description="Collect payments faster, reconcile better and manage travel settlement complexity with SanKash Payments."
       />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">

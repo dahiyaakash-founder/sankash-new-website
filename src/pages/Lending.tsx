@@ -18,8 +18,8 @@ const Lending = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="No Cost EMI for Travel Bookings | SanKash"
-        description="Offer No Cost EMI at checkout. 20% higher sales, 40% better conversion, and 200% more customer queries for travel agents."
+        title="No Cost EMI for Travel Bookings | SanKash Lending"
+        description="Offer No Cost EMI and standard travel EMI at checkout to improve sales, conversion and customer queries."
       />
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container">

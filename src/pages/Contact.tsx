@@ -117,8 +117,8 @@ const Contact = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Contact SanKash for Demo, Support or Integrations | SanKash"
-        description="Book a demo, get integration help, start agent onboarding, or reach SanKash support. Fast guided routing to the right team."
+        title="Contact SanKash"
+        description="Get in touch with SanKash for demos, onboarding, support, integrations and travel business solutions."
         jsonLd={contactPageSchema}
       />
       {/* Hero */}

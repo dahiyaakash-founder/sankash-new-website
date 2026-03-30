@@ -89,8 +89,8 @@ const ForTravelers = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Holiday EMI and Travel Payment Options | SanKash"
-        description="Upload your holiday quote to check EMI options, explore travel insurance, and get finance-ready before you book. No obligation, no credit score impact."
+        title="Travel EMI and Holiday Quote Review | SanKash"
+        description="Upload your holiday quote, explore No Cost EMI options, travel protection and smarter ways to book with SanKash."
         jsonLd={createFAQSchema(faqs)}
       />
       {/* Hero */}

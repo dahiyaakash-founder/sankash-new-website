@@ -30,8 +30,8 @@ const About = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel Financial Infrastructure for Travel Businesses | SanKash"
-        description="SanKash was built because travel deserved its own financial layer. Learn why lending, insurance, and payments needed a travel-first platform."
+        title="About SanKash — Travel Financial Infrastructure"
+        description="Learn how SanKash is building lending, insurance and payments infrastructure designed specifically for travel businesses."
       />
       {/* Hero */}
       <section className="bg-hero-gradient py-20 md:py-28">

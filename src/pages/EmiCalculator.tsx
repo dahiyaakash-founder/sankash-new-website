@@ -40,8 +40,8 @@ const EmiCalculator = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="Travel EMI Calculator — No Cost EMI for Holidays | SanKash"
-        description="Calculate monthly EMI for your holiday or travel booking. Compare No Cost EMI and standard EMI across 3 to 24-month tenures. Indicative estimates from SanKash."
+        title="Travel EMI Calculator — Holiday and Tour Package EMI Calculator | SanKash"
+        description="Estimate monthly EMI for holidays and tour packages across 3, 6, 9, 12, 18 and 24-month tenures with SanKash's travel EMI calculator."
       />
 
       {/* Hero */}
