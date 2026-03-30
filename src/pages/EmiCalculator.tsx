@@ -75,7 +75,7 @@ const EmiCalculator = () => {
         <div className="container max-w-4xl">
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Input panel */}
-            <div className="lg:col-span-2 space-y-5 p-6 rounded-2xl border bg-card">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-5 p-4 sm:p-6 rounded-2xl border bg-card">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trip Amount</label>
                 <div className="relative">
