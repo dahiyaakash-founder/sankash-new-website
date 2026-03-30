@@ -396,6 +396,25 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
+      {/* FAQ section */}
+      <section className="py-10 md:py-14 bg-section-alt">
+        <div className="container max-w-3xl">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground mb-6">
+            Frequently asked questions
+          </h2>
+          <div className="space-y-3">
+            {agentFaqs.map((faq) => (
+              <details key={faq.q} className="group bg-card rounded-xl border p-3.5 cursor-pointer">
+                <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
+                  {faq.q}
+                </summary>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-2.5 pr-6">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Assistant — compact utility */}
       <AssistantEntryPoint
         className="py-6 md:py-8"
