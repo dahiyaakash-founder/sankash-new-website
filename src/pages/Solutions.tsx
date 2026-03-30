@@ -172,7 +172,7 @@ const Solutions = () => {
                 transition={{ delay: i * 0.1, duration: 0.4 }}
                 className="relative"
               >
-                <div className="bg-card border rounded-xl p-6 shadow-card h-full">
+                <div className="bg-card border rounded-xl p-4 sm:p-6 shadow-card h-full">
                   <span className="text-3xl font-heading font-bold text-primary/15">{step.num}</span>
                   <h3 className="text-lg font-heading font-bold text-primary-deep mt-2">{step.label}</h3>
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{step.desc}</p>
