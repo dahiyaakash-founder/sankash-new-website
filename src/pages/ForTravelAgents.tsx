@@ -426,7 +426,7 @@ const ForTravelAgents = () => {
       />
 
       {/* Final CTA */}
-      <section className="py-10 md:py-14 bg-brand-deep relative overflow-hidden" />
+      <section className="py-10 md:py-14 bg-brand-deep relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="container relative max-w-3xl text-center space-y-3">
           <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-foreground tracking-tight">
