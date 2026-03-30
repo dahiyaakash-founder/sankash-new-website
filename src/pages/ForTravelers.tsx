@@ -106,7 +106,7 @@ const ForTravelers = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travelers
               </p>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Already got a holiday quote?
                 <br />
                 <span className="text-gradient-brand">Check it before you book.</span>
