@@ -289,7 +289,9 @@ const OpsLeads = () => {
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden xl:table-cell">
                       {lead.assigned_to ? (
-                        <span className="text-xs font-mono text-muted-foreground">{lead.assigned_to.slice(0, 8)}…</span>
+                        <span className="text-xs text-muted-foreground">
+                          {lead.assigned_to === user?.id ? (user?.email ?? "You") : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")}
+                        </span>
                       ) : (
                         <span className="text-xs text-muted-foreground/50">Unassigned</span>
                       )}
