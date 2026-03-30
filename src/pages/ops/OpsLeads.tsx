@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
-import { fetchLeads, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority } from "@/lib/leads-service";
+import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority } from "@/lib/leads-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +88,7 @@ const OpsLeads = () => {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">(searchParams.get("status") as LeadStatus ?? "");
   const [sourceFilter, setSourceFilter] = useState<LeadSourceType | "">(searchParams.get("source") as LeadSourceType ?? "");
@@ -122,6 +123,15 @@ const OpsLeads = () => {
   }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Load team members for owner display
+  useEffect(() => {
+    fetchTeamMembers().then((members) => {
+      const emailMap: Record<string, string> = {};
+      if (user) emailMap[user.id] = user.email ?? user.id.slice(0, 8) + "…";
+      setTeamEmails(emailMap);
+    }).catch(() => {});
+  }, [user]);
 
   const applyPreset = (preset: typeof VIEW_PRESETS[number]) => {
     setActivePreset(preset.label);
@@ -279,7 +289,9 @@ const OpsLeads = () => {
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden xl:table-cell">
                       {lead.assigned_to ? (
-                        <span className="text-xs font-mono text-muted-foreground">{lead.assigned_to.slice(0, 8)}…</span>
+                        <span className="text-xs text-muted-foreground">
+                          {lead.assigned_to === user?.id ? (user?.email ?? "You") : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")}
+                        </span>
                       ) : (
                         <span className="text-xs text-muted-foreground/50">Unassigned</span>
                       )}
