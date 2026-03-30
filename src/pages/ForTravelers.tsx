@@ -192,7 +192,7 @@ const ForTravelers = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 EMI & Affordability
               </p>
-              <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
                 Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
