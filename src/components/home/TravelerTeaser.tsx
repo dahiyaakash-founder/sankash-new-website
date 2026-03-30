@@ -28,7 +28,7 @@ const steps = [
 
 const TravelerTeaser = () => {
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-14 md:py-28">
       <div className="container">
         <div className="max-w-4xl mx-auto">
           <motion.div
