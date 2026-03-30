@@ -56,7 +56,7 @@ export function calculateEmi(amount: number, tenure: number, emiType: EmiType): 
   // Standard / interest-bearing
   const totalInterest = Math.round(amount * INTEREST_RATE_PER_MONTH * tenure);
   const totalPayable = amount + totalInterest + processingFee;
-  const monthlyEmi = Math.round((amount + totalInterest) / tenure);
+  const monthlyEmi = Math.round(totalPayable / tenure);
 
   return {
     tenure,
