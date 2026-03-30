@@ -18,7 +18,7 @@ const Insurance = () => {
         title="Embedded Travel Insurance for Travel Businesses | SanKash Insurance"
         description="Add travel protection at checkout with embedded insurance for trip cancellation, medical and baggage coverage."
       />
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-14 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
             <div className="w-14 h-14 rounded-2xl bg-secondary/15 flex items-center justify-center">
