@@ -3,6 +3,7 @@ import SiteLayout from "@/components/SiteLayout";
 import SEOHead, { createFAQSchema } from "@/components/SEOHead";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
