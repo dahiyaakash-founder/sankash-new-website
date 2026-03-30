@@ -26,7 +26,7 @@ const HomepageCTA = () => {
           <p className="text-primary-foreground/50 text-base">
             Join 8,000+ travel partners using SanKash to convert more, collect faster, and protect every booking.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
             <Link to="/solutions">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
                 Explore Solutions <ArrowRight size={16} />
