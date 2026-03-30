@@ -231,10 +231,10 @@ const EmiCalculator = () => {
       </section>
 
       {/* CTA section */}
-      <section className="py-10 md:py-14 bg-section-alt">
+      <section className="py-8 md:py-14 bg-section-alt">
         <div className="container max-w-3xl">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="p-6 rounded-2xl border bg-card space-y-3">
+          <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="p-4 sm:p-6 rounded-2xl border bg-card space-y-3">
               <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
                 <Upload size={18} className="text-primary" />
               </div>
