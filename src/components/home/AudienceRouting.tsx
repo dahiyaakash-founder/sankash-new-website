@@ -28,7 +28,7 @@ const audiences = [
 
 const AudienceRouting = () => {
   return (
-    <section className="py-16 md:py-20">
+    <section className="py-12 md:py-20">
       <div className="container">
         <div className="max-w-lg mb-10">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.1em] mb-3">Who it's for</p>
