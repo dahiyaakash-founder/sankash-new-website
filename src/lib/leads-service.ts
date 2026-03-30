@@ -11,10 +11,10 @@ type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
 type LeadStatus = Database["public"]["Enums"]["lead_status"];
 type LeadSourceType = Database["public"]["Enums"]["lead_source_type"];
 type AudienceType = Database["public"]["Enums"]["audience_type"];
+type LeadPriority = Database["public"]["Enums"]["lead_priority"];
 
-export type { LeadRow, LeadInsert, LeadUpdate, LeadStatus, LeadSourceType, AudienceType };
+export type { LeadRow, LeadInsert, LeadUpdate, LeadStatus, LeadSourceType, AudienceType, LeadPriority };
 
-// Extended types for new tables (not yet in auto-generated types)
 export interface LeadNote {
   id: string;
   lead_id: string;
@@ -32,8 +32,14 @@ export interface LeadStatusHistoryEntry {
   changed_at: string;
 }
 
-export type LeadPriority = "low" | "medium" | "high" | "urgent";
 export type LeadStage = "new" | "reviewed" | "contacted" | "qualified" | "follow_up_scheduled" | "in_progress" | "won" | "lost" | "archived";
+
+export interface TeamMember {
+  id: string;
+  user_id: string;
+  role: string;
+  email?: string;
+}
 
 /** Insert a lead from a public website form (anon) */
 export async function createLead(lead: LeadInsert) {
@@ -201,23 +207,38 @@ export async function uploadQuoteFile(file: File) {
 /** Export leads to CSV */
 export function leadsToCSV(leads: LeadRow[]): string {
   const headers = [
-    "ID", "Created", "Name", "Email", "Mobile", "Company", "City",
-    "Source Page", "Source Type", "Audience", "Status", "Stage", "Priority", "Outcome",
-    "Assigned To", "Next Follow Up", "Notes", "Message",
+    "Date", "Name", "Email", "Mobile", "Company", "City",
+    "Source Type", "Audience", "Status", "Priority", "Outcome",
+    "Owner", "Next Follow Up",
   ];
   const rows = leads.map((l: any) => [
-    l.id, l.created_at, l.full_name, l.email ?? "", l.mobile_number ?? "",
-    l.company_name ?? "", l.city ?? "", l.lead_source_page ?? "",
-    l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.stage ?? "", l.priority ?? "", l.outcome,
-    l.assigned_to ?? "", l.next_follow_up_at ?? "", l.notes ?? "", l.message ?? "",
+    l.created_at, l.full_name, l.email ?? "", l.mobile_number ?? "",
+    l.company_name ?? "", l.city ?? "",
+    l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.priority ?? "", l.outcome,
+    l.assigned_to ?? "", l.next_follow_up_at ?? "",
   ]);
   return [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
 }
 
 // ── Team / User Roles ──
 
-export async function fetchTeamMembers() {
+export async function fetchTeamMembers(): Promise<TeamMember[]> {
   const { data, error } = await supabase.from("user_roles").select("*");
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as TeamMember[];
+}
+
+/**
+ * Resolve team member emails by looking up the current user and matching IDs.
+ * Since we can't query auth.users, we build a map from what's available.
+ */
+export function buildTeamEmailMap(members: TeamMember[], currentUserId: string | undefined, currentUserEmail: string | undefined): Record<string, string> {
+  const map: Record<string, string> = {};
+  members.forEach((m) => {
+    if (m.user_id === currentUserId && currentUserEmail) {
+      map[m.user_id] = currentUserEmail;
+    }
+    // For other users, we'll show a truncated ID unless we have more info
+  });
+  return map;
 }
