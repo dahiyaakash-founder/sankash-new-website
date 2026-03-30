@@ -3,9 +3,32 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { FileSearch, TrendingUp, Zap, ArrowRight } from "lucide-react";
 
+const proofBlocks = [
+  {
+    eyebrow: "No Cost EMI",
+    title: "3 & 6 months",
+    detail: "Let customers book in monthly instalments right at checkout.",
+  },
+  {
+    eyebrow: "Commercial lift",
+    title: "20% sales lift · 40% better conversion",
+    detail: "Turn bigger itineraries into bookable trips with financing-led sales support.",
+  },
+  {
+    eyebrow: "Checkout protection",
+    title: "Medical, cancellation, baggage",
+    detail: "Attach protection at checkout instead of chasing add-ons after the quote is sent.",
+  },
+  {
+    eyebrow: "Collections",
+    title: "T+1 collections · eligible PG waiver",
+    detail: "Move faster on settlements with cleaner collection and reconciliation flows.",
+  },
+];
+
 const AgentValueProp = () => {
   return (
-    <section className="py-14 md:py-28 bg-brand-deep relative overflow-hidden">
+    <section className="py-12 md:py-28 bg-brand-deep relative overflow-hidden">
       {/* Subtle texture */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
@@ -32,7 +55,7 @@ const AgentValueProp = () => {
             <ul className="space-y-3 pt-2">
               {[
                 { icon: FileSearch, text: "Upload any itinerary — get competitive improvement suggestions" },
-                { icon: TrendingUp, text: "20% sales lift and 40% higher conversion with No Cost EMI at checkout" },
+                { icon: TrendingUp, text: "20% sales lift, 40% better conversion, and 200% more customer queries with travel EMI" },
                 { icon: Zap, text: "Go live in days — single API or no-code dashboard" },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-3">
@@ -56,20 +79,16 @@ const AgentValueProp = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="grid grid-cols-2 gap-3"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
           >
-            {[
-              { value: "8,000+", label: "Active Partners", highlight: true },
-              { value: "T+1", label: "Settlement Cycle", highlight: false },
-              { value: "40%", label: "Conversion Lift", highlight: false },
-              { value: "₹200Cr+", label: "Disbursed", highlight: true },
-            ].map((stat) => (
+            {proofBlocks.map((stat, index) => (
               <div
-                key={stat.label}
-                className={`p-5 rounded-xl text-center ${stat.highlight ? 'bg-primary-foreground/10 border border-primary-foreground/10' : 'bg-primary-foreground/5 border border-primary-foreground/5'}`}
+                key={stat.title}
+                className={`rounded-xl border p-4 text-left ${index % 2 === 0 ? 'bg-primary-foreground/10 border-primary-foreground/10' : 'bg-primary-foreground/5 border-primary-foreground/5'}`}
               >
-                <div className="text-2xl md:text-3xl font-heading font-bold text-primary-foreground">{stat.value}</div>
-                <p className="text-[11px] text-primary-foreground/40 mt-1.5 uppercase tracking-wider">{stat.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/40">{stat.eyebrow}</p>
+                <div className="mt-2 text-base md:text-lg font-heading font-bold leading-snug text-primary-foreground">{stat.title}</div>
+                <p className="mt-2 text-[12px] leading-relaxed text-primary-foreground/60">{stat.detail}</p>
               </div>
             ))}
           </motion.div>

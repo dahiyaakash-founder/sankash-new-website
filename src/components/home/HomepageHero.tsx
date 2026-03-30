@@ -39,14 +39,14 @@ const HomepageHero = () => {
     <section className="relative overflow-hidden bg-hero-gradient">
       <div className="h-0.5 bg-primary" />
 
-      <div className="container py-10 md:py-24 lg:py-28">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+      <div className="container py-8 md:py-24 lg:py-28">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           {/* Left — Copy */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="lg:col-span-6 space-y-5 md:space-y-7"
+            className="lg:col-span-6 space-y-4 md:space-y-7"
           >
             <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
@@ -81,11 +81,11 @@ const HomepageHero = () => {
             </div>
 
             {/* Trust stats inline */}
-            <div className="grid grid-cols-3 gap-4 sm:flex sm:gap-8 pt-4 border-t border-border/60">
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 pt-4 border-t border-border/60">
               {[
-                { v: "8,000+", l: "Travel Partners" },
-                { v: "5 Million+", l: "Travelers Served" },
-                { v: "T+1", l: "Agent Settlements" },
+                { v: "20%", l: "Sales Lift" },
+                { v: "40%", l: "Better Conversion" },
+                { v: "200%", l: "More Queries" },
               ].map((s) => (
                 <div key={s.l}>
                   <div className="text-base sm:text-xl font-heading font-bold text-primary-deep">{s.v}</div>
