@@ -14,7 +14,8 @@ const NotFound = () => {
     <SiteLayout>
       <SEOHead
         title="Page Not Found | SanKash"
-        description="The page you're looking for doesn't exist. Return to SanKash to explore travel lending, insurance, and payment solutions."
+        description="The page you're looking for doesn't exist."
+        noindex
       />
       <div className="flex items-center justify-center py-32">
         <div className="text-center space-y-4">
