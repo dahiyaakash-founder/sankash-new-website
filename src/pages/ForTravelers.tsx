@@ -279,9 +279,9 @@ const ForTravelers = () => {
       </section>
 
       {/* Trust & FAQ */}
-      <section className="py-16 md:py-22 bg-section-alt">
+      <section className="py-12 md:py-22 bg-section-alt">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-10">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-10">
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
