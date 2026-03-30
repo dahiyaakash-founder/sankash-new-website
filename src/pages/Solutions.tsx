@@ -105,8 +105,8 @@ const Solutions = () => {
       </section>
 
       {/* Pillar deep-dives */}
-      <section className="py-20 md:py-28">
-        <div className="container space-y-16">
+      <section className="py-14 md:py-28">
+        <div className="container space-y-10 md:space-y-16">
           {pillars.map((p, i) => (
             <motion.div
               key={p.label}
