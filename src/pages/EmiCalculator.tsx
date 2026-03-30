@@ -267,7 +267,7 @@ const EmiCalculator = () => {
       </section>
 
       {/* SEO Content / FAQ */}
-      <section className="py-14 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container max-w-3xl space-y-8">
           {emiFaqs.map((faq) => (
             <div key={faq.q}>

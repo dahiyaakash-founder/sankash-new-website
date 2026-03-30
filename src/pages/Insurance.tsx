@@ -63,7 +63,7 @@ const Insurance = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-12 md:py-28 bg-section-alt">
         <div className="container max-w-3xl">
           <h2 className="text-3xl font-heading font-bold text-center mb-8">Why embed insurance?</h2>
           <div className="space-y-3">

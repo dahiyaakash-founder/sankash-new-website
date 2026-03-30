@@ -23,7 +23,7 @@ const AssistantEntryPoint = ({ prompts, className = "" }: AssistantEntryPointPro
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="rounded-2xl border bg-card p-6 md:p-8"
+          className="rounded-2xl border bg-card p-5 md:p-8"
         >
           <div className="flex items-center gap-2.5 mb-5">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">

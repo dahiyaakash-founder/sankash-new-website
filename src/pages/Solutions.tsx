@@ -218,7 +218,7 @@ const Solutions = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
+      <section className="py-14 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
             Ready to grow your travel business?

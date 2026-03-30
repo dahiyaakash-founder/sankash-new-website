@@ -56,7 +56,7 @@ const TravelerTeaser = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-                className="p-6 rounded-xl border bg-card hover:shadow-card transition-shadow space-y-3"
+                className="p-4 sm:p-6 rounded-xl border bg-card hover:shadow-card transition-shadow space-y-2.5"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-brand-coral/10 flex items-center justify-center">

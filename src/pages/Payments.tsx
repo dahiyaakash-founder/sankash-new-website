@@ -48,7 +48,7 @@ const Payments = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="p-8 rounded-2xl border bg-card text-center space-y-4"
+                className="p-5 sm:p-8 rounded-2xl border bg-card text-center space-y-3 sm:space-y-4"
               >
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
                   <f.icon size={24} className="text-primary" />

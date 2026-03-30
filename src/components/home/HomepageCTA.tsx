@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const HomepageCTA = () => {
   return (
-    <section className="relative py-20 md:py-28 bg-brand-deep overflow-hidden">
+    <section className="relative py-14 md:py-28 bg-brand-deep overflow-hidden">
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 opacity-[0.04]" style={{
         backgroundImage: 'linear-gradient(hsl(189 99% 35%) 1px, transparent 1px), linear-gradient(90deg, hsl(189 99% 35%) 1px, transparent 1px)',

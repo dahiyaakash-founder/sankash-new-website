@@ -345,7 +345,7 @@ const ForTravelers = () => {
       ]} />
 
       {/* Final CTA */}
-      <section className="py-14 md:py-20 bg-brand-deep relative overflow-hidden">
+      <section className="py-12 md:py-20 bg-brand-deep relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{

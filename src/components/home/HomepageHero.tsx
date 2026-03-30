@@ -112,7 +112,7 @@ const HomepageHero = () => {
                   initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25 + i * 0.1, duration: 0.4, ease: "easeOut" }}
-                  className="relative flex items-start gap-4 p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm"
+                  className="relative flex items-start gap-3 p-3 sm:p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm"
                 >
                   {/* Step number */}
                   <div className="relative z-10 w-10 h-10 rounded-lg bg-accent/60 border border-border/40 flex items-center justify-center shrink-0">
