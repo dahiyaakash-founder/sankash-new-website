@@ -123,4 +123,15 @@ export const contactPageSchema = {
   description: "Get in touch with SanKash for demos, support, or integration help.",
 };
 
+export const createBreadcrumbSchema = (items: { name: string; url: string }[]) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: item.name,
+    item: item.url,
+  })),
+});
+
 export default SEOHead;
