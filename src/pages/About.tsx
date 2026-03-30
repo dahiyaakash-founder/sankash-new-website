@@ -38,7 +38,7 @@ const About = () => {
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Why SanKash</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-primary-deep">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-primary-deep">
               Travel needed a financial layer.<br />We built it.
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
