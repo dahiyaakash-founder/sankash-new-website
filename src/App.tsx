@@ -44,6 +44,7 @@ const App = () => (
             <Route path="/solutions/insurance" element={<Insurance />} />
             <Route path="/solutions/payments" element={<Payments />} />
             <Route path="/developers" element={<Developers />} />
+            <Route path="/emi-calculator" element={<EmiCalculator />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             {/* Ops Dashboard — protected */}
