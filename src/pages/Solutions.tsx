@@ -87,7 +87,7 @@ const Solutions = () => {
       <section className="bg-hero-gradient py-20 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">Solutions</p>
-          <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep">
+          <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep">
             Three growth engines for travel businesses
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
