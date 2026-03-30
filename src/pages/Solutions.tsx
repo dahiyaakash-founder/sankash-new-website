@@ -189,9 +189,9 @@ const Solutions = () => {
       </section>
 
       {/* Who it's for */}
-      <section className="py-20 md:py-28">
+      <section className="py-12 md:py-28">
         <div className="container">
-          <motion.div {...fade} className="max-w-2xl mb-12">
+          <motion.div {...fade} className="max-w-2xl mb-8 md:mb-12">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Built for</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
               Designed for travel businesses
