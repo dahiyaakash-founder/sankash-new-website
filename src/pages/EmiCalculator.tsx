@@ -22,7 +22,7 @@ import {
   type EmiType,
   type EmiResult,
 } from "@/lib/emi-calculator";
-import { AGENT_SIGNUP_URL } from "@/lib/constants";
+import { AGENT_LOGIN_URL } from "@/lib/constants";
 
 const EmiCalculator = () => {
   const [amount, setAmount] = useState(85000);
