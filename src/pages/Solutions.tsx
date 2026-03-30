@@ -204,7 +204,7 @@ const Solutions = () => {
                 key={a.label}
                 {...fade}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="bg-card border rounded-xl p-6 shadow-card"
+                className="bg-card border rounded-xl p-4 sm:p-6 shadow-card"
               >
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center mb-4">
                   <a.icon size={20} className="text-primary" />
