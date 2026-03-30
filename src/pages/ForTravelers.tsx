@@ -122,6 +122,11 @@ const ForTravelers = () => {
                     <Calculator size={16} /> Check EMI Options
                   </Button>
                 </a>
+                <Link to="/emi-calculator">
+                  <Button variant="ghost" size="xl" className="gap-2 text-primary">
+                    EMI Calculator <ArrowRight size={14} />
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 

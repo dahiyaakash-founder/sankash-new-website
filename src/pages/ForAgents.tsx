@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Upload, TrendingUp, Zap, Users, BarChart3, Shield, CreditCard } from "lucide-react";
+import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
 
 const features = [
   { icon: CreditCard, title: "Offer EMI at Point of Sale", desc: "Let customers pay in installments — instant approval, zero paperwork." },
@@ -39,10 +40,12 @@ const ForAgents = () => {
               that drive higher conversion and customer satisfaction.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/contact">
+              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
                 <Button size="xl" className="gap-2">Get Started <ArrowRight size={18} /></Button>
-              </Link>
-              <Button variant="outline" size="xl">Agent Login</Button>
+              </a>
+              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="xl">Agent Login</Button>
+              </a>
             </div>
           </motion.div>
         </div>
@@ -109,10 +112,12 @@ const ForAgents = () => {
             better pricing, smarter bundling, higher margins. Available exclusively to SanKash partners.
           </p>
           <div className="flex justify-center gap-3 pt-2">
-            <Link to="/contact">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="gap-2">Become a Partner <ArrowRight size={16} /></Button>
-            </Link>
-            <Button variant="outline" size="lg">Agent Login</Button>
+            </a>
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="lg">Agent Login</Button>
+            </a>
           </div>
         </div>
       </section>
