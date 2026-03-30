@@ -39,7 +39,7 @@ const Insurance = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-28">
+      <section className="py-12 md:py-28">
         <div className="container">
           <h2 className="text-3xl font-heading font-bold text-center mb-14">Coverage Types</h2>
           <div className="grid md:grid-cols-3 gap-6">
