@@ -248,9 +248,9 @@ const EmiCalculator = () => {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Offer No Cost EMI at checkout. Sign up to start presenting financing options to your customers.
               </p>
-              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
+              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
                 <Button size="sm" className="gap-1.5">
-                  Agent Signup <ArrowRight size={14} />
+                  Agent Login <ArrowRight size={14} />
                 </Button>
               </a>
             </div>
