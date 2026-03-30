@@ -46,7 +46,7 @@ const HomepageHero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="lg:col-span-6 space-y-7"
+            className="lg:col-span-6 space-y-5 md:space-y-7"
           >
             <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
