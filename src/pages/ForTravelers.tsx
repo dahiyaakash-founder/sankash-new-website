@@ -144,9 +144,9 @@ const ForTravelers = () => {
       </section>
 
       {/* How Quote Review Works */}
-      <section className="py-14 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container">
-          <div className="max-w-2xl mx-auto text-center mb-10">
+          <div className="max-w-2xl mx-auto text-center mb-7 md:mb-10">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               How It Works
             </p>
