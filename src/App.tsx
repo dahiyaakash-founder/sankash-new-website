@@ -15,6 +15,7 @@ import Payments from "./pages/Payments";
 import Developers from "./pages/Developers";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import EmiCalculator from "./pages/EmiCalculator";
 import NotFound from "./pages/NotFound";
 import OpsLogin from "./pages/ops/OpsLogin";
 import OpsSetup from "./pages/ops/OpsSetup";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/solutions/insurance" element={<Insurance />} />
             <Route path="/solutions/payments" element={<Payments />} />
             <Route path="/developers" element={<Developers />} />
+            <Route path="/emi-calculator" element={<EmiCalculator />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             {/* Ops Dashboard — protected */}

@@ -8,6 +8,7 @@ const footerSections = [
       { label: "Lending", href: "/solutions/lending" },
       { label: "Insurance", href: "/solutions/insurance" },
       { label: "Payments", href: "/solutions/payments" },
+      { label: "EMI Calculator", href: "/emi-calculator" },
       { label: "Overview", href: "/solutions" },
     ],
   },

@@ -3,6 +3,7 @@ import SiteLayout from "@/components/SiteLayout";
 import SEOHead, { createFAQSchema } from "@/components/SEOHead";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -122,6 +123,11 @@ const ForTravelers = () => {
                     <Calculator size={16} /> Check EMI Options
                   </Button>
                 </a>
+                <Link to="/emi-calculator">
+                  <Button variant="ghost" size="xl" className="gap-2 text-primary">
+                    EMI Calculator <ArrowRight size={14} />
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 

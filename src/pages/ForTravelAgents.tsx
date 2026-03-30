@@ -18,8 +18,11 @@ import {
   Users,
   FileText,
   Clock,
+  Calculator,
 } from "lucide-react";
 import ItineraryUploader from "@/components/agents/ItineraryUploader";
+import { calculateAllTenures, formatINR } from "@/lib/emi-calculator";
+import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
 
 const whyReasons = [
   {
@@ -75,6 +78,9 @@ const pillars = [
   { icon: CreditCard, title: "Payments", outcome: "Collect faster. Settle T+1. Auto-reconciliation." },
 ];
 
+// Sample EMI for agent display — ₹85,000 trip
+const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 12, 18, 24].includes(r.tenure));
+
 const ForTravelAgents = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
 
@@ -114,11 +120,11 @@ const ForTravelAgents = () => {
                 <Button size="xl" className="gap-2" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
-              <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="xl">
-                  Agent Login
-                </Button>
-              </a>
+                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="xl">
+                    Agent Login
+                  </Button>
+                </a>
               </div>
             </motion.div>
 
@@ -163,6 +169,79 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
+      {/* EMI & Sales Tool — agent-specific */}
+      <section className="py-10 md:py-14 bg-section-alt">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              <p className="text-xs font-semibold text-primary uppercase tracking-widest">
+                EMI & Sales Tool
+              </p>
+              <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-foreground">
+                Check EMI for your customer
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Show your customer what their trip could cost per month. Use SanKash's indicative EMI calculator to present 3, 6, 9, 12, 18, and 24‑month options during the sales conversation.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/emi-calculator">
+                  <Button size="lg" className="gap-2">
+                    <Calculator size={16} /> Open EMI Calculator
+                  </Button>
+                </Link>
+                <Button variant="outline" size="lg" className="gap-2" onClick={scrollToUploader}>
+                  Upload a Quote
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <div className="bg-card rounded-2xl border shadow-card p-5 space-y-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <CreditCard size={14} className="text-primary" />
+                  Indicative EMI · ₹85,000 trip
+                </div>
+                <div className="space-y-2">
+                  {sampleEmiResults.map((emi) => (
+                    <div
+                      key={emi.tenure}
+                      className="flex items-center justify-between p-3 rounded-xl bg-accent/40 border border-border/50"
+                    >
+                      <div>
+                        <p className="font-heading font-bold text-foreground text-sm">
+                          {formatINR(emi.monthlyEmi)}
+                          <span className="text-muted-foreground font-normal text-xs"> /month</span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">{emi.tenure} months</p>
+                      </div>
+                      <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
+                        emi.emiType === "no_cost" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {emi.emiType === "no_cost" ? "No Cost EMI" : "Standard EMI"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Indicative amounts only. Final offers depend on lender approval, trip value, customer profile, and applicable fees.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Three pillars — compact product summary */}
       <section className="py-8 md:py-10 border-t border-b">
         <div className="container">
@@ -189,7 +268,7 @@ const ForTravelAgents = () => {
         </div>
       </section>
 
-      {/* Review your itinerary — dark section, compact */}
+      {/* Review your itinerary — dark section */}
       <section className="py-8 md:py-12 bg-brand-deep relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="container relative">
@@ -245,7 +324,6 @@ const ForTravelAgents = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
-            {/* Before signup */}
             <motion.div
               initial={{ opacity: 0, x: -12 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -269,7 +347,6 @@ const ForTravelAgents = () => {
               </div>
             </motion.div>
 
-            {/* After signup */}
             <motion.div
               initial={{ opacity: 0, x: 12 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -303,8 +380,9 @@ const ForTravelAgents = () => {
       <AssistantEntryPoint
         className="py-6 md:py-8"
         prompts={[
-          { label: "Start agent onboarding", link: "/contact" },
+          { label: "Start agent onboarding", href: AGENT_SIGNUP_URL },
           { label: "See how it works", link: "/solutions" },
+          { label: "EMI Calculator", link: "/emi-calculator" },
         ]}
       />
 
@@ -319,12 +397,12 @@ const ForTravelAgents = () => {
             Join 8,000+ travel partners using SanKash to grow revenue and collect faster.
           </p>
           <div className="flex justify-center gap-3 pt-1">
-            <Link to="/contact">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
               <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
                 Agent Signup <ArrowRight size={18} />
               </Button>
-            </Link>
-            <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer">
+            </a>
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
               <Button variant="ghost-dark" size="xl">
                 Agent Login
               </Button>
