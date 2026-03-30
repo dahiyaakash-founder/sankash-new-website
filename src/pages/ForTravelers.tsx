@@ -360,16 +360,16 @@ const ForTravelers = () => {
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
             Upload your holiday quote and explore travel EMI options, better structuring, and trip protection — all before you book.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-1">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
             <Button
               size="xl"
-              className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90"
+              className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90 w-full sm:w-auto"
               onClick={scrollToUploader}
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <a href="#emi-section">
-              <Button variant="ghost-dark" size="xl" className="gap-2">
+            <a href="#emi-section" className="w-full sm:w-auto">
+              <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto">
                 <Calculator size={16} /> Check EMI Options
               </Button>
             </a>
