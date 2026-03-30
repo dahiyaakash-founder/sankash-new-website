@@ -39,7 +39,7 @@ const HomepageHero = () => {
     <section className="relative overflow-hidden bg-hero-gradient">
       <div className="h-0.5 bg-primary" />
 
-      <div className="container py-16 md:py-24 lg:py-28">
+      <div className="container py-10 md:py-24 lg:py-28">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* Left — Copy */}
           <motion.div
