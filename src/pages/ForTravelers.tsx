@@ -247,9 +247,9 @@ const ForTravelers = () => {
       </section>
 
       {/* Why Use SanKash */}
-      <section className="py-16 md:py-22">
+      <section className="py-12 md:py-22">
         <div className="container">
-          <div className="max-w-2xl mb-10">
+          <div className="max-w-2xl mb-7 md:mb-10">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               Why Use SanKash
             </p>
