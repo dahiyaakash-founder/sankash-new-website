@@ -19,7 +19,7 @@ const Payments = () => {
               <CreditCard size={28} className="text-accent-foreground" />
             </div>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Payments</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
               Seamless Settlement Infrastructure
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">

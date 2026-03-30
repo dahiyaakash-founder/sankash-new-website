@@ -106,7 +106,7 @@ const ForTravelers = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travelers
               </p>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Already got a holiday quote?
                 <br />
                 <span className="text-gradient-brand">Check it before you book.</span>
@@ -114,17 +114,17 @@ const ForTravelers = () => {
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
                 Upload your holiday quote to explore better-value options and check travel EMI plans — before you commit to booking.
               </p>
-              <div className="flex flex-wrap gap-3 pt-1">
-                <Button size="xl" className="gap-2" onClick={scrollToUploader}>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
+                <Button size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
                   Upload My Quote <ArrowRight size={18} />
                 </Button>
-                <a href="#emi-section">
-                  <Button variant="outline" size="xl" className="gap-2">
+                <a href="#emi-section" className="w-full sm:w-auto">
+                  <Button variant="outline" size="xl" className="gap-2 w-full sm:w-auto">
                     <Calculator size={16} /> Check EMI Options
                   </Button>
                 </a>
-                <Link to="/emi-calculator">
-                  <Button variant="ghost" size="xl" className="gap-2 text-primary">
+                <Link to="/emi-calculator" className="w-full sm:w-auto">
+                  <Button variant="ghost" size="xl" className="gap-2 text-primary w-full sm:w-auto">
                     EMI Calculator <ArrowRight size={14} />
                   </Button>
                 </Link>
@@ -150,7 +150,7 @@ const ForTravelers = () => {
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               How It Works
             </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
               How holiday quote review works
             </h2>
           </div>
@@ -192,7 +192,7 @@ const ForTravelers = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 EMI & Affordability
               </p>
-              <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
                 Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
@@ -253,7 +253,7 @@ const ForTravelers = () => {
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               Why Use SanKash
             </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
               Why review your holiday quote with SanKash
             </h2>
           </div>
@@ -354,22 +354,22 @@ const ForTravelers = () => {
           }}
         />
         <div className="container relative max-w-3xl text-center space-y-5">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
             Upload your holiday quote and explore travel EMI options, better structuring, and trip protection — all before you book.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-1">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
             <Button
               size="xl"
-              className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90"
+              className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90 w-full sm:w-auto"
               onClick={scrollToUploader}
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <a href="#emi-section">
-              <Button variant="ghost-dark" size="xl" className="gap-2">
+            <a href="#emi-section" className="w-full sm:w-auto">
+              <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto">
                 <Calculator size={16} /> Check EMI Options
               </Button>
             </a>

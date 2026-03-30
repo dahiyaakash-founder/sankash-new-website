@@ -71,13 +71,13 @@ const Developers = () => {
         <div className="container max-w-3xl space-y-6">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-5">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">API & Integrations</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep leading-tight">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep leading-tight">
               Integrate SanKash in days, not months
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
-            <div className="flex flex-wrap gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
               <Button size="xl" asChild>
                 <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
                   View Docs <ExternalLink size={16} />

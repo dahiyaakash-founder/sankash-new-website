@@ -25,7 +25,7 @@ const Insurance = () => {
               <ShieldCheck size={28} className="text-secondary-foreground" />
             </div>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Insurance</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
               Travel Protection, Built In
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">

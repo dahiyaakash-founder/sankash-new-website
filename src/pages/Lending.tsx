@@ -28,7 +28,7 @@ const Lending = () => {
               <Banknote size={28} className="text-primary" />
             </div>
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Lending</p>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight">
               No Cost EMI for travel bookings
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">

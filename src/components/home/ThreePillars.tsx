@@ -77,7 +77,7 @@ const ThreePillars = () => {
                     </span>
                   </div>
 
-                  <div className="flex md:flex-col gap-2 md:gap-2 md:min-w-[180px]">
+                  <div className="flex flex-wrap md:flex-col gap-2 md:gap-2 md:min-w-[180px]">
                     {pillar.metrics.map((m) => (
                       <div key={m} className="px-3 py-2 rounded-lg bg-card border text-[12px] font-medium text-center whitespace-nowrap shadow-sm">
                         {m}

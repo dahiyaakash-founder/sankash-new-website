@@ -29,7 +29,7 @@ const SiteNavbar = () => {
 
   return (
     <nav aria-label="Main navigation" className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b">
-      <div className="container mx-auto flex items-center justify-between h-14 lg:h-16">
+      <div className="container mx-auto flex items-center justify-between h-14 lg:h-16 px-4">
         {/* Logo */}
         <Link to="/" className="flex h-12 lg:h-14 items-center shrink-0 pr-2" aria-label="SanKash home">
           <img src={sankashLogo} alt="SanKash logo" className="h-11 lg:h-12 w-auto object-contain" />

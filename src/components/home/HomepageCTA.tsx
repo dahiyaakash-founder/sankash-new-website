@@ -20,13 +20,13 @@ const HomepageCTA = () => {
           transition={{ duration: 0.5 }}
           className="max-w-2xl mx-auto text-center space-y-6"
         >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
             Ready to grow your travel business?
           </h2>
           <p className="text-primary-foreground/50 text-base">
             Join 8,000+ travel partners using SanKash to convert more, collect faster, and protect every booking.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
             <Link to="/solutions">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
                 Explore Solutions <ArrowRight size={16} />

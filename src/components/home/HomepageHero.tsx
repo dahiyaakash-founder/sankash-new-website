@@ -55,7 +55,7 @@ const HomepageHero = () => {
               </span>
             </div>
 
-            <h1 className="text-[2.5rem] sm:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-heading font-bold leading-[1.08] tracking-[-0.02em] text-primary-deep">
+            <h1 className="text-[1.75rem] sm:text-[2.5rem] md:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-heading font-bold leading-[1.12] sm:leading-[1.08] tracking-[-0.02em] text-primary-deep">
               Lending. Insurance. Payments.
               <br />
               <span className="text-primary">Built for travel growth.</span>
@@ -81,14 +81,14 @@ const HomepageHero = () => {
             </div>
 
             {/* Trust stats inline */}
-            <div className="flex gap-8 pt-4 border-t border-border/60">
+            <div className="grid grid-cols-3 gap-4 sm:flex sm:gap-8 pt-4 border-t border-border/60">
               {[
                 { v: "8,000+", l: "Travel Partners" },
                 { v: "5 Million+", l: "Travelers Served" },
                 { v: "T+1", l: "Agent Settlements" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-xl font-heading font-bold text-primary-deep">{s.v}</div>
+                  <div className="text-base sm:text-xl font-heading font-bold text-primary-deep">{s.v}</div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">{s.l}</p>
                 </div>
               ))}

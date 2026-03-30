@@ -127,7 +127,7 @@ const Contact = () => {
           <p className="text-xs font-semibold text-primary uppercase tracking-widest">
             Contact
           </p>
-          <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight">
+          <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight">
             How can SanKash help right now?
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">

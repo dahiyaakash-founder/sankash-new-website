@@ -127,7 +127,7 @@ const ForTravelAgents = () => {
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travel Agents & Businesses
               </p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              <h1 className="text-[1.75rem] sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
                 Review your itinerary
                 <br />
                 <span className="text-gradient-brand">before you send it.</span>
@@ -136,12 +136,12 @@ const ForTravelAgents = () => {
                 Upload a quote and get a quick review of financing, protection,
                 and collection opportunities — before your customer sees it.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Button size="xl" className="gap-2" onClick={scrollToUploader}>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                <Button size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
-                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="xl">
+                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                  <Button variant="outline" size="xl" className="w-full sm:w-auto">
                     Agent Login
                   </Button>
                 </a>
@@ -435,14 +435,14 @@ const ForTravelAgents = () => {
           <p className="text-sm text-primary-foreground/50 max-w-md mx-auto">
             Join 8,000+ travel partners using SanKash to grow revenue and collect faster.
           </p>
-          <div className="flex justify-center gap-3 pt-1">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
-              <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button size="xl" className="gap-2 bg-primary-foreground text-foreground hover:bg-primary-foreground/90 w-full sm:w-auto">
                 Agent Signup <ArrowRight size={18} />
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost-dark" size="xl">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button variant="ghost-dark" size="xl" className="w-full sm:w-auto">
                 Agent Login
               </Button>
             </a>
