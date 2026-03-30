@@ -16,7 +16,7 @@ interface AssistantEntryPointProps {
 
 const AssistantEntryPoint = ({ prompts, className = "" }: AssistantEntryPointProps) => {
   return (
-    <section className={`py-12 md:py-16 ${className}`}>
+    <section className={`py-8 md:py-16 ${className}`}>
       <div className="container max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
