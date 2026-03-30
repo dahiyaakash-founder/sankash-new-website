@@ -349,7 +349,7 @@ const ForTravelAgents = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="p-5 rounded-2xl border bg-card"
+              className="p-4 sm:p-5 rounded-2xl border bg-card"
             >
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Try now</p>
               <div className="space-y-3">
