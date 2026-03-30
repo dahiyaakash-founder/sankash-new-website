@@ -84,7 +84,7 @@ const Solutions = () => {
         description="Explore SanKash solutions for travel businesses, including No Cost EMI at checkout, embedded insurance and faster payment collection."
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-14 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">Solutions</p>
           <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep">
