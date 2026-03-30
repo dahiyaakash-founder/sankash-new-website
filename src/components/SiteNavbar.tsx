@@ -98,16 +98,16 @@ const SiteNavbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — fixed full-screen overlay */}
       {mobileOpen && (
-        <div className="md:hidden bg-background border-b max-h-[85vh] overflow-y-auto">
-          <div className="container py-3 space-y-0.5">
+        <div className="md:hidden fixed inset-0 top-14 z-40 bg-background flex flex-col">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
             {navItems.map((item) =>
               item.dropdown ? (
                 <div key={item.label}>
                   <button
                     onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg"
+                    className="w-full flex items-center justify-between px-3 py-3 text-[15px] font-medium rounded-lg"
                   >
                     {item.label}
                     <ChevronDown size={14} className={`transition-transform ${openDropdown === item.label ? 'rotate-180' : ''}`} />
@@ -119,7 +119,7 @@ const SiteNavbar = () => {
                           key={child.href}
                           to={child.href}
                           onClick={() => setMobileOpen(false)}
-                          className="block px-3 py-2 text-sm text-muted-foreground rounded-lg"
+                          className="block px-3 py-2.5 text-sm text-muted-foreground rounded-lg"
                         >
                           {child.label}
                         </Link>
@@ -132,18 +132,20 @@ const SiteNavbar = () => {
                   key={item.label}
                   to={item.href!}
                   onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2.5 text-sm font-medium rounded-lg"
+                  className="block px-3 py-3 text-[15px] font-medium rounded-lg"
                 >
                   {item.label}
                 </Link>
               )
             )}
-            <div className="flex gap-2 pt-3 px-3 border-t mt-2">
+          </div>
+          <div className="px-4 py-4 border-t bg-background">
+            <div className="flex gap-3">
               <a href="https://app.sankash.in/agent/onboarding/signup" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex-1">
-                <Button variant="outline" size="sm" className="w-full text-sm">Agent Signup</Button>
+                <Button variant="outline" size="default" className="w-full text-sm">Agent Signup</Button>
               </a>
-              <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer" className="flex-1">
-                <Button size="sm" className="w-full text-sm">Agent Login</Button>
+              <a href="https://app.sankash.in/agent/auth/login" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex-1">
+                <Button size="default" className="w-full text-sm">Agent Login</Button>
               </a>
             </div>
           </div>
