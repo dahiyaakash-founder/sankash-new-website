@@ -152,7 +152,7 @@ const Solutions = () => {
       </section>
 
       {/* How they work together */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-12 md:py-28 bg-section-alt">
         <div className="container">
           <motion.div {...fade} className="max-w-2xl mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Integrated workflow</p>
