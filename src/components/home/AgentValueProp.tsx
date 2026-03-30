@@ -5,7 +5,7 @@ import { FileSearch, TrendingUp, Zap, ArrowRight } from "lucide-react";
 
 const AgentValueProp = () => {
   return (
-    <section className="py-20 md:py-28 bg-brand-deep relative overflow-hidden">
+    <section className="py-14 md:py-28 bg-brand-deep relative overflow-hidden">
       {/* Subtle texture */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
