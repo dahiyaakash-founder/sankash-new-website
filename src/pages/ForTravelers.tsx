@@ -150,7 +150,7 @@ const ForTravelers = () => {
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
               How It Works
             </p>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
               How holiday quote review works
             </h2>
           </div>
