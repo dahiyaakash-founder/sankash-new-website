@@ -266,28 +266,15 @@ const EmiCalculator = () => {
         </div>
       </section>
 
-      {/* SEO Content */}
+      {/* SEO Content / FAQ */}
       <section className="py-14 md:py-20">
-        <div className="container max-w-3xl prose prose-sm">
-          <h2 className="text-2xl font-heading font-bold text-foreground">What is a travel EMI calculator?</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            A travel EMI calculator helps you estimate the monthly instalment for a holiday or travel booking. Enter your trip cost, choose a tenure between 3 and 24 months, and see what your booking would cost per month — with or without interest.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">How does No Cost EMI work for holidays?</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures, making it ideal for holidays in the ₹30,000 to ₹2,00,000 range.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">Difference between No Cost EMI and Standard EMI</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee.
-          </p>
-
-          <h2 className="text-2xl font-heading font-bold text-foreground mt-8">Why travel agents use EMI during checkout</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Travel agents offering No Cost EMI at checkout see 20% higher sales and 40% better booking conversion. EMI removes the upfront cost barrier, helping customers choose premium packages and complete bookings faster. Agents get paid in full by the lender, so there's no collection risk.
-          </p>
+        <div className="container max-w-3xl space-y-8">
+          {emiFaqs.map((faq) => (
+            <div key={faq.q}>
+              <h2 className="text-2xl font-heading font-bold text-foreground">{faq.q}</h2>
+              <p className="text-muted-foreground leading-relaxed mt-2">{faq.a}</p>
+            </div>
+          ))}
         </div>
       </section>
     </SiteLayout>
