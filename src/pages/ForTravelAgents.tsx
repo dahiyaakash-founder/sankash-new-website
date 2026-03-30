@@ -79,7 +79,7 @@ const pillars = [
 ];
 
 // Sample EMI for agent display — ₹85,000 trip
-const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 12, 18, 24].includes(r.tenure));
+const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 9, 12, 18, 24].includes(r.tenure));
 
 const ForTravelAgents = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
