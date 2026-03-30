@@ -323,7 +323,7 @@ const ForTravelers = () => {
               {faqs.map((faq) => (
                 <details
                   key={faq.q}
-                  className="group bg-card rounded-xl border p-3.5 cursor-pointer"
+                  className="group bg-card rounded-xl border p-3 sm:p-3.5 cursor-pointer"
                 >
                   <summary className="flex items-center justify-between font-heading font-bold text-sm text-foreground list-none">
                     {faq.q}
