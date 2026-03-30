@@ -55,7 +55,7 @@ const HomepageHero = () => {
               </span>
             </div>
 
-            <h1 className="text-[2.5rem] sm:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-heading font-bold leading-[1.08] tracking-[-0.02em] text-primary-deep">
+            <h1 className="text-[1.75rem] sm:text-[2.5rem] md:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-heading font-bold leading-[1.12] sm:leading-[1.08] tracking-[-0.02em] text-primary-deep">
               Lending. Insurance. Payments.
               <br />
               <span className="text-primary">Built for travel growth.</span>
