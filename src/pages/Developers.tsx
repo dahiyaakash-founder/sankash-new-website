@@ -77,7 +77,7 @@ const Developers = () => {
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
-            <div className="flex flex-wrap gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
               <Button size="xl" asChild>
                 <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
                   View Docs <ExternalLink size={16} />

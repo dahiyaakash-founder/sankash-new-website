@@ -136,12 +136,12 @@ const ForTravelAgents = () => {
                 Upload a quote and get a quick review of financing, protection,
                 and collection opportunities — before your customer sees it.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Button size="xl" className="gap-2" onClick={scrollToUploader}>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                <Button size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
                   Upload a Quote <ArrowRight size={18} />
                 </Button>
-                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="xl">
+                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                  <Button variant="outline" size="xl" className="w-full sm:w-auto">
                     Agent Login
                   </Button>
                 </a>
