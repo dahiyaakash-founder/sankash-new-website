@@ -16,6 +16,7 @@ import Developers from "./pages/Developers";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import EmiCalculator from "./pages/EmiCalculator";
+import Resources from "./pages/Resources";
 import NotFound from "./pages/NotFound";
 import OpsLogin from "./pages/ops/OpsLogin";
 import OpsSetup from "./pages/ops/OpsSetup";
