@@ -181,7 +181,13 @@ const OpsTeamManagement = () => {
         body: { action: "reinvite", user_id: userId },
       });
       if (res.data?.error) throw new Error(res.data.error);
-      toast.success("Invite re-sent successfully");
+      if (res.data?.action_link) {
+        // Copy link to clipboard as fallback since generateLink doesn't send email
+        await navigator.clipboard.writeText(res.data.action_link);
+        toast.success("Invite link copied to clipboard. Share it with the team member directly.");
+      } else {
+        toast.success("Invite re-sent successfully");
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to re-send invite");
     }
