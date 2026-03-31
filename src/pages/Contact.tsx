@@ -127,7 +127,7 @@ const Contact = () => {
         message: (data.get("message") as string)?.trim() || null,
         audience_type: audienceMap[(data.get("audience") as string)] ?? "other",
         lead_source_page: "contact",
-        lead_source_type: "contact_form",
+        lead_source_type: isDemoIntent ? "demo_request" : "contact_form",
       });
       setSubmitted(true);
     } catch {
