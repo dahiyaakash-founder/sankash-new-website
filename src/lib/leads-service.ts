@@ -43,7 +43,7 @@ export interface TeamMember {
   status?: string;
 }
 
-/** Insert a lead from a public website form (anon) */
+/** Insert a lead from a public website form (anon) — with duplicate detection */
 export async function createLead(lead: LeadInsert) {
   // Generate a client-side ID so we can return it without needing SELECT permission.
   // Anon users can INSERT but cannot SELECT (RLS), so .select() would fail with 42501.
@@ -51,6 +51,63 @@ export async function createLead(lead: LeadInsert) {
   const { error } = await supabase.from("leads").insert({ ...lead, id });
   if (error) throw error;
   return { ...lead, id } as LeadRow;
+}
+
+/**
+ * Check for existing open leads by mobile or email before creating.
+ * If a duplicate exists, updates the existing lead with new submission data.
+ * Returns { lead, isDuplicate }.
+ */
+export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: LeadRow; isDuplicate: boolean }> {
+  // Try to find an existing open lead by mobile or email
+  let existingLead: LeadRow | null = null;
+
+  if (lead.mobile_number) {
+    const { data } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("mobile_number", lead.mobile_number)
+      .not("status", "in", '("converted","closed_lost")')
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) existingLead = data[0] as LeadRow;
+  }
+
+  if (!existingLead && lead.email) {
+    const { data } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("email", lead.email)
+      .not("status", "in", '("converted","closed_lost")')
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) existingLead = data[0] as LeadRow;
+  }
+
+  if (existingLead) {
+    // Update existing lead with latest submission info (merge, don't replace)
+    const mergeUpdates: LeadUpdate = {};
+    if (lead.message) mergeUpdates.message = lead.message;
+    if (lead.company_name && !existingLead.company_name) mergeUpdates.company_name = lead.company_name;
+    if (lead.lead_source_page) mergeUpdates.notes = `[Re-submission from ${lead.lead_source_page}] ${lead.message ?? ""}`.trim();
+
+    if (Object.keys(mergeUpdates).length > 0) {
+      await supabase.from("leads").update(mergeUpdates).eq("id", existingLead.id);
+    }
+
+    // Log re-submission as activity
+    await supabase.from("lead_activity" as any).insert({
+      lead_id: existingLead.id,
+      activity_type: "resubmission",
+      description: `Duplicate submission detected from ${lead.lead_source_page ?? "website"}. Original lead updated.`,
+    } as any);
+
+    return { lead: existingLead, isDuplicate: true };
+  }
+
+  // No duplicate — create new lead
+  const result = await createLead(lead);
+  return { lead: result, isDuplicate: false };
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */
