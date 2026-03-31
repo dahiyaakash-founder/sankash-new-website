@@ -216,12 +216,11 @@ Deno.serve(async (req) => {
       const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
       const redirectTo = `${siteUrl}/ops/accept-invite`;
 
-      // Generate a new invite link for the existing user
+      // Use magiclink type for existing users (invite type fails for registered users)
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "invite",
+        type: "magiclink",
         email: userData.user.email!,
         options: {
-          data: { full_name: userData.user.user_metadata?.full_name },
           redirectTo,
         },
       });
@@ -232,8 +231,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      // The generated link contains the token — we need to trigger the email via the verify endpoint
-      // Extract the hashed_token and redirect through Supabase's verify endpoint
       const actionLink = linkData?.properties?.action_link;
       if (!actionLink) {
         return new Response(JSON.stringify({ error: "Failed to generate invite link" }), {
