@@ -24,11 +24,16 @@ import {
 } from "@/lib/emi-calculator";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
 
+const EMI_MIN = 50000;
+const EMI_MAX = 500000;
+
 const emiFaqs = [
   { q: "What is a travel EMI calculator?", a: "A travel EMI calculator helps you estimate the monthly instalment for a holiday or travel booking. Enter your trip cost, choose a tenure between 3 and 24 months, and see what your booking would cost per month — with or without interest." },
-  { q: "How does No Cost EMI work for holidays?", a: "No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures, making it ideal for holidays in the ₹30,000 to ₹2,00,000 range." },
-  { q: "What is the difference between No Cost EMI and Standard EMI?", a: "No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee." },
+  { q: "How does No Cost EMI work for holidays?", a: "No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures. No Cost EMI is subject to customer eligibility, lender approval, and applicable partner criteria. T&C apply." },
+  { q: "What is the difference between No Cost EMI and Standard EMI?", a: "No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee. Subject to eligibility and lender approval. T&C apply." },
   { q: "Why do travel agents use EMI during checkout?", a: "Travel agents offering No Cost EMI at checkout see 20% higher sales and 40% better booking conversion. EMI removes the upfront cost barrier, helping customers choose premium packages and complete bookings faster. Agents get paid in full by the lender, so there's no collection risk." },
+  { q: "Can I use travel EMI for partial bookings like flights or hotels?", a: "Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval." },
+  { q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?", a: "Yes, in many cases you can. You may book through your own travel agent, make eligible direct travel bookings, or share the details of a non-registered agent with us. Where feasible, our team can evaluate and onboard the agent so your booking can be supported through SanKash." },
 ];
 
 const EmiCalculator = () => {
