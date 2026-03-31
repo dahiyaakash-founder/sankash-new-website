@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
+import { useState, useEffect, createContext, useContext, type ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -10,8 +10,10 @@ interface AuthContext {
   loading: boolean;
   hasRole: boolean;
   role: AppRole | null;
+  profileStatus: string | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshAccess: () => Promise<void>;
 }
 
 const AuthCtx = createContext<AuthContext | undefined>(undefined);
@@ -24,46 +26,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [hasRole, setHasRole] = useState(false);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [profileStatus, setProfileStatus] = useState<string | null>(null);
 
-  const resolveRole = async (userId: string) => {
-    for (const r of ROLE_PRIORITY) {
-      const { data } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: r as any,
-      });
-      if (data) {
-        setRole(r);
-        setHasRole(true);
-        setLoading(false);
-        return;
-      }
+  const resolveAccess = useCallback(async (nextUser: User | null) => {
+    if (!nextUser) {
+      setHasRole(false);
+      setRole(null);
+      setProfileStatus(null);
+      setLoading(false);
+      return;
     }
-    setRole(null);
-    setHasRole(false);
-    setLoading(false);
-  };
+
+    setLoading(true);
+
+    try {
+      const [profileResult, roleResults] = await Promise.all([
+        supabase.from("profiles").select("status").eq("user_id", nextUser.id).maybeSingle(),
+        Promise.all(
+          ROLE_PRIORITY.map(async (candidate) => {
+            const { data } = await supabase.rpc("has_role", {
+              _user_id: nextUser.id,
+              _role: candidate as any,
+            });
+
+            return data ? candidate : null;
+          }),
+        ),
+      ]);
+
+      const resolvedRole = roleResults.find(Boolean) ?? null;
+      setProfileStatus(profileResult.data?.status ?? null);
+      setRole(resolvedRole);
+      setHasRole(Boolean(resolvedRole));
+    } catch (error) {
+      console.error("[ops-auth] access resolution failed", error);
+      setProfileStatus(null);
+      setRole(null);
+      setHasRole(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => resolveRole(session.user.id), 0);
-      } else {
-        setHasRole(false);
-        setRole(null);
-        setLoading(false);
-      }
+      void resolveAccess(session?.user ?? null);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      if (!session) setLoading(false);
+      void resolveAccess(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [resolveAccess]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -74,8 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const refreshAccess = async () => {
+    await resolveAccess(user);
+  };
+
   return (
-    <AuthCtx.Provider value={{ user, session, loading, hasRole, role, signIn, signOut }}>
+    <AuthCtx.Provider value={{ user, session, loading, hasRole, role, profileStatus, signIn, signOut, refreshAccess }}>
       {children}
     </AuthCtx.Provider>
   );

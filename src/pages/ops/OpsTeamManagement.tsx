@@ -125,7 +125,12 @@ const OpsTeamManagement = () => {
         }
         throw new Error(errMsg);
       }
-      toast.success(`Invited ${inviteForm.full_name} as ${roleLabels[inviteForm.role] ?? inviteForm.role}. They will receive an email to set their password.`);
+      if (res.data?.action_link) {
+        await navigator.clipboard.writeText(res.data.action_link);
+        toast.success(`Invite created for ${inviteForm.full_name}. Activation link copied as a fallback in case email delivery is delayed.`);
+      } else {
+        toast.success(`Invited ${inviteForm.full_name} as ${roleLabels[inviteForm.role] ?? inviteForm.role}. They will receive an email to set their password.`);
+      }
       setInviteOpen(false);
       setInviteForm({ full_name: "", email: "", role: "team_member", supervisor_id: "" });
       loadMembers();
@@ -331,7 +336,7 @@ const OpsTeamManagement = () => {
         {isAdminOrAbove && (
           <div className="p-4 rounded-xl bg-accent/50 border border-border/50">
             <p className="text-xs text-muted-foreground">
-              <strong>Invite flow:</strong> Invited members receive an email to set their password. Once activated, they can log in at <code>/ops/login</code>.
+              <strong>Invite flow:</strong> Every team invite opens the live activation page at <code>/ops/accept-invite</code>, where the user sets a password and then enters CRM.
             </p>
           </div>
         )}
