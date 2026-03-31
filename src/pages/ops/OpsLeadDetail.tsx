@@ -368,6 +368,15 @@ const OpsLeadDetail = () => {
                           </div>
                         </div>
                         <div className="flex gap-1.5 shrink-0">
+                          {["itinerary", "quote", "document", "screenshot"].includes(att.category) && (
+                            <ItineraryAnalysisDrawer
+                              leadId={id!}
+                              attachmentId={att.id}
+                              fileUrl={url}
+                              fileName={att.file_name}
+                              audienceType={lead?.audience_type ?? undefined}
+                            />
+                          )}
                           <a href={url} target="_blank" rel="noopener noreferrer">
                             <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><ExternalLink size={11} /> Open</Button>
                           </a>
