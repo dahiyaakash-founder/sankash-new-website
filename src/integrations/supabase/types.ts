@@ -65,6 +65,144 @@ export type Database = {
         }
         Relationships: []
       }
+      itinerary_analysis: {
+        Row: {
+          additional_destinations_json: Json | null
+          adults_count: number | null
+          airline_names_json: Json | null
+          attachment_id: string | null
+          children_count: number | null
+          created_at: string
+          currency: string | null
+          customer_name: string | null
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          duration_days: number | null
+          duration_nights: number | null
+          emi_candidate: boolean | null
+          exclusions_text: string | null
+          extracted_fields_json: Json | null
+          extracted_snippets_json: Json | null
+          hotel_names_json: Json | null
+          id: string
+          inclusions_text: string | null
+          infants_count: number | null
+          insurance_candidate: boolean | null
+          insurance_mentioned: boolean | null
+          lead_id: string
+          missing_fields_json: Json | null
+          parsing_confidence: string | null
+          pg_candidate: boolean | null
+          price_per_person: number | null
+          raw_text: string | null
+          sectors_json: Json | null
+          total_price: number | null
+          travel_agent_name: string | null
+          travel_end_date: string | null
+          travel_start_date: string | null
+          traveller_count_total: number | null
+          updated_at: string
+          uploaded_by_audience: string | null
+          visa_mentioned: boolean | null
+        }
+        Insert: {
+          additional_destinations_json?: Json | null
+          adults_count?: number | null
+          airline_names_json?: Json | null
+          attachment_id?: string | null
+          children_count?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_name?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          emi_candidate?: boolean | null
+          exclusions_text?: string | null
+          extracted_fields_json?: Json | null
+          extracted_snippets_json?: Json | null
+          hotel_names_json?: Json | null
+          id?: string
+          inclusions_text?: string | null
+          infants_count?: number | null
+          insurance_candidate?: boolean | null
+          insurance_mentioned?: boolean | null
+          lead_id: string
+          missing_fields_json?: Json | null
+          parsing_confidence?: string | null
+          pg_candidate?: boolean | null
+          price_per_person?: number | null
+          raw_text?: string | null
+          sectors_json?: Json | null
+          total_price?: number | null
+          travel_agent_name?: string | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveller_count_total?: number | null
+          updated_at?: string
+          uploaded_by_audience?: string | null
+          visa_mentioned?: boolean | null
+        }
+        Update: {
+          additional_destinations_json?: Json | null
+          adults_count?: number | null
+          airline_names_json?: Json | null
+          attachment_id?: string | null
+          children_count?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_name?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          emi_candidate?: boolean | null
+          exclusions_text?: string | null
+          extracted_fields_json?: Json | null
+          extracted_snippets_json?: Json | null
+          hotel_names_json?: Json | null
+          id?: string
+          inclusions_text?: string | null
+          infants_count?: number | null
+          insurance_candidate?: boolean | null
+          insurance_mentioned?: boolean | null
+          lead_id?: string
+          missing_fields_json?: Json | null
+          parsing_confidence?: string | null
+          pg_candidate?: boolean | null
+          price_per_person?: number | null
+          raw_text?: string | null
+          sectors_json?: Json | null
+          total_price?: number | null
+          travel_agent_name?: string | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveller_count_total?: number | null
+          updated_at?: string
+          uploaded_by_audience?: string | null
+          visa_mentioned?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itinerary_analysis_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "lead_attachments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "itinerary_analysis_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_activity: {
         Row: {
           activity_type: string
