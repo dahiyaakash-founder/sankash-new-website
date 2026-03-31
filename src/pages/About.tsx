@@ -34,7 +34,7 @@ const About = () => {
         description="Learn how SanKash is building lending, insurance and payments infrastructure designed specifically for travel businesses."
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Why SanKash</p>
