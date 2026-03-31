@@ -256,7 +256,7 @@ const OpsTeamManagement = () => {
                 )}
                 {members.map((m) => {
                   const isYou = m.user_id === user?.id;
-                  const displayName = m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…";
+                  const displayName = m.full_name || m.email || `Team member`;
                   const displayEmail = isYou ? user?.email : m.email;
                   const isDisabled = m.status === "disabled";
                   const isInvited = m.status === "invited";
