@@ -403,6 +403,30 @@ export type Database = {
         Returns: boolean
       }
       is_ops_member: { Args: { _user_id: string }; Returns: boolean }
+      upsert_lead_with_dedup: {
+        Args: {
+          _audience_type?: Database["public"]["Enums"]["audience_type"]
+          _city?: string
+          _company_name?: string
+          _destination_type?: string
+          _detected_trip_type?: string
+          _email?: string
+          _emi_flag?: boolean
+          _full_name: string
+          _insurance_flag?: boolean
+          _lead_source_page?: string
+          _lead_source_type?: Database["public"]["Enums"]["lead_source_type"]
+          _message?: string
+          _metadata_json?: Json
+          _mobile_number?: string
+          _pg_flag?: boolean
+          _quote_amount?: number
+          _quote_file_name?: string
+          _quote_file_url?: string
+          _website_url?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "team_member" | "super_admin" | "team_supervisor"
