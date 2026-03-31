@@ -32,7 +32,7 @@ const HomepageCTA = () => {
                 Explore Solutions <ArrowRight size={16} />
               </Button>
             </Link>
-            <Link to="/contact">
+            <Link to="/contact?intent=demo">
               <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Book a Demo <ArrowRight size={16} />
               </Button>

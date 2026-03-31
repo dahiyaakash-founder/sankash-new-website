@@ -73,7 +73,7 @@ const HomepageHero = () => {
                   Explore Solutions <ArrowRight size={16} />
                 </Button>
               </Link>
-              <Link to="/contact">
+              <Link to="/contact?intent=demo">
                 <Button variant="outline" size="lg" className="text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
                   Book a Demo
                 </Button>

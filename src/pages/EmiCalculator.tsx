@@ -241,9 +241,14 @@ const EmiCalculator = () => {
               {/* Disclaimer */}
               <div className="flex items-start gap-2 p-4 rounded-xl bg-accent/50 border border-border/50">
                 <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Indicative calculation only. Final lender offer may vary based on eligibility, trip details, and underwriting. Processing fee of 2.5% may apply. No Cost EMI is subject to eligibility and lender approval. T&C apply.
-                </p>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Indicative calculation only. Final lender offer may vary based on eligibility, trip details, and underwriting. Processing fee of 2.5% may apply. No Cost EMI is subject to eligibility and lender approval. T&C apply.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Standard EMI illustrations use a flat monthly rate representation and applicable processing fee. They are not reducing-balance APR illustrations.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

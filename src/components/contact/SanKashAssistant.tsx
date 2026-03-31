@@ -158,16 +158,16 @@ const SanKashAssistant = () => {
                     ))}
                   </div>
 
-                  <div className="text-center pt-1">
-                    <Button
-                      size="lg"
-                      className="gap-2"
-                      onClick={() => setState("routing")}
-                    >
-                      <MessageSquare size={16} />
-                      See next steps
-                    </Button>
-                  </div>
+                   <div className="text-center pt-1">
+                     <Button
+                       size="lg"
+                       className="gap-2"
+                       onClick={() => setState("routing")}
+                     >
+                       <MessageSquare size={16} />
+                       Tell me what you need
+                     </Button>
+                   </div>
                 </motion.div>
               )}
 
