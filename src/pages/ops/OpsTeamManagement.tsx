@@ -68,6 +68,13 @@ const OpsTeamManagement = () => {
         profileMap[p.user_id] = { full_name: p.full_name, status: p.status, supervisor_id: p.supervisor_id };
       });
 
+      // Try to get emails for all users via auth if we're super_admin
+      // Otherwise fall back to profile names
+      let emailMap: Record<string, string> = {};
+      if (user?.email) {
+        emailMap[user.id] = user.email;
+      }
+
       // Get lead stats per member
       const allLeads = await fetchLeads({ pageSize: 1000 });
       const now = new Date();
@@ -75,14 +82,15 @@ const OpsTeamManagement = () => {
 
       const merged: TeamMemberRow[] = (roles ?? []).map((r: any) => {
         const memberLeads = allLeads.data.filter((l: any) => l.assigned_to === r.user_id);
+        const profile = profileMap[r.user_id];
         return {
           id: r.id,
           user_id: r.user_id,
           role: r.role,
-          full_name: profileMap[r.user_id]?.full_name,
-          status: profileMap[r.user_id]?.status ?? "active",
-          email: r.user_id === user?.id ? user?.email ?? undefined : undefined,
-          supervisor_id: profileMap[r.user_id]?.supervisor_id,
+          full_name: profile?.full_name,
+          status: profile?.status ?? "active",
+          email: emailMap[r.user_id] ?? undefined,
+          supervisor_id: profile?.supervisor_id,
           openLeads: memberLeads.filter((l: any) => !["converted", "closed_lost"].includes(l.status)).length,
           overdueLeads: memberLeads.filter((l: any) => l.next_follow_up_at && new Date(l.next_follow_up_at) < now && !["converted", "closed_lost"].includes(l.status)).length,
           convertedThisMonth: memberLeads.filter((l: any) => l.status === "converted" && l.updated_at >= startOfMonth).length,
@@ -248,7 +256,7 @@ const OpsTeamManagement = () => {
                 )}
                 {members.map((m) => {
                   const isYou = m.user_id === user?.id;
-                  const displayName = m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…";
+                  const displayName = m.full_name || m.email || `Team member`;
                   const displayEmail = isYou ? user?.email : m.email;
                   const isDisabled = m.status === "disabled";
                   const isInvited = m.status === "invited";

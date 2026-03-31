@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SiteLayout from "@/components/SiteLayout";
 import { createLeadWithDedup } from "@/lib/leads-service";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   Mail,
-  Phone,
   MapPin,
   ArrowRight,
   FileText,
@@ -80,11 +80,23 @@ const escalationPaths = [
 ];
 
 const Contact = () => {
+  const [searchParams] = useSearchParams();
+  const isDemoIntent = searchParams.get("intent") === "demo";
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
+  const formSectionRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to form if intent=demo
+  useEffect(() => {
+    if (isDemoIntent && formSectionRef.current) {
+      setTimeout(() => {
+        formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400);
+    }
+  }, [isDemoIntent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +127,7 @@ const Contact = () => {
         message: (data.get("message") as string)?.trim() || null,
         audience_type: audienceMap[(data.get("audience") as string)] ?? "other",
         lead_source_page: "contact",
-        lead_source_type: "contact_form",
+        lead_source_type: isDemoIntent ? "demo_request" : "contact_form",
       });
       setSubmitted(true);
     } catch {
@@ -278,7 +290,7 @@ const Contact = () => {
       </section>
 
       {/* Simplified fallback form + contact info */}
-      <section id="demo-form" className="py-10 md:py-20 bg-accent/40">
+      <section id="demo-form" ref={formSectionRef} className="py-10 md:py-20 bg-accent/40">
         <div className="container max-w-5xl">
           <div className="grid lg:grid-cols-5 gap-12">
             {/* Form */}
@@ -308,11 +320,18 @@ const Contact = () => {
                   className="p-5 sm:p-8 rounded-2xl border bg-card space-y-5"
                 >
                   <div>
+                    {isDemoIntent && (
+                      <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+                        <Calendar size={14} /> Demo Request
+                      </div>
+                    )}
                     <h2 className="text-xl font-heading font-bold">
-                      Prefer a form? We'll get back fast.
+                      {isDemoIntent ? "Book a demo with SanKash" : "Prefer a form? We'll get back fast."}
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Book a demo, ask a question, or tell us what you need.
+                      {isDemoIntent
+                        ? "Tell us about your business and we'll arrange a walkthrough."
+                        : "Book a demo, ask a question, or tell us what you need."}
                     </p>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
