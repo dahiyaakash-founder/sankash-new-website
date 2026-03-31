@@ -136,7 +136,7 @@ const About = () => {
         <div className="container">
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto text-center">
             {[
-              { v: "8,000+", l: "Active Partners" },
+              { v: "10,000+", l: "Active Partners" },
               { v: "5 Million+", l: "Travelers Served" },
               { v: "T+1", l: "Settlement Cycle" },
             ].map((s) => (

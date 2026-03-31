@@ -110,7 +110,8 @@ export async function createLead(lead: LeadInsert) {
  * Returns { lead, isDuplicate }.
  */
 export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: LeadRow; isDuplicate: boolean }> {
-  // Try to find an existing open lead by mobile or email
+  // 24-hour duplicate suppression window
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   let existingLead: LeadRow | null = null;
 
   if (lead.mobile_number) {
@@ -118,7 +119,7 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
       .from("leads")
       .select("*")
       .eq("mobile_number", lead.mobile_number)
-      .not("status", "in", '("converted","closed_lost")')
+      .gte("created_at", twentyFourHoursAgo)
       .order("created_at", { ascending: false })
       .limit(1);
     if (data && data.length > 0) existingLead = data[0] as LeadRow;
@@ -129,7 +130,7 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
       .from("leads")
       .select("*")
       .eq("email", lead.email)
-      .not("status", "in", '("converted","closed_lost")')
+      .gte("created_at", twentyFourHoursAgo)
       .order("created_at", { ascending: false })
       .limit(1);
     if (data && data.length > 0) existingLead = data[0] as LeadRow;
@@ -141,6 +142,8 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
     if (lead.message) mergeUpdates.message = lead.message;
     if (lead.company_name && !existingLead.company_name) mergeUpdates.company_name = lead.company_name;
     if (lead.lead_source_page) mergeUpdates.notes = `[Re-submission from ${lead.lead_source_page}] ${lead.message ?? ""}`.trim();
+    if (lead.quote_file_url) mergeUpdates.quote_file_url = lead.quote_file_url;
+    if (lead.quote_file_name) mergeUpdates.quote_file_name = lead.quote_file_name;
 
     if (Object.keys(mergeUpdates).length > 0) {
       await supabase.from("leads").update(mergeUpdates).eq("id", existingLead.id);
@@ -150,13 +153,13 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
     await supabase.from("lead_activity" as any).insert({
       lead_id: existingLead.id,
       activity_type: "resubmission",
-      description: `Duplicate submission detected from ${lead.lead_source_page ?? "website"}. Original lead updated.`,
+      description: `Duplicate submission within 24h from ${lead.lead_source_page ?? "website"} (${lead.lead_source_type ?? "unknown"}). Merged into existing lead.`,
     } as any);
 
     return { lead: existingLead, isDuplicate: true };
   }
 
-  // No duplicate — create new lead
+  // No duplicate within 24h — create new lead
   const result = await createLead(lead);
   return { lead: result, isDuplicate: false };
 }
