@@ -33,7 +33,7 @@ const whyReasons = [
   {
     icon: Banknote,
     title: "No Cost EMI at checkout",
-    desc: "3 and 6 month No Cost EMI. 20% sales lift, 40% better conversion.",
+    desc: "3 and 6 month No Cost EMI. 20% sales lift, 40% better conversion. Subject to eligibility and lender approval.",
   },
   {
     icon: ShieldCheck,
