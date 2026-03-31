@@ -132,6 +132,7 @@ const ForTravelers = () => {
             </motion.div>
 
             <motion.div
+              id="quote-upload-section"
               ref={uploaderRef}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -340,7 +341,7 @@ const ForTravelers = () => {
       </section>
 
       <AssistantEntryPoint prompts={[
-        { label: "Ask about my quote", link: "/for-travelers" },
+        { label: "Ask about my quote", onClick: () => document.getElementById("quote-upload-section")?.scrollIntoView({ behavior: "smooth", block: "center" }) },
         { label: "Check EMI options", href: "#emi-section" },
       ]} />
 
