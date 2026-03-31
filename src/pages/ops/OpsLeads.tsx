@@ -181,8 +181,18 @@ const OpsLeads = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
-          <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2">
             {selected.size > 0 && <span className="text-xs text-muted-foreground">{selected.size} selected</span>}
+            {canImport && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => downloadTemplate("xlsx")} className="gap-1.5 text-xs">
+                  <FileDown size={14} /> Template
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-1.5 text-xs">
+                  <Upload size={14} /> Import
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
               <Download size={14} /> Export CSV
             </Button>
