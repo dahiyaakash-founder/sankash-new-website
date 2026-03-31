@@ -243,7 +243,7 @@ const Contact = () => {
       </section>
 
       {/* Simplified fallback form + contact info */}
-      <section id="demo-form" className="py-16 md:py-20 bg-accent/40">
+      <section id="demo-form" className="py-10 md:py-20 bg-accent/40">
         <div className="container max-w-5xl">
           <div className="grid lg:grid-cols-5 gap-12">
             {/* Form */}
