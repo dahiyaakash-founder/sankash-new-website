@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, action_link: actionLink }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
