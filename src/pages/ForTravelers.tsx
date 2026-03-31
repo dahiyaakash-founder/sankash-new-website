@@ -243,7 +243,7 @@ const ForTravelers = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
-                  * Indicative amounts. Final options depend on lender approval and trip details.
+                  * Indicative amounts. Final options depend on lender approval, trip details, and agent terms. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
             </motion.div>

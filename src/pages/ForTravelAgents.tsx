@@ -84,7 +84,7 @@ const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 9, 12, 18
 const agentFaqs = [
   {
     q: "How does No Cost EMI work for travel agents?",
-    a: "When a customer books through your agency with SanKash No Cost EMI, the lender pays you the full trip amount upfront. The customer repays the lender in monthly instalments with zero interest. You bear no credit risk and get paid immediately.",
+    a: "When a customer books through your agency with SanKash No Cost EMI, the lender pays you the full trip amount upfront. The customer repays the lender in monthly instalments with zero interest. You bear no credit risk and get paid immediately. No Cost EMI is subject to customer eligibility, lender approval, and applicable partner criteria. T&C apply.",
   },
   {
     q: "Does offering EMI slow down the booking process?",
