@@ -111,14 +111,27 @@ const OpsTeamManagement = () => {
           role: inviteForm.role,
         },
       });
-      if (res.error) throw new Error(res.error.message || "Invite failed");
-      if (res.data?.error) throw new Error(res.data.error);
-      toast.success(`Invited ${inviteForm.full_name}`);
+      if (res.error) {
+        const msg = typeof res.error === "object" && "message" in res.error
+          ? (res.error as any).message
+          : String(res.error);
+        throw new Error(msg || "Invite failed");
+      }
+      if (res.data?.error) {
+        // Handle specific known errors
+        const errMsg = res.data.error;
+        if (errMsg.includes("already been registered") || errMsg.includes("duplicate")) {
+          throw new Error(`${inviteForm.email} has already been invited or registered.`);
+        }
+        throw new Error(errMsg);
+      }
+      toast.success(`Invited ${inviteForm.full_name} as ${roleLabels[inviteForm.role] ?? inviteForm.role}. They will receive an email to set their password.`);
       setInviteOpen(false);
       setInviteForm({ full_name: "", email: "", role: "team_member", supervisor_id: "" });
       loadMembers();
     } catch (err: any) {
-      toast.error(err.message || "Invite failed");
+      console.error("Invite error:", err);
+      toast.error(err.message || "Failed to send invite. Please try again.");
     }
     setInviting(false);
   };
