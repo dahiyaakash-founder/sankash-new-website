@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import SiteLayout from "@/components/SiteLayout";
-import { createLead } from "@/lib/leads-service";
+import { createLeadWithDedup } from "@/lib/leads-service";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
