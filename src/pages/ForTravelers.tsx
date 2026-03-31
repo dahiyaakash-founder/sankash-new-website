@@ -201,7 +201,7 @@ const ForTravelers = () => {
                 Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score.
+                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score. No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2" onClick={scrollToUploader}>
