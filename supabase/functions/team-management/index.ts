@@ -212,8 +212,8 @@ Deno.serve(async (req) => {
         });
       }
 
-      const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
-      const redirectTo = `${siteUrl}/ops/accept-invite`;
+      const appUrl = "https://sankash-new-website.lovable.app";
+      const redirectTo = `${appUrl}/ops/accept-invite`;
 
       // Use magiclink type for existing users (invite type fails for registered users)
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
