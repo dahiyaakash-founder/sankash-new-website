@@ -189,7 +189,7 @@ const Solutions = () => {
       </section>
 
       {/* Who it's for */}
-      <section className="py-12 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container">
           <motion.div {...fade} className="max-w-2xl mb-8 md:mb-12">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Built for</p>
