@@ -34,6 +34,7 @@ const Lending = () => {
             <p className="text-lg text-muted-foreground max-w-xl">
               Offer No Cost EMI at checkout. Help customers book holidays in monthly instalments 
               and unlock 20% higher sales, 40% better conversion, and 200% more customer queries.
+              No Cost EMI is subject to customer eligibility, lender approval, and applicable partner criteria. T&C apply.
             </p>
             <a href="https://app.sankash.in/agent/onboarding/signup" target="_blank" rel="noopener noreferrer">
               <Button size="xl" className="gap-2">Get Started <ArrowRight size={18} /></Button>

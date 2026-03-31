@@ -24,15 +24,21 @@ import {
 } from "@/lib/emi-calculator";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
 
+const EMI_MIN = 50000;
+const EMI_MAX = 500000;
+
 const emiFaqs = [
   { q: "What is a travel EMI calculator?", a: "A travel EMI calculator helps you estimate the monthly instalment for a holiday or travel booking. Enter your trip cost, choose a tenure between 3 and 24 months, and see what your booking would cost per month — with or without interest." },
-  { q: "How does No Cost EMI work for holidays?", a: "No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures, making it ideal for holidays in the ₹30,000 to ₹2,00,000 range." },
-  { q: "What is the difference between No Cost EMI and Standard EMI?", a: "No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee." },
+  { q: "How does No Cost EMI work for holidays?", a: "No Cost EMI means you pay exactly the trip cost divided across monthly instalments, with zero interest. A one-time processing fee of 2.5% applies. On SanKash, No Cost EMI is generally available for 3 and 6-month tenures. No Cost EMI is subject to customer eligibility, lender approval, and applicable partner criteria. T&C apply." },
+  { q: "What is the difference between No Cost EMI and Standard EMI?", a: "No Cost EMI carries zero interest — you only pay a one-time processing fee. Standard EMI applies a flat interest rate of 1.25% per month on the loan amount, making it more suitable for longer tenures of 9 to 24 months. Both options include a 2.5% processing fee. Subject to eligibility and lender approval. T&C apply." },
   { q: "Why do travel agents use EMI during checkout?", a: "Travel agents offering No Cost EMI at checkout see 20% higher sales and 40% better booking conversion. EMI removes the upfront cost barrier, helping customers choose premium packages and complete bookings faster. Agents get paid in full by the lender, so there's no collection risk." },
+  { q: "Can I use travel EMI for partial bookings like flights or hotels?", a: "Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval." },
+  { q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?", a: "Yes, in many cases you can. You may book through your own travel agent, make eligible direct travel bookings, or share the details of a non-registered agent with us. Where feasible, our team can evaluate and onboard the agent so your booking can be supported through SanKash." },
 ];
 
 const EmiCalculator = () => {
   const [amount, setAmount] = useState(85000);
+  const [amountError, setAmountError] = useState<string | null>(null);
   const [selectedTenure, setSelectedTenure] = useState(6);
   const [emiType, setEmiType] = useState<EmiType>("no_cost");
 
@@ -65,7 +71,10 @@ const EmiCalculator = () => {
             Travel EMI Calculator
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Estimate your monthly EMI for a holiday or travel booking across 3, 6, 9, 12, 18, and 24‑month tenures.
+            Enter your trip amount to see indicative EMI options. Calculator range: ₹50,000 to ₹5,00,000.
+          </p>
+          <p className="text-xs text-muted-foreground max-w-xl mx-auto">
+            Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval.
           </p>
         </div>
       </section>
@@ -83,13 +92,23 @@ const EmiCalculator = () => {
                   <input
                     type="number"
                     value={amount}
-                    onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                    min={10000}
-                    max={5000000}
-                    className="w-full pl-7 pr-4 py-3 rounded-xl border bg-background text-lg font-heading font-bold focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value) || 0;
+                      setAmount(v);
+                      if (v < EMI_MIN) setAmountError(`Minimum amount is ₹${EMI_MIN.toLocaleString("en-IN")}`);
+                      else if (v > EMI_MAX) setAmountError(`Maximum amount is ₹${EMI_MAX.toLocaleString("en-IN")}`);
+                      else setAmountError(null);
+                    }}
+                    min={EMI_MIN}
+                    max={EMI_MAX}
+                    className={`w-full pl-7 pr-4 py-3 rounded-xl border bg-background text-lg font-heading font-bold focus:outline-none focus:ring-2 focus:ring-ring ${amountError ? "border-destructive" : ""}`}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">Min ₹10,000 · Max ₹50,00,000</p>
+                {amountError ? (
+                  <p className="text-[11px] text-destructive font-medium">{amountError}</p>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">Min ₹50,000 · Max ₹5,00,000</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -222,7 +241,7 @@ const EmiCalculator = () => {
               <div className="flex items-start gap-2 p-4 rounded-xl bg-accent/50 border border-border/50">
                 <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Indicative calculation only. Final lender offer may differ based on eligibility, trip details, and underwriting. Processing fee of 2.5% may apply. EMI options subject to lender approval.
+                  Indicative calculation only. Final lender offer may vary based on eligibility, trip details, and underwriting. Processing fee of 2.5% may apply. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
             </div>

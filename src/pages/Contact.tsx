@@ -81,13 +81,24 @@ const escalationPaths = [
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    setSubmitting(true);
     const form = formRef.current!;
     const data = new FormData(form);
+
+    const fullName = (data.get("fullName") as string)?.trim();
+    const email = (data.get("email") as string)?.trim();
+
+    if (!fullName) { setFormError("Full name is required."); setSubmitting(false); return; }
+    if (!email) { setFormError("Work email is required."); setSubmitting(false); return; }
+
     const audienceMap: Record<string, "traveler" | "agent" | "developer" | "partner" | "other"> = {
       "Travel Agent / OTA": "agent",
       "Distribution Partner": "partner",
@@ -97,8 +108,8 @@ const Contact = () => {
     };
     try {
       await createLead({
-        full_name: (data.get("fullName") as string).trim(),
-        email: (data.get("email") as string).trim() || null,
+        full_name: fullName,
+        email: email || null,
         mobile_number: (data.get("phone") as string)?.trim() || null,
         company_name: (data.get("company") as string)?.trim() || null,
         message: (data.get("message") as string)?.trim() || null,
@@ -108,9 +119,9 @@ const Contact = () => {
       });
       setSubmitted(true);
     } catch {
-      // Show error feedback instead of fake success
-      const { toast } = await import("sonner");
-      toast.error("Failed to submit. Please try again.");
+      setFormError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -338,8 +349,11 @@ const Contact = () => {
                     <label className="block text-xs font-medium mb-1.5">Message</label>
                     <textarea name="message" rows={3} className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full gap-2">
-                    Submit <ArrowRight size={16} />
+                  {formError && (
+                    <p className="text-sm text-destructive font-medium">{formError}</p>
+                  )}
+                  <Button type="submit" size="lg" className="w-full gap-2" disabled={submitting}>
+                    {submitting ? "Submitting…" : "Submit"} {!submitting && <ArrowRight size={16} />}
                   </Button>
                 </form>
               )}

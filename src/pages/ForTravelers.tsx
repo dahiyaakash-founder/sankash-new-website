@@ -71,11 +71,15 @@ const faqs = [
   },
   {
     q: "What types of trips and holidays does this work for?",
-    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Whether your quote is ₹30,000 or ₹5,00,000, you can check EMI options and explore travel protection.",
+    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval.",
   },
   {
     q: "How does holiday EMI work on SanKash?",
-    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately.",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans, subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
+  },
+  {
+    q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?",
+    a: "Yes, in many cases you can. You may book through your own travel agent, make eligible direct travel bookings, or share the details of a non-registered agent with us. Where feasible, our team can evaluate and onboard the agent so your booking can be supported through SanKash.",
   },
 ];
 
@@ -197,7 +201,7 @@ const ForTravelers = () => {
                 Travel EMI — pay monthly, book now
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score.
+                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score. No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="gap-2" onClick={scrollToUploader}>
@@ -239,7 +243,7 @@ const ForTravelers = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
-                  * Indicative amounts. Final options depend on lender approval and trip details.
+                  * Indicative amounts. Final options depend on lender approval, trip details, and agent terms. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
             </motion.div>
@@ -382,7 +386,7 @@ const ForTravelers = () => {
       <section className="py-6 bg-background">
         <div className="container max-w-2xl text-center">
           <p className="text-[11px] text-muted-foreground">
-            * EMI options and savings are indicative. Final offers depend on lender approval, trip details, and agent terms. SanKash facilitates — your travel agent finalizes.
+            * EMI options and savings are indicative. Final offers depend on lender approval, trip details, and agent terms. No Cost EMI is subject to customer eligibility and lender approval. T&C apply. SanKash facilitates — your travel agent finalizes.
           </p>
         </div>
       </section>

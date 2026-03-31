@@ -33,7 +33,7 @@ const whyReasons = [
   {
     icon: Banknote,
     title: "No Cost EMI at checkout",
-    desc: "3 and 6 month No Cost EMI. 20% sales lift, 40% better conversion.",
+    desc: "3 and 6 month No Cost EMI. 20% sales lift, 40% better conversion. Subject to eligibility and lender approval.",
   },
   {
     icon: ShieldCheck,
@@ -84,7 +84,7 @@ const sampleEmiResults = calculateAllTenures(85000).filter(r => [3, 6, 9, 12, 18
 const agentFaqs = [
   {
     q: "How does No Cost EMI work for travel agents?",
-    a: "When a customer books through your agency with SanKash No Cost EMI, the lender pays you the full trip amount upfront. The customer repays the lender in monthly instalments with zero interest. You bear no credit risk and get paid immediately.",
+    a: "When a customer books through your agency with SanKash No Cost EMI, the lender pays you the full trip amount upfront. The customer repays the lender in monthly instalments with zero interest. You bear no credit risk and get paid immediately. No Cost EMI is subject to customer eligibility, lender approval, and applicable partner criteria. T&C apply.",
   },
   {
     q: "Does offering EMI slow down the booking process?",
@@ -254,7 +254,7 @@ const ForTravelAgents = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
-                  Indicative amounts only. Final offers depend on lender approval, trip value, customer profile, and applicable fees.
+                  Indicative amounts only. Final offers depend on lender approval, trip value, customer profile, and applicable fees. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
             </motion.div>
