@@ -63,7 +63,7 @@ const escalationPaths = [
     title: "Support",
     description: "Help with an existing integration or account",
     cta: "Reach support",
-    href: "mailto:support@sankash.in",
+    scrollTo: "demo-form",
   },
   {
     title: "Integrations",
