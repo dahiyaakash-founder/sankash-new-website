@@ -30,7 +30,7 @@ const confidenceColors: Record<string, string> = {
   low: "bg-red-100 text-red-800",
 };
 
-function InfoRow({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon?: React.ComponentType<{ size?: number; className?: string }> }) {
+function InfoRow({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon?: any }) {
   if (value == null || value === "") return null;
   return (
     <div className="flex items-start gap-2 py-1.5 border-b border-border/30 last:border-0">
