@@ -55,7 +55,7 @@ const ForAgents = () => {
       <section className="py-12 bg-primary">
         <div className="container grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { v: "8K+", l: "Travel Partners" },
+            { v: "10,000+", l: "Travel Partners" },
             { v: "40%", l: "Higher Conversion" },
             { v: "T+1", l: "Settlement" },
             { v: "20%", l: "More Inquiries" },
