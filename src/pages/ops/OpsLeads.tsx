@@ -202,9 +202,11 @@ const OpsLeads = () => {
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
-              <Download size={14} /> Export CSV
-            </Button>
+            {canExport && (
+              <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
+                <Download size={14} /> Export CSV
+              </Button>
+            )}
           </div>
         </div>
 
