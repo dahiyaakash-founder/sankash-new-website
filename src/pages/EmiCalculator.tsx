@@ -42,8 +42,9 @@ const EmiCalculator = () => {
   const [selectedTenure, setSelectedTenure] = useState(6);
   const [emiType, setEmiType] = useState<EmiType>("no_cost");
 
-  const currentResult = calculateEmi(amount, selectedTenure, emiType);
-  const allTenures = calculateAllTenures(amount);
+  const clampedAmount = Math.min(EMI_MAX, Math.max(EMI_MIN, amount));
+  const currentResult = calculateEmi(clampedAmount, selectedTenure, emiType);
+  const allTenures = calculateAllTenures(clampedAmount);
 
   const handleTenureChange = (t: number) => {
     setSelectedTenure(t);
