@@ -169,7 +169,18 @@ const TravelerQuoteUploader = () => {
     if (!leadName.trim() || !leadPhone.trim()) return;
     try {
       const { createLead } = await import("@/lib/leads-service");
-      await createLead({
+      const { uploadLeadAttachment } = await import("@/lib/attachments-service");
+      const { logLeadCreated } = await import("@/lib/activity-service");
+
+      // Upload file to storage first if available
+      let quoteFileUrl: string | null = null;
+      if (uploadedFile) {
+        const { uploadQuoteFile } = await import("@/lib/leads-service");
+        const uploaded = await uploadQuoteFile(uploadedFile);
+        quoteFileUrl = uploaded.url;
+      }
+
+      const lead = await createLead({
         full_name: leadName.trim(),
         mobile_number: leadPhone.trim(),
         email: leadEmail.trim() || null,
@@ -177,8 +188,15 @@ const TravelerQuoteUploader = () => {
         lead_source_type: "traveler_quote_unlock",
         audience_type: "traveler",
         quote_file_name: fileName,
+        quote_file_url: quoteFileUrl,
         metadata_json: { confidence: stage === "results-high" ? "high" : "medium" },
       });
+
+      // Attach file to lead record
+      if (uploadedFile && lead?.id) {
+        await uploadLeadAttachment(uploadedFile, lead.id, { sourceType: "traveler_quote_unlock" }).catch(() => {});
+        await logLeadCreated(lead.id, "for-travelers").catch(() => {});
+      }
     } catch {
       // still show success
     }
