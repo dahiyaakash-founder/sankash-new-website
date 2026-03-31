@@ -150,9 +150,9 @@ const About = () => {
       </section>
 
       {/* Capabilities */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-4xl">
-          <motion.div {...fade} className="space-y-10">
+          <motion.div {...fade} className="space-y-8 md:space-y-10">
             <div className="max-w-2xl space-y-3">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
                 Built by people who know travel
