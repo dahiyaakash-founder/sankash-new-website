@@ -1,13 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
-import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority } from "@/lib/leads-service";
+import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority, type TeamMember } from "@/lib/leads-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
+import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown } from "lucide-react";
 import { format } from "date-fns";
+import LeadImportModal from "@/components/ops/LeadImportModal";
+import { downloadTemplate } from "@/lib/lead-import-service";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
   { value: "new", label: "New" },
@@ -30,6 +32,14 @@ const SOURCE_OPTIONS: { value: LeadSourceType; label: string }[] = [
   { value: "demo_request", label: "Demo" },
   { value: "support_request", label: "Support" },
   { value: "integration_query", label: "Integration" },
+  { value: "excel_import", label: "Excel Import" },
+  { value: "manual_entry", label: "Manual Entry" },
+  { value: "offline_calling", label: "Offline Calling" },
+  { value: "whatsapp_inbound", label: "WhatsApp" },
+  { value: "referral", label: "Referral" },
+  { value: "existing_partner", label: "Existing Partner" },
+  { value: "event_lead", label: "Event Lead" },
+  { value: "itinerary_upload", label: "Itinerary Upload" },
 ];
 
 const AUDIENCE_OPTIONS: { value: AudienceType; label: string }[] = [
@@ -83,12 +93,13 @@ const PAGE_SIZE = 25;
 
 const OpsLeads = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">(searchParams.get("status") as LeadStatus ?? "");
   const [sourceFilter, setSourceFilter] = useState<LeadSourceType | "">(searchParams.get("source") as LeadSourceType ?? "");
@@ -98,7 +109,9 @@ const OpsLeads = () => {
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [activePreset, setActivePreset] = useState("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [importOpen, setImportOpen] = useState(false);
 
+  const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -127,7 +140,9 @@ const OpsLeads = () => {
   // Load team members for owner display
   useEffect(() => {
     fetchTeamMembers().then((members) => {
+      setTeamMembers(members);
       const emailMap: Record<string, string> = {};
+      members.forEach(m => { if (m.full_name) emailMap[m.user_id] = m.full_name; });
       if (user) emailMap[user.id] = user.email ?? user.id.slice(0, 8) + "…";
       setTeamEmails(emailMap);
     }).catch(() => {});
@@ -174,8 +189,18 @@ const OpsLeads = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
-          <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2">
             {selected.size > 0 && <span className="text-xs text-muted-foreground">{selected.size} selected</span>}
+            {canImport && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => downloadTemplate("xlsx")} className="gap-1.5 text-xs">
+                  <FileDown size={14} /> Template
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-1.5 text-xs">
+                  <Upload size={14} /> Import
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
               <Download size={14} /> Export CSV
             </Button>
@@ -325,6 +350,16 @@ const OpsLeads = () => {
           </div>
         )}
       </div>
+
+      {canImport && (
+        <LeadImportModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          userId={user!.id}
+          teamMembers={teamMembers}
+          onImportComplete={load}
+        />
+      )}
     </OpsLayout>
   );
 };
