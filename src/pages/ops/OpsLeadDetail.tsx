@@ -7,6 +7,7 @@ import {
   type LeadRow, type LeadStatus, type LeadNote, type LeadPriority, type TeamMember,
 } from "@/lib/leads-service";
 import { fetchLeadAttachments, getAttachmentUrl, type LeadAttachment } from "@/lib/attachments-service";
+import ItineraryAnalysisDrawer from "@/components/ops/ItineraryAnalysisDrawer";
 import { fetchLeadActivity, logActivity, type LeadActivityEntry } from "@/lib/activity-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
