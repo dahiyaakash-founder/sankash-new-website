@@ -400,13 +400,19 @@ const OpsLeadDetail = () => {
                         </span>
                       </div>
                       <div className="flex gap-1.5 shrink-0">
-                        <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><ExternalLink size={11} /> Open</Button>
-                        </a>
-                        <a href={lead.quote_file_url} download={lead.quote_file_name ?? "attachment"}>
-                          <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><Download size={11} /></Button>
-                        </a>
-                      </div>
+                          <ItineraryAnalysisDrawer
+                            leadId={id!}
+                            fileUrl={lead.quote_file_url!}
+                            fileName={lead.quote_file_name ?? "attachment"}
+                            audienceType={lead.audience_type ?? undefined}
+                          />
+                          <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><ExternalLink size={11} /> Open</Button>
+                          </a>
+                          <a href={lead.quote_file_url} download={lead.quote_file_name ?? "attachment"}>
+                            <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><Download size={11} /></Button>
+                          </a>
+                        </div>
                     </div>
                   )}
                 </div>
