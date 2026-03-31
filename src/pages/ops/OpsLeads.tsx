@@ -342,6 +342,16 @@ const OpsLeads = () => {
           </div>
         )}
       </div>
+
+      {canImport && (
+        <LeadImportModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          userId={user!.id}
+          teamMembers={teamMembers}
+          onImportComplete={load}
+        />
+      )}
     </OpsLayout>
   );
 };
