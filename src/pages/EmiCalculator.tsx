@@ -38,6 +38,7 @@ const emiFaqs = [
 
 const EmiCalculator = () => {
   const [amount, setAmount] = useState(85000);
+  const [amountError, setAmountError] = useState<string | null>(null);
   const [selectedTenure, setSelectedTenure] = useState(6);
   const [emiType, setEmiType] = useState<EmiType>("no_cost");
 
