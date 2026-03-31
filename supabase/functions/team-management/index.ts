@@ -194,6 +194,45 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── RE-INVITE (resend invite email) ──
+    if (action === "reinvite") {
+      const { user_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Get user email
+      const { data: userData, error: getUserError } = await adminClient.auth.admin.getUserById(user_id);
+      if (getUserError || !userData?.user) {
+        return new Response(JSON.stringify({ error: "User not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
+      const redirectTo = `${siteUrl}/ops/accept-invite`;
+
+      // Re-invite by email
+      const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(userData.user.email!, {
+        data: { full_name: userData.user.user_metadata?.full_name },
+        redirectTo,
+      });
+      if (inviteError) {
+        return new Response(JSON.stringify({ error: inviteError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
