@@ -23,14 +23,19 @@ import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader"
 const howItWorks = [
   { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
   { num: "02", icon: Search, label: "Review value and pricing", desc: "See if there's room for better structuring or savings on your trip." },
-  { num: "03", icon: Calculator, label: "Check travel EMI options", desc: "Compare monthly payment plans across 3, 6, or 12-month tenures." },
+  { num: "03", icon: Calculator, label: "Check travel EMI options", desc: "Compare monthly payment plans across 3, 6, 9, 12, 18, and 24-month tenures." },
   { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
+// Dynamic EMI examples from the real calculator for ₹85,000
+import { calculateEmi, formatINR as fmtINR } from "@/lib/emi-calculator";
+const _emi3 = calculateEmi(85000, 3, "no_cost");
+const _emi6 = calculateEmi(85000, 6, "no_cost");
+const _emi12 = calculateEmi(85000, 12, "standard");
 const emiExamples = [
-  { tenure: "3 months", monthly: "₹28,333", total: "₹85,000", tag: "No Cost EMI" },
-  { tenure: "6 months", monthly: "₹14,500", total: "₹87,000", tag: null },
-  { tenure: "12 months", monthly: "₹7,600", total: "₹91,200", tag: "Most popular" },
+  { tenure: "3 months", monthly: fmtINR(_emi3.monthlyEmi), total: fmtINR(_emi3.totalPayable), tag: "No Cost EMI" },
+  { tenure: "6 months", monthly: fmtINR(_emi6.monthlyEmi), total: fmtINR(_emi6.totalPayable), tag: "No Cost EMI" },
+  { tenure: "12 months", monthly: fmtINR(_emi12.monthlyEmi), total: fmtINR(_emi12.totalPayable), tag: "Most popular" },
 ];
 
 const whyReasons = [
@@ -75,7 +80,7 @@ const faqs = [
   },
   {
     q: "How does holiday EMI work on SanKash?",
-    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans, subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, 9, 12, 18, and 24-month tenures from 15+ lending partners. No Cost EMI (zero interest, 2.5% processing fee) is available on 3 and 6-month plans. Standard EMI (1.25% flat per month, 2.5% processing fee) applies on 9–24 month tenures. Subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
   },
   {
     q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?",
@@ -298,7 +303,7 @@ const ForTravelers = () => {
                 Trusted by real travelers and travel partners
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                8,000+ travel agent partners. 15+ lending institutions. Over 5 Million+ travelers have used SanKash for holiday financing and quote reviews.
+                10,000+ travel agent partners. 15+ lending institutions. Over 5 Million+ travelers have used SanKash for holiday financing and quote reviews.
               </p>
               <div className="space-y-3 pt-1">
                 {[

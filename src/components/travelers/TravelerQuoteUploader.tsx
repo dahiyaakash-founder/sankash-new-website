@@ -173,7 +173,7 @@ const TravelerQuoteUploader = () => {
     setLeadSubmitting(true);
     setLeadError(null);
     try {
-      const { createLead } = await import("@/lib/leads-service");
+      const { createLeadWithDedup } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { logLeadCreated } = await import("@/lib/activity-service");
 
@@ -185,7 +185,7 @@ const TravelerQuoteUploader = () => {
         quoteFileUrl = uploaded.url;
       }
 
-      const lead = await createLead({
+      const { lead } = await createLeadWithDedup({
         full_name: leadName.trim(),
         mobile_number: leadPhone.trim(),
         email: leadEmail.trim() || null,

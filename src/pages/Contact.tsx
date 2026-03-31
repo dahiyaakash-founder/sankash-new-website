@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import SiteLayout from "@/components/SiteLayout";
-import { createLead } from "@/lib/leads-service";
+import { createLeadWithDedup } from "@/lib/leads-service";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -107,7 +107,7 @@ const Contact = () => {
       "Other": "other",
     };
     try {
-      await createLead({
+      await createLeadWithDedup({
         full_name: fullName,
         email: email || null,
         mobile_number: (data.get("phone") as string)?.trim() || null,
@@ -365,7 +365,7 @@ const Contact = () => {
               <div className="space-y-4">
                 {[
                   { icon: Mail, label: "Email", value: "hello@sankash.in" },
-                  { icon: Phone, label: "Phone", value: "+91 (support line)" },
+                  { icon: Mail, label: "Support", value: "support@sankash.in" },
                   {
                     icon: MapPin,
                     label: "Office",

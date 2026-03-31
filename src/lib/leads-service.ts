@@ -43,14 +43,122 @@ export interface TeamMember {
   status?: string;
 }
 
-/** Insert a lead from a public website form (anon) */
+/**
+ * Fetch the default assignee for new public leads.
+ * Strategy: round-robin across active supervisors, falling back to admins.
+ */
+async function resolveDefaultAssignee(): Promise<string | null> {
+  try {
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["team_supervisor", "admin", "super_admin"]);
+
+    if (!roles || roles.length === 0) return null;
+
+    const { data: profiles } = await supabase
+      .from("profiles" as any)
+      .select("user_id, status") as any;
+
+    const activeUserIds = new Set(
+      (profiles ?? []).filter((p: any) => p.status === "active").map((p: any) => p.user_id)
+    );
+
+    const supervisors = roles.filter((r: any) => r.role === "team_supervisor" && activeUserIds.has(r.user_id));
+    const admins = roles.filter((r: any) => (r.role === "admin" || r.role === "super_admin") && activeUserIds.has(r.user_id));
+    const candidates = supervisors.length > 0 ? supervisors : admins;
+
+    if (candidates.length === 0) return null;
+
+    // Simple round-robin: pick candidate with fewest open leads
+    const { data: leadCounts } = await supabase
+      .from("leads")
+      .select("assigned_to")
+      .in("assigned_to", candidates.map((c: any) => c.user_id))
+      .not("status", "in", '("converted","closed_lost")');
+
+    const counts: Record<string, number> = {};
+    candidates.forEach((c: any) => { counts[c.user_id] = 0; });
+    (leadCounts ?? []).forEach((l: any) => {
+      if (l.assigned_to && counts[l.assigned_to] !== undefined) counts[l.assigned_to]++;
+    });
+
+    return Object.entries(counts).sort((a, b) => a[1] - b[1])[0]?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Insert a lead from a public website form (anon) — with auto-assignment */
 export async function createLead(lead: LeadInsert) {
-  // Generate a client-side ID so we can return it without needing SELECT permission.
-  // Anon users can INSERT but cannot SELECT (RLS), so .select() would fail with 42501.
   const id = lead.id ?? crypto.randomUUID();
-  const { error } = await supabase.from("leads").insert({ ...lead, id });
+
+  // Try auto-assignment for new public leads (best-effort, don't block on failure)
+  let assignedTo = lead.assigned_to ?? null;
+  if (!assignedTo) {
+    assignedTo = await resolveDefaultAssignee();
+  }
+
+  const { error } = await supabase.from("leads").insert({ ...lead, id, assigned_to: assignedTo });
   if (error) throw error;
-  return { ...lead, id } as LeadRow;
+  return { ...lead, id, assigned_to: assignedTo } as LeadRow;
+}
+
+/**
+ * Check for existing open leads by mobile or email before creating.
+ * If a duplicate exists, updates the existing lead with new submission data.
+ * Returns { lead, isDuplicate }.
+ */
+export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: LeadRow; isDuplicate: boolean }> {
+  // Try to find an existing open lead by mobile or email
+  let existingLead: LeadRow | null = null;
+
+  if (lead.mobile_number) {
+    const { data } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("mobile_number", lead.mobile_number)
+      .not("status", "in", '("converted","closed_lost")')
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) existingLead = data[0] as LeadRow;
+  }
+
+  if (!existingLead && lead.email) {
+    const { data } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("email", lead.email)
+      .not("status", "in", '("converted","closed_lost")')
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length > 0) existingLead = data[0] as LeadRow;
+  }
+
+  if (existingLead) {
+    // Update existing lead with latest submission info (merge, don't replace)
+    const mergeUpdates: LeadUpdate = {};
+    if (lead.message) mergeUpdates.message = lead.message;
+    if (lead.company_name && !existingLead.company_name) mergeUpdates.company_name = lead.company_name;
+    if (lead.lead_source_page) mergeUpdates.notes = `[Re-submission from ${lead.lead_source_page}] ${lead.message ?? ""}`.trim();
+
+    if (Object.keys(mergeUpdates).length > 0) {
+      await supabase.from("leads").update(mergeUpdates).eq("id", existingLead.id);
+    }
+
+    // Log re-submission as activity
+    await supabase.from("lead_activity" as any).insert({
+      lead_id: existingLead.id,
+      activity_type: "resubmission",
+      description: `Duplicate submission detected from ${lead.lead_source_page ?? "website"}. Original lead updated.`,
+    } as any);
+
+    return { lead: existingLead, isDuplicate: true };
+  }
+
+  // No duplicate — create new lead
+  const result = await createLead(lead);
+  return { lead: result, isDuplicate: false };
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */

@@ -433,7 +433,7 @@ const ForTravelAgents = () => {
             Your next booking starts here.
           </h2>
           <p className="text-sm text-primary-foreground/50 max-w-md mx-auto">
-            Join 8,000+ travel partners using SanKash to grow revenue and collect faster.
+            Join 10,000+ travel partners using SanKash to grow revenue and collect faster.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
             <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
