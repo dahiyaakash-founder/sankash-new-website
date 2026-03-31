@@ -52,9 +52,9 @@ const About = () => {
       </section>
 
       {/* The gap */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-3xl">
-          <motion.div {...fade} className="space-y-8">
+          <motion.div {...fade} className="space-y-6 md:space-y-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
               The problem we saw
             </h2>
