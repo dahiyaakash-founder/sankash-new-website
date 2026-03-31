@@ -76,9 +76,14 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Determine the site URL for redirect
+      const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
+      const redirectTo = `${siteUrl}/ops/accept-invite`;
+
       // Create user via admin API with invite
       const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
         data: { full_name },
+        redirectTo,
       });
       if (createError) {
         return new Response(JSON.stringify({ error: createError.message }), {
@@ -183,6 +188,45 @@ Deno.serve(async (req) => {
 
       // Update profile status
       await adminClient.from("profiles").update({ status: "active" }).eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── RE-INVITE (resend invite email) ──
+    if (action === "reinvite") {
+      const { user_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Get user email
+      const { data: userData, error: getUserError } = await adminClient.auth.admin.getUserById(user_id);
+      if (getUserError || !userData?.user) {
+        return new Response(JSON.stringify({ error: "User not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
+      const redirectTo = `${siteUrl}/ops/accept-invite`;
+
+      // Re-invite by email
+      const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(userData.user.email!, {
+        data: { full_name: userData.user.user_metadata?.full_name },
+        redirectTo,
+      });
+      if (inviteError) {
+        return new Response(JSON.stringify({ error: inviteError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -175,6 +175,18 @@ const OpsTeamManagement = () => {
     }
   };
 
+  const handleReinvite = async (userId: string) => {
+    try {
+      const res = await supabase.functions.invoke("team-management", {
+        body: { action: "reinvite", user_id: userId },
+      });
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success("Invite re-sent successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to re-send invite");
+    }
+  };
+
   if (loading) return <OpsLayout><div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={28} /></div></OpsLayout>;
 
   const supervisors = members.filter(m => m.role === "team_supervisor" || m.role === "admin" || m.role === "super_admin");
@@ -285,6 +297,9 @@ const OpsTeamManagement = () => {
                               <DropdownMenuContent align="end">
                                 {!isDisabled && (
                                   <>
+                                    {isInvited && (
+                                      <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Re-send Invite</DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "admin")}>Set as Admin</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_supervisor")}>Set as Supervisor</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_member")}>Set as Team Member</DropdownMenuItem>
