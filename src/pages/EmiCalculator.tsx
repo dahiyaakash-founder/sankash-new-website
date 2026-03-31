@@ -71,7 +71,10 @@ const EmiCalculator = () => {
             Travel EMI Calculator
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Estimate your monthly EMI for a holiday or travel booking across 3, 6, 9, 12, 18, and 24‑month tenures.
+            Enter your trip amount to see indicative EMI options. Calculator range: ₹50,000 to ₹5,00,000.
+          </p>
+          <p className="text-xs text-muted-foreground max-w-xl mx-auto">
+            Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval.
           </p>
         </div>
       </section>
