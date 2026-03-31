@@ -92,13 +92,23 @@ const EmiCalculator = () => {
                   <input
                     type="number"
                     value={amount}
-                    onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                    min={10000}
-                    max={5000000}
-                    className="w-full pl-7 pr-4 py-3 rounded-xl border bg-background text-lg font-heading font-bold focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value) || 0;
+                      setAmount(v);
+                      if (v < EMI_MIN) setAmountError(`Minimum amount is ₹${EMI_MIN.toLocaleString("en-IN")}`);
+                      else if (v > EMI_MAX) setAmountError(`Maximum amount is ₹${EMI_MAX.toLocaleString("en-IN")}`);
+                      else setAmountError(null);
+                    }}
+                    min={EMI_MIN}
+                    max={EMI_MAX}
+                    className={`w-full pl-7 pr-4 py-3 rounded-xl border bg-background text-lg font-heading font-bold focus:outline-none focus:ring-2 focus:ring-ring ${amountError ? "border-destructive" : ""}`}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground">Min ₹10,000 · Max ₹50,00,000</p>
+                {amountError ? (
+                  <p className="text-[11px] text-destructive font-medium">{amountError}</p>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">Min ₹50,000 · Max ₹5,00,000</p>
+                )}
               </div>
 
               <div className="space-y-2">
