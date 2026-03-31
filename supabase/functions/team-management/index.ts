@@ -38,13 +38,17 @@ Deno.serve(async (req) => {
     // Admin client for privileged operations
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check caller is super_admin
+    // Check caller is super_admin or admin
     const { data: isSuperAdmin } = await adminClient.rpc("has_role", {
       _user_id: caller.id,
       _role: "super_admin",
     });
-    if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: "Only super admins can manage team" }), {
+    const { data: isAdmin } = await adminClient.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+    if (!isSuperAdmin && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Only admins can manage team" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
