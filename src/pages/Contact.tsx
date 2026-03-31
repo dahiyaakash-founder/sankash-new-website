@@ -320,11 +320,18 @@ const Contact = () => {
                   className="p-5 sm:p-8 rounded-2xl border bg-card space-y-5"
                 >
                   <div>
+                    {isDemoIntent && (
+                      <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+                        <Calendar size={14} /> Demo Request
+                      </div>
+                    )}
                     <h2 className="text-xl font-heading font-bold">
-                      Prefer a form? We'll get back fast.
+                      {isDemoIntent ? "Book a demo with SanKash" : "Prefer a form? We'll get back fast."}
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Book a demo, ask a question, or tell us what you need.
+                      {isDemoIntent
+                        ? "Tell us about your business and we'll arrange a walkthrough."
+                        : "Book a demo, ask a question, or tell us what you need."}
                     </p>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
