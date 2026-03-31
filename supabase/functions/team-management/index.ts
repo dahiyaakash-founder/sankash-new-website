@@ -38,6 +38,17 @@ Deno.serve(async (req) => {
     // Admin client for privileged operations
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    const body = await req.json();
+    const { action } = body;
+
+    // ── ACTIVATE (self-service, no admin check needed) ──
+    if (action === "activate") {
+      await adminClient.from("profiles").update({ status: "active" }).eq("user_id", caller.id);
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check caller is super_admin or admin
     const { data: isSuperAdmin } = await adminClient.rpc("has_role", {
       _user_id: caller.id,
@@ -53,9 +64,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const body = await req.json();
-    const { action } = body;
 
     // ── INVITE ──
     if (action === "invite") {
@@ -278,16 +286,6 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ success: true, action_link: actionLink }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // ── ACTIVATE (called by invited user after setting password) ──
-    if (action === "activate") {
-      // Caller is the invited user themselves
-      await adminClient.from("profiles").update({ status: "active" }).eq("user_id", caller.id);
-
-      return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
