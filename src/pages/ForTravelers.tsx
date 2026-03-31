@@ -132,6 +132,7 @@ const ForTravelers = () => {
             </motion.div>
 
             <motion.div
+              id="quote-upload-section"
               ref={uploaderRef}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
