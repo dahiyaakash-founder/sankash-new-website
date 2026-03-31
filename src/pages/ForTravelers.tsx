@@ -80,7 +80,7 @@ const faqs = [
   },
   {
     q: "How does holiday EMI work on SanKash?",
-    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans, subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, 9, 12, 18, and 24-month tenures from 15+ lending partners. No Cost EMI (zero interest, 2.5% processing fee) is available on 3 and 6-month plans. Standard EMI (1.25% flat per month, 2.5% processing fee) applies on 9–24 month tenures. Subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
   },
   {
     q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?",
