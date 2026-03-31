@@ -132,7 +132,9 @@ const OpsLeads = () => {
   // Load team members for owner display
   useEffect(() => {
     fetchTeamMembers().then((members) => {
+      setTeamMembers(members);
       const emailMap: Record<string, string> = {};
+      members.forEach(m => { if (m.full_name) emailMap[m.user_id] = m.full_name; });
       if (user) emailMap[user.id] = user.email ?? user.id.slice(0, 8) + "…";
       setTeamEmails(emailMap);
     }).catch(() => {});
