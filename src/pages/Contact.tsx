@@ -365,7 +365,7 @@ const Contact = () => {
               <div className="space-y-4">
                 {[
                   { icon: Mail, label: "Email", value: "hello@sankash.in" },
-                  { icon: Phone, label: "Phone", value: "+91 (support line)" },
+                  { icon: Mail, label: "Support", value: "support@sankash.in" },
                   {
                     icon: MapPin,
                     label: "Office",

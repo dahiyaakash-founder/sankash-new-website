@@ -303,7 +303,7 @@ const ForTravelers = () => {
                 Trusted by real travelers and travel partners
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                8,000+ travel agent partners. 15+ lending institutions. Over 5 Million+ travelers have used SanKash for holiday financing and quote reviews.
+                10,000+ travel agent partners. 15+ lending institutions. Over 5 Million+ travelers have used SanKash for holiday financing and quote reviews.
               </p>
               <div className="space-y-3 pt-1">
                 {[
