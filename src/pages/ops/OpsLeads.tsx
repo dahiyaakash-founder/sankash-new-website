@@ -112,6 +112,7 @@ const OpsLeads = () => {
   const [importOpen, setImportOpen] = useState(false);
 
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
+  const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -201,9 +202,11 @@ const OpsLeads = () => {
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
-              <Download size={14} /> Export CSV
-            </Button>
+            {canExport && (
+              <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
+                <Download size={14} /> Export CSV
+              </Button>
+            )}
           </div>
         </div>
 
