@@ -63,7 +63,7 @@ const escalationPaths = [
     title: "Support",
     description: "Help with an existing integration or account",
     cta: "Reach support",
-    href: "mailto:support@sankash.in",
+    scrollTo: "demo-form",
   },
   {
     title: "Integrations",
@@ -229,21 +229,31 @@ const Contact = () => {
                       {path.cta} <ExternalLink size={12} />
                     </Button>
                   </Link>
-              ) : path.href?.startsWith("mailto:") ? (
+              ) : (path as any).scrollTo ? (
                   <Button
                     variant="outline-primary"
                     size="sm"
                     className="gap-1.5 text-xs"
                     onClick={() => {
-                      const form = document.getElementById("demo-form");
-                      if (form) {
-                        form.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }
+                      const el = document.getElementById((path as any).scrollTo);
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
                   >
                     {path.cta} <ArrowRight size={12} />
                   </Button>
-                ) : (
+              ) : path.href?.startsWith("#") ? (
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => {
+                      const el = document.getElementById(path.href!.slice(1));
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  >
+                    {path.cta} <ArrowRight size={12} />
+                  </Button>
+              ) : (
                   <a href={path.href}>
                     <Button variant="outline-primary" size="sm" className="gap-1.5 text-xs">
                       {path.cta} <ArrowRight size={12} />
