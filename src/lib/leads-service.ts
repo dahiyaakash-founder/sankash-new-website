@@ -105,63 +105,39 @@ export async function createLead(lead: LeadInsert) {
 }
 
 /**
- * Check for existing open leads by mobile or email before creating.
- * If a duplicate exists, updates the existing lead with new submission data.
- * Returns { lead, isDuplicate }.
+ * Create a lead with 24-hour duplicate suppression.
+ * Uses a SECURITY DEFINER database function to bypass RLS for dedup checks.
  */
 export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: LeadRow; isDuplicate: boolean }> {
-  // 24-hour duplicate suppression window
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  let existingLead: LeadRow | null = null;
+  const { data, error } = await supabase.rpc("upsert_lead_with_dedup" as any, {
+    _full_name: lead.full_name,
+    _email: lead.email ?? null,
+    _mobile_number: lead.mobile_number ?? null,
+    _company_name: lead.company_name ?? null,
+    _message: lead.message ?? null,
+    _audience_type: lead.audience_type ?? null,
+    _lead_source_page: lead.lead_source_page ?? null,
+    _lead_source_type: lead.lead_source_type ?? null,
+    _quote_file_url: lead.quote_file_url ?? null,
+    _quote_file_name: lead.quote_file_name ?? null,
+    _quote_amount: lead.quote_amount ?? null,
+    _city: lead.city ?? null,
+    _destination_type: lead.destination_type ?? null,
+    _detected_trip_type: lead.detected_trip_type ?? "unknown",
+    _emi_flag: lead.emi_flag ?? false,
+    _insurance_flag: lead.insurance_flag ?? false,
+    _pg_flag: lead.pg_flag ?? false,
+    _website_url: lead.website_url ?? null,
+    _metadata_json: lead.metadata_json ?? {},
+  } as any);
 
-  if (lead.mobile_number) {
-    const { data } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("mobile_number", lead.mobile_number)
-      .gte("created_at", twentyFourHoursAgo)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    if (data && data.length > 0) existingLead = data[0] as LeadRow;
-  }
+  if (error) throw error;
 
-  if (!existingLead && lead.email) {
-    const { data } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("email", lead.email)
-      .gte("created_at", twentyFourHoursAgo)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    if (data && data.length > 0) existingLead = data[0] as LeadRow;
-  }
-
-  if (existingLead) {
-    // Update existing lead with latest submission info (merge, don't replace)
-    const mergeUpdates: LeadUpdate = {};
-    if (lead.message) mergeUpdates.message = lead.message;
-    if (lead.company_name && !existingLead.company_name) mergeUpdates.company_name = lead.company_name;
-    if (lead.lead_source_page) mergeUpdates.notes = `[Re-submission from ${lead.lead_source_page}] ${lead.message ?? ""}`.trim();
-    if (lead.quote_file_url) mergeUpdates.quote_file_url = lead.quote_file_url;
-    if (lead.quote_file_name) mergeUpdates.quote_file_name = lead.quote_file_name;
-
-    if (Object.keys(mergeUpdates).length > 0) {
-      await supabase.from("leads").update(mergeUpdates).eq("id", existingLead.id);
-    }
-
-    // Log re-submission as activity
-    await supabase.from("lead_activity" as any).insert({
-      lead_id: existingLead.id,
-      activity_type: "resubmission",
-      description: `Duplicate submission within 24h from ${lead.lead_source_page ?? "website"} (${lead.lead_source_type ?? "unknown"}). Merged into existing lead.`,
-    } as any);
-
-    return { lead: existingLead, isDuplicate: true };
-  }
-
-  // No duplicate within 24h — create new lead
-  const result = await createLead(lead);
-  return { lead: result, isDuplicate: false };
+  const result = data as any;
+  return {
+    lead: { ...lead, id: result.id } as LeadRow,
+    isDuplicate: result.is_duplicate === true,
+  };
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */
