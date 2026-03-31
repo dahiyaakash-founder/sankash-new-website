@@ -341,7 +341,7 @@ const ForTravelers = () => {
       </section>
 
       <AssistantEntryPoint prompts={[
-        { label: "Ask about my quote", link: "/for-travelers" },
+        { label: "Ask about my quote", onClick: () => document.getElementById("quote-upload-section")?.scrollIntoView({ behavior: "smooth", block: "center" }) },
         { label: "Check EMI options", href: "#emi-section" },
       ]} />
 
