@@ -24,6 +24,7 @@ import OpsDashboard from "./pages/ops/OpsDashboard";
 import OpsLeads from "./pages/ops/OpsLeads";
 import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
 import OpsTeamManagement from "./pages/ops/OpsTeamManagement";
+import OpsAcceptInvite from "./pages/ops/OpsAcceptInvite";
 import ProtectedOpsRoute from "./components/ops/ProtectedOpsRoute";
 
 const queryClient = new QueryClient();
