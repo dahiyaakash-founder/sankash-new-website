@@ -145,9 +145,9 @@ const Developers = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6">
             {/* Lending API */}
-            <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <Banknote size={20} className="text-primary" />
