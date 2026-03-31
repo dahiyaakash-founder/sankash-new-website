@@ -98,6 +98,7 @@ const TravelerQuoteUploader = () => {
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
@@ -111,6 +112,7 @@ const TravelerQuoteUploader = () => {
     }
 
     setFileName(file.name);
+    setUploadedFile(file);
     setStage("validating");
 
     setTimeout(() => {
