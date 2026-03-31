@@ -254,7 +254,7 @@ const ForTravelAgents = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
-                  Indicative amounts only. Final offers depend on lender approval, trip value, customer profile, and applicable fees.
+                  Indicative amounts only. Final offers depend on lender approval, trip value, customer profile, and applicable fees. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
             </motion.div>
