@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       }
 
       const appUrl = "https://sankash-new-website.lovable.app";
-      const redirectTo = `${appUrl}/ops/accept-invite`;
+      const redirectTo = `${appUrl}/ops/login`;
 
       // Create user via admin API with invite
       const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
