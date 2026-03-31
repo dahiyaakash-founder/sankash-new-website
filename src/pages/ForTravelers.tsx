@@ -71,11 +71,15 @@ const faqs = [
   },
   {
     q: "What types of trips and holidays does this work for?",
-    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Whether your quote is ₹30,000 or ₹5,00,000, you can check EMI options and explore travel protection.",
+    a: "SanKash works with any holiday that has a quoted cost — domestic family holidays, international packages, honeymoon trips, group tours, pilgrimage travel, and more. Travel EMI can be available for full holiday packages as well as eligible partial bookings such as flights, hotels, or land packages. Final availability depends on booking type, customer profile, merchant setup, and lender approval.",
   },
   {
     q: "How does holiday EMI work on SanKash?",
-    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately.",
+    a: "Once you upload your holiday quote, SanKash shows you indicative monthly payment options across 3, 6, and 12-month tenures from 15+ lending partners. No Cost EMI is available on select plans, subject to customer eligibility and lender approval. You choose the tenure that works for you, and the lender disburses the full amount to your agent — so your booking is confirmed immediately. T&C apply.",
+  },
+  {
+    q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?",
+    a: "Yes, in many cases you can. You may book through your own travel agent, make eligible direct travel bookings, or share the details of a non-registered agent with us. Where feasible, our team can evaluate and onboard the agent so your booking can be supported through SanKash.",
   },
 ];
 
