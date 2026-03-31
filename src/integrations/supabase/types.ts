@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      import_batches: {
+        Row: {
+          batch_name: string | null
+          duplicate_action: string
+          duplicate_rows: number
+          failed_details: Json | null
+          failed_rows: number
+          file_name: string
+          id: string
+          imported_at: string
+          imported_by: string
+          imported_rows: number
+          skipped_rows: number
+          total_rows: number
+          updated_rows: number
+          valid_rows: number
+        }
+        Insert: {
+          batch_name?: string | null
+          duplicate_action?: string
+          duplicate_rows?: number
+          failed_details?: Json | null
+          failed_rows?: number
+          file_name: string
+          id?: string
+          imported_at?: string
+          imported_by: string
+          imported_rows?: number
+          skipped_rows?: number
+          total_rows?: number
+          updated_rows?: number
+          valid_rows?: number
+        }
+        Update: {
+          batch_name?: string | null
+          duplicate_action?: string
+          duplicate_rows?: number
+          failed_details?: Json | null
+          failed_rows?: number
+          file_name?: string
+          id?: string
+          imported_at?: string
+          imported_by?: string
+          imported_rows?: number
+          skipped_rows?: number
+          total_rows?: number
+          updated_rows?: number
+          valid_rows?: number
+        }
+        Relationships: []
+      }
       lead_activity: {
         Row: {
           activity_type: string
@@ -186,6 +237,7 @@ export type Database = {
           estimated_savings_percent: number | null
           full_name: string
           id: string
+          import_batch_id: string | null
           insurance_flag: boolean | null
           last_contacted_at: string | null
           lead_source_page: string | null
@@ -225,6 +277,7 @@ export type Database = {
           estimated_savings_percent?: number | null
           full_name: string
           id?: string
+          import_batch_id?: string | null
           insurance_flag?: boolean | null
           last_contacted_at?: string | null
           lead_source_page?: string | null
@@ -264,6 +317,7 @@ export type Database = {
           estimated_savings_percent?: number | null
           full_name?: string
           id?: string
+          import_batch_id?: string | null
           insurance_flag?: boolean | null
           last_contacted_at?: string | null
           lead_source_page?: string | null
@@ -364,6 +418,14 @@ export type Database = {
         | "demo_request"
         | "support_request"
         | "integration_query"
+        | "excel_import"
+        | "manual_entry"
+        | "offline_calling"
+        | "whatsapp_inbound"
+        | "referral"
+        | "existing_partner"
+        | "event_lead"
+        | "itinerary_upload"
       lead_stage:
         | "new"
         | "reviewed"
@@ -524,6 +586,14 @@ export const Constants = {
         "demo_request",
         "support_request",
         "integration_query",
+        "excel_import",
+        "manual_entry",
+        "offline_calling",
+        "whatsapp_inbound",
+        "referral",
+        "existing_partner",
+        "event_lead",
+        "itinerary_upload",
       ],
       lead_stage: [
         "new",
