@@ -14,6 +14,94 @@ export type Database = {
   }
   public: {
     Tables: {
+      lead_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string
+          id: string
+          lead_id: string
+          new_value: string | null
+          old_value: string | null
+          performed_by: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description: string
+          id?: string
+          lead_id: string
+          new_value?: string | null
+          old_value?: string | null
+          performed_by?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          lead_id?: string
+          new_value?: string | null
+          old_value?: string | null
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activity_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_attachments: {
+        Row: {
+          category: string
+          file_name: string
+          file_size: number | null
+          id: string
+          lead_id: string
+          mime_type: string | null
+          parsed_text_excerpt: string | null
+          storage_path: string
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          lead_id: string
+          mime_type?: string | null
+          parsed_text_excerpt?: string | null
+          storage_path: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          lead_id?: string
+          mime_type?: string | null
+          parsed_text_excerpt?: string | null
+          storage_path?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_attachments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_notes: {
         Row: {
           created_at: string
@@ -207,6 +295,7 @@ export type Database = {
           full_name: string
           id: string
           status: string
+          supervisor_id: string | null
           user_id: string
         }
         Insert: {
@@ -214,6 +303,7 @@ export type Database = {
           full_name: string
           id?: string
           status?: string
+          supervisor_id?: string | null
           user_id: string
         }
         Update: {
@@ -221,6 +311,7 @@ export type Database = {
           full_name?: string
           id?: string
           status?: string
+          supervisor_id?: string | null
           user_id?: string
         }
         Relationships: []
