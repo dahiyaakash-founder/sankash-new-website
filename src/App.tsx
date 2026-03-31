@@ -55,6 +55,9 @@ const App = () => (
             <Route path="/guides" element={<Resources />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/security" element={<Security />} />
             {/* Ops Dashboard — protected */}
             <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
