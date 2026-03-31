@@ -80,11 +80,23 @@ const escalationPaths = [
 ];
 
 const Contact = () => {
+  const [searchParams] = useSearchParams();
+  const isDemoIntent = searchParams.get("intent") === "demo";
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
+  const formSectionRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to form if intent=demo
+  useEffect(() => {
+    if (isDemoIntent && formSectionRef.current) {
+      setTimeout(() => {
+        formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400);
+    }
+  }, [isDemoIntent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
