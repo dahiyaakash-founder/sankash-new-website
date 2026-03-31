@@ -122,7 +122,7 @@ const Contact = () => {
         jsonLd={contactPageSchema}
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">
           <p className="text-xs font-semibold text-primary uppercase tracking-widest">
             Contact
