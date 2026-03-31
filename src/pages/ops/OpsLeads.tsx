@@ -1,13 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
-import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority } from "@/lib/leads-service";
+import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority, type TeamMember } from "@/lib/leads-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
+import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown } from "lucide-react";
 import { format } from "date-fns";
+import LeadImportModal from "@/components/ops/LeadImportModal";
+import { downloadTemplate } from "@/lib/lead-import-service";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
   { value: "new", label: "New" },
