@@ -133,9 +133,9 @@ const Developers = () => {
       </section>
 
       {/* API Overview */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container">
-          <motion.div {...fade} className="max-w-2xl mb-14">
+          <motion.div {...fade} className="max-w-2xl mb-8 md:mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">API overview</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
               Three integrations, built for travel
