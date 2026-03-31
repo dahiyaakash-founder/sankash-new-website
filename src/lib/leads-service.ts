@@ -45,9 +45,12 @@ export interface TeamMember {
 
 /** Insert a lead from a public website form (anon) */
 export async function createLead(lead: LeadInsert) {
-  const { data, error } = await supabase.from("leads").insert(lead).select().single();
+  // Generate a client-side ID so we can return it without needing SELECT permission.
+  // Anon users can INSERT but cannot SELECT (RLS), so .select() would fail with 42501.
+  const id = lead.id ?? crypto.randomUUID();
+  const { error } = await supabase.from("leads").insert({ ...lead, id });
   if (error) throw error;
-  return data;
+  return { ...lead, id } as LeadRow;
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */
