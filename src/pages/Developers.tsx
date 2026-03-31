@@ -269,7 +269,7 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       </section>
 
       {/* Docs & Sandbox */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
