@@ -34,7 +34,7 @@ const About = () => {
         description="Learn how SanKash is building lending, insurance and payments infrastructure designed specifically for travel businesses."
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest">Why SanKash</p>
@@ -52,9 +52,9 @@ const About = () => {
       </section>
 
       {/* The gap */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-3xl">
-          <motion.div {...fade} className="space-y-8">
+          <motion.div {...fade} className="space-y-6 md:space-y-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
               The problem we saw
             </h2>
@@ -79,7 +79,7 @@ const About = () => {
       </section>
 
       {/* What makes us different */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container max-w-4xl">
           <motion.div {...fade} className="space-y-10">
             <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
@@ -108,9 +108,9 @@ const About = () => {
       </section>
 
       {/* Who uses SanKash */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-4xl">
-          <motion.div {...fade} className="space-y-10">
+          <motion.div {...fade} className="space-y-8 md:space-y-10">
             <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
               Who uses SanKash
             </h2>
@@ -150,9 +150,9 @@ const About = () => {
       </section>
 
       {/* Capabilities */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-4xl">
-          <motion.div {...fade} className="space-y-10">
+          <motion.div {...fade} className="space-y-8 md:space-y-10">
             <div className="max-w-2xl space-y-3">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
                 Built by people who know travel
@@ -175,7 +175,7 @@ const About = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-20 bg-section-alt">
+      <section className="py-10 md:py-20 bg-section-alt">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
             See how SanKash works for your business

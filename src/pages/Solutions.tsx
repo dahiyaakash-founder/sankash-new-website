@@ -84,7 +84,7 @@ const Solutions = () => {
         description="Explore SanKash solutions for travel businesses, including No Cost EMI at checkout, embedded insurance and faster payment collection."
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-14 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">Solutions</p>
           <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight text-primary-deep">
@@ -105,7 +105,7 @@ const Solutions = () => {
       </section>
 
       {/* Pillar deep-dives */}
-      <section className="py-14 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container space-y-10 md:space-y-16">
           {pillars.map((p, i) => (
             <motion.div
@@ -113,7 +113,7 @@ const Solutions = () => {
               {...fade}
               transition={{ delay: i * 0.08, duration: 0.45 }}
             >
-              <div className={`rounded-2xl border ${p.accentBorder} ${p.accentBg} p-5 sm:p-8 md:p-12`}>
+              <div className={`rounded-2xl border ${p.accentBorder} ${p.accentBg} p-4 sm:p-6 md:p-12`}>
                 <div className="grid md:grid-cols-[1fr_340px] gap-10 items-start">
                   <div className="space-y-5">
                     <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ const Solutions = () => {
       </section>
 
       {/* How they work together */}
-      <section className="py-12 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container">
           <motion.div {...fade} className="max-w-2xl mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Integrated workflow</p>
@@ -189,7 +189,7 @@ const Solutions = () => {
       </section>
 
       {/* Who it's for */}
-      <section className="py-12 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container">
           <motion.div {...fade} className="max-w-2xl mb-8 md:mb-12">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Built for</p>
@@ -218,7 +218,7 @@ const Solutions = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-14 md:py-28 bg-brand-deep text-primary-foreground">
+      <section className="py-10 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
             Ready to grow your travel business?

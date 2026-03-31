@@ -67,7 +67,7 @@ const Developers = () => {
       <ApiFinderModal open={finderOpen} onOpenChange={setFinderOpen} onOpenSandbox={() => setSandboxOpen(true)} />
 
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl space-y-6">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-5">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">API & Integrations</p>
@@ -97,9 +97,9 @@ const Developers = () => {
       </section>
 
       {/* Getting Started */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container">
-          <motion.div {...fade} className="max-w-2xl mb-14">
+          <motion.div {...fade} className="max-w-2xl mb-8 md:mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">Getting started</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
               Four steps to go live
@@ -133,9 +133,9 @@ const Developers = () => {
       </section>
 
       {/* API Overview */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container">
-          <motion.div {...fade} className="max-w-2xl mb-14">
+          <motion.div {...fade} className="max-w-2xl mb-8 md:mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">API overview</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
               Three integrations, built for travel
@@ -145,9 +145,9 @@ const Developers = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6">
             {/* Lending API */}
-            <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <Banknote size={20} className="text-primary" />
@@ -174,7 +174,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Insurance API */}
-            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <ShieldCheck size={20} className="text-primary" />
@@ -201,7 +201,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Payments API */}
-            <motion.div {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-8 md:p-10 space-y-5">
+            <motion.div {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <CreditCard size={20} className="text-primary" />
@@ -231,7 +231,7 @@ const Developers = () => {
       </section>
 
       {/* Authentication */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       </section>
 
       {/* Docs & Sandbox */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
@@ -309,7 +309,7 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       ]} />
 
       {/* Final CTA */}
-      <section className="py-20 md:py-28 bg-brand-deep text-primary-foreground">
+      <section className="py-10 md:py-28 bg-brand-deep text-primary-foreground">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
             Ready to integrate SanKash into your travel flow?

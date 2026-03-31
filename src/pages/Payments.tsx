@@ -12,7 +12,7 @@ const Payments = () => {
         title="Travel Payment Collection and T+1 Settlement | SanKash Payments"
         description="Collect payments faster, reconcile better and manage travel settlement complexity with SanKash Payments."
       />
-      <section className="bg-hero-gradient py-14 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl space-y-6">
             <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center">

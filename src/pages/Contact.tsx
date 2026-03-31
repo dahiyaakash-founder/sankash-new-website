@@ -122,7 +122,7 @@ const Contact = () => {
         jsonLd={contactPageSchema}
       />
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl text-center space-y-5">
           <p className="text-xs font-semibold text-primary uppercase tracking-widest">
             Contact
@@ -138,9 +138,9 @@ const Contact = () => {
       </section>
 
       {/* Quick action cards */}
-      <section className="py-16 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container max-w-4xl">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {quickActions.map((action, i) => {
               const Inner = (
                 <motion.div
@@ -199,7 +199,7 @@ const Contact = () => {
       </div>
 
       {/* Escalation paths */}
-      <section id="escalation" className="py-16 md:py-20">
+      <section id="escalation" className="py-10 md:py-20">
         <div className="container max-w-4xl">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-heading font-bold">
@@ -243,7 +243,7 @@ const Contact = () => {
       </section>
 
       {/* Simplified fallback form + contact info */}
-      <section id="demo-form" className="py-16 md:py-20 bg-accent/40">
+      <section id="demo-form" className="py-10 md:py-20 bg-accent/40">
         <div className="container max-w-5xl">
           <div className="grid lg:grid-cols-5 gap-12">
             {/* Form */}
@@ -270,7 +270,7 @@ const Contact = () => {
                 <form
                   ref={formRef}
                   onSubmit={handleSubmit}
-                  className="p-8 rounded-2xl border bg-card space-y-5"
+                  className="p-5 sm:p-8 rounded-2xl border bg-card space-y-5"
                 >
                   <div>
                     <h2 className="text-xl font-heading font-bold">
