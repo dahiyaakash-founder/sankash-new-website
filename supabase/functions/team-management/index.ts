@@ -216,14 +216,28 @@ Deno.serve(async (req) => {
       const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
       const redirectTo = `${siteUrl}/ops/accept-invite`;
 
-      // Re-invite by email
-      const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(userData.user.email!, {
-        data: { full_name: userData.user.user_metadata?.full_name },
-        redirectTo,
+      // Generate a new invite link for the existing user
+      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+        type: "invite",
+        email: userData.user.email!,
+        options: {
+          data: { full_name: userData.user.user_metadata?.full_name },
+          redirectTo,
+        },
       });
-      if (inviteError) {
-        return new Response(JSON.stringify({ error: inviteError.message }), {
+      if (linkError) {
+        return new Response(JSON.stringify({ error: linkError.message }), {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // The generated link contains the token — we need to trigger the email via the verify endpoint
+      // Extract the hashed_token and redirect through Supabase's verify endpoint
+      const actionLink = linkData?.properties?.action_link;
+      if (!actionLink) {
+        return new Response(JSON.stringify({ error: "Failed to generate invite link" }), {
+          status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
