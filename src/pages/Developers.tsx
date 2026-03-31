@@ -67,7 +67,7 @@ const Developers = () => {
       <ApiFinderModal open={finderOpen} onOpenChange={setFinderOpen} onOpenSandbox={() => setSandboxOpen(true)} />
 
       {/* Hero */}
-      <section className="bg-hero-gradient py-20 md:py-28">
+      <section className="bg-hero-gradient py-10 md:py-28">
         <div className="container max-w-3xl space-y-6">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-5">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em]">API & Integrations</p>
