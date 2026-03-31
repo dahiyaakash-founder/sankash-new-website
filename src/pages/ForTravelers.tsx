@@ -386,7 +386,7 @@ const ForTravelers = () => {
       <section className="py-6 bg-background">
         <div className="container max-w-2xl text-center">
           <p className="text-[11px] text-muted-foreground">
-            * EMI options and savings are indicative. Final offers depend on lender approval, trip details, and agent terms. SanKash facilitates — your travel agent finalizes.
+            * EMI options and savings are indicative. Final offers depend on lender approval, trip details, and agent terms. No Cost EMI is subject to customer eligibility and lender approval. T&C apply. SanKash facilitates — your travel agent finalizes.
           </p>
         </div>
       </section>
