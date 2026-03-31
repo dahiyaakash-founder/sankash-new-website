@@ -27,10 +27,15 @@ const howItWorks = [
   { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
+// Dynamic EMI examples from the real calculator for ₹85,000
+import { calculateEmi, formatINR as fmtINR } from "@/lib/emi-calculator";
+const _emi3 = calculateEmi(85000, 3, "no_cost");
+const _emi6 = calculateEmi(85000, 6, "no_cost");
+const _emi12 = calculateEmi(85000, 12, "standard");
 const emiExamples = [
-  { tenure: "3 months", monthly: "₹28,333", total: "₹85,000", tag: "No Cost EMI" },
-  { tenure: "6 months", monthly: "₹14,500", total: "₹87,000", tag: null },
-  { tenure: "12 months", monthly: "₹7,600", total: "₹91,200", tag: "Most popular" },
+  { tenure: "3 months", monthly: fmtINR(_emi3.monthlyEmi), total: fmtINR(_emi3.totalPayable), tag: "No Cost EMI" },
+  { tenure: "6 months", monthly: fmtINR(_emi6.monthlyEmi), total: fmtINR(_emi6.totalPayable), tag: "No Cost EMI" },
+  { tenure: "12 months", monthly: fmtINR(_emi12.monthlyEmi), total: fmtINR(_emi12.totalPayable), tag: "Most popular" },
 ];
 
 const whyReasons = [
