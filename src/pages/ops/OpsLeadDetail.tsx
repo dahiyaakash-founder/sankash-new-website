@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
 import {
-  fetchLead, updateLead, fetchLeadNotes, addLeadNote, fetchLeadHistory, addStatusHistory,
+  fetchLead, updateLead, fetchLeadNotes, addLeadNote,
   fetchTeamMembers,
-  type LeadRow, type LeadStatus, type LeadNote, type LeadStatusHistoryEntry, type LeadPriority, type TeamMember,
+  type LeadRow, type LeadStatus, type LeadNote, type LeadPriority, type TeamMember,
 } from "@/lib/leads-service";
+import { fetchLeadAttachments, getAttachmentUrl, type LeadAttachment } from "@/lib/attachments-service";
+import { fetchLeadActivity, logActivity, type LeadActivityEntry } from "@/lib/activity-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Loader2, ArrowLeft, ExternalLink, FileText, Clock, MessageSquare, History, Send,
-  Phone, Mail, MessageCircle, Copy, ChevronDown, ChevronUp, Download,
+  Phone, Mail, MessageCircle, Copy, ChevronDown, ChevronUp, Download, Paperclip,
+  Image, File as FileIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -60,88 +63,34 @@ const copyToClipboard = (text: string, label: string) => {
   toast.success(`${label} copied`);
 };
 
-/* ── Source-specific detail renderers ── */
+const activityTypeLabels: Record<string, string> = {
+  lead_created: "Lead created",
+  file_uploaded: "File uploaded",
+  status_changed: "Status changed",
+  priority_changed: "Priority changed",
+  owner_changed: "Owner changed",
+  follow_up_changed: "Follow-up changed",
+  outcome_changed: "Outcome changed",
+  note_added: "Note added",
+  lead_closed: "Lead closed",
+};
 
-const ContactFormDetails = ({ lead }: { lead: LeadRow }) => (
-  lead.message ? (
-    <div className="border rounded-xl bg-card p-5 space-y-2">
-      <h2 className="text-sm font-heading font-semibold">Message</h2>
-      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{lead.message}</p>
-    </div>
-  ) : null
-);
+const getFileIcon = (mimeType: string | null) => {
+  if (mimeType?.startsWith("image/")) return Image;
+  if (mimeType?.includes("pdf")) return FileText;
+  return FileIcon;
+};
 
-const QuoteDetails = ({ lead, meta }: { lead: LeadRow; meta: Record<string, any> | null }) => (
-  <div className="space-y-4">
-    {lead.quote_file_url && (
-      <div className="border rounded-xl bg-card p-5 space-y-2">
-        <h2 className="text-sm font-heading font-semibold">Uploaded file</h2>
-        <div className="flex items-center gap-3">
-          <FileText size={16} className="text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{lead.quote_file_name ?? "Attachment"}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">
-              Source: {lead.lead_source_type?.replace(/_/g, " ") ?? "Unknown"}
-            </p>
-          </div>
-          <div className="flex gap-1.5">
-            <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><ExternalLink size={12} /> Open</Button>
-            </a>
-            <a href={lead.quote_file_url} download={lead.quote_file_name ?? "attachment"}>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs"><Download size={12} /> Download</Button>
-            </a>
-          </div>
-        </div>
-      </div>
-    )}
-    {/* Parsed quote summary */}
-    <div className="border rounded-xl bg-card p-5 space-y-3">
-      <h2 className="text-sm font-heading font-semibold">Quote summary</h2>
-      <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
-        {[
-          { label: "Destination", value: lead.destination_type },
-          { label: "Trip type", value: lead.detected_trip_type },
-          { label: "Quote amount", value: lead.quote_amount ? `₹${Number(lead.quote_amount).toLocaleString()}` : null },
-          { label: "Validation", value: lead.quote_validation_status },
-          { label: "EMI eligible", value: lead.emi_flag ? "Yes" : "No" },
-          { label: "Insurance fit", value: lead.insurance_flag ? "Yes" : "No" },
-          { label: "PG eligible", value: lead.pg_flag ? "Yes" : "No" },
-        ].map((r) => (
-          <div key={r.label} className="flex justify-between py-1 border-b border-border/50">
-            <span className="text-xs text-muted-foreground">{r.label}</span>
-            <span className="text-xs font-medium text-right capitalize">{r.value ?? "—"}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const SandboxProductionDetails = ({ lead, meta }: { lead: LeadRow; meta: Record<string, any> | null }) => (
-  <div className="border rounded-xl bg-card p-5 space-y-3">
-    <h2 className="text-sm font-heading font-semibold">
-      {lead.lead_source_type === "sandbox_access_request" ? "Sandbox request" : "Production request"} details
-    </h2>
-    <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
-      {[
-        { label: "Company", value: lead.company_name },
-        { label: "Work email", value: lead.email },
-        { label: "Website / App URL", value: lead.website_url },
-        { label: "API needed", value: meta?.api_needed ?? meta?.apiNeeded },
-        { label: "Use case", value: meta?.use_case ?? meta?.useCase ?? lead.message },
-        ...(lead.lead_source_type === "production_access_request"
-          ? [{ label: "Production notes", value: meta?.production_notes ?? meta?.productionNotes }]
-          : []),
-      ].map((r) => (
-        <div key={r.label} className="flex justify-between py-1 border-b border-border/50">
-          <span className="text-xs text-muted-foreground">{r.label}</span>
-          <span className="text-xs font-medium text-right max-w-[200px] truncate">{r.value ?? "—"}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+const getCategoryBadge = (category: string) => {
+  const styles: Record<string, string> = {
+    itinerary: "bg-blue-100 text-blue-700",
+    quote: "bg-emerald-100 text-emerald-700",
+    screenshot: "bg-purple-100 text-purple-700",
+    document: "bg-amber-100 text-amber-700",
+    unknown: "bg-muted text-muted-foreground",
+  };
+  return styles[category] ?? styles.unknown;
+};
 
 const OpsLeadDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -158,14 +107,14 @@ const OpsLeadDetail = () => {
   const [metadataExpanded, setMetadataExpanded] = useState(false);
 
   const [leadNotes, setLeadNotes] = useState<LeadNote[]>([]);
-  const [history, setHistory] = useState<LeadStatusHistoryEntry[]>([]);
+  const [activity, setActivity] = useState<LeadActivityEntry[]>([]);
+  const [attachments, setAttachments] = useState<LeadAttachment[]>([]);
   const [newNote, setNewNote] = useState("");
   const [addingNote, setAddingNote] = useState(false);
-  const [activeTab, setActiveTab] = useState<"notes" | "history">("notes");
+  const [activeTab, setActiveTab] = useState<"notes" | "activity" | "files">("notes");
 
-  // Team members for owner dropdown
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
+  const [teamNameMap, setTeamNameMap] = useState<Record<string, string>>({});
 
   const loadLead = useCallback(async () => {
     if (!id) return;
@@ -182,68 +131,64 @@ const OpsLeadDetail = () => {
     setLoading(false);
   }, [id]);
 
-  const loadNotesAndHistory = useCallback(async () => {
+  const loadDetails = useCallback(async () => {
     if (!id) return;
     try {
-      const [n, h] = await Promise.all([fetchLeadNotes(id), fetchLeadHistory(id)]);
+      const [n, a, att] = await Promise.all([
+        fetchLeadNotes(id),
+        fetchLeadActivity(id),
+        fetchLeadAttachments(id),
+      ]);
       setLeadNotes(n);
-      setHistory(h);
-    } catch { /* fail silently */ }
+      setActivity(a);
+      setAttachments(att);
+    } catch { /* */ }
   }, [id]);
 
   const loadTeam = useCallback(async () => {
     try {
       const members = await fetchTeamMembers();
       setTeamMembers(members);
-      const emailMap: Record<string, string> = {};
+      const nameMap: Record<string, string> = {};
+      members.forEach(m => {
+        nameMap[m.user_id] = m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…";
+      });
       if (user) {
-        emailMap[user.id] = user.email ?? user.id.slice(0, 8) + "…";
+        nameMap[user.id] = user.email ?? "You";
       }
-      setTeamEmails(emailMap);
+      setTeamNameMap(nameMap);
     } catch { /* */ }
   }, [user]);
 
-  useEffect(() => { loadLead(); loadNotesAndHistory(); loadTeam(); }, [loadLead, loadNotesAndHistory, loadTeam]);
+  useEffect(() => { loadLead(); loadDetails(); loadTeam(); }, [loadLead, loadDetails, loadTeam]);
 
-  const getOwnerLabel = (userId: string) => {
-    if (userId === user?.id) return user.email ?? "You";
-    return teamEmails[userId] ?? userId.slice(0, 8) + "…";
-  };
+  const getOwnerLabel = (userId: string) => teamNameMap[userId] ?? userId.slice(0, 8) + "…";
 
   const handleSave = async () => {
     if (!id || !lead || !user) return;
     setSaving(true);
     try {
-      const historyEntries: { old: string | null; new: string }[] = [];
-
+      // Log changes as activity
       if (status !== lead.status) {
-        historyEntries.push({ old: `status:${lead.status}`, new: `status:${status}` });
+        await logActivity(id, "status_changed", `Status: ${lead.status} → ${status}`, { oldValue: lead.status, newValue: status, performedBy: user.id });
       }
       if (priority !== (lead.priority ?? "medium")) {
-        historyEntries.push({ old: `priority:${lead.priority ?? "medium"}`, new: `priority:${priority}` });
+        await logActivity(id, "priority_changed", `Priority: ${lead.priority ?? "medium"} → ${priority}`, { oldValue: lead.priority ?? "medium", newValue: priority, performedBy: user.id });
       }
       if (outcome !== lead.outcome) {
-        historyEntries.push({ old: `outcome:${lead.outcome}`, new: `outcome:${outcome}` });
+        await logActivity(id, "outcome_changed", `Outcome: ${lead.outcome} → ${outcome}`, { oldValue: lead.outcome, newValue: outcome, performedBy: user.id });
       }
       const newOwner = owner === "__unassigned__" ? null : owner;
       if (newOwner !== lead.assigned_to) {
-        historyEntries.push({
-          old: `owner:${lead.assigned_to ? getOwnerLabel(lead.assigned_to) : "unassigned"}`,
-          new: `owner:${newOwner ? getOwnerLabel(newOwner) : "unassigned"}`,
-        });
+        const oldLabel = lead.assigned_to ? getOwnerLabel(lead.assigned_to) : "Unassigned";
+        const newLabel = newOwner ? getOwnerLabel(newOwner) : "Unassigned";
+        await logActivity(id, "owner_changed", `Owner: ${oldLabel} → ${newLabel}`, { oldValue: oldLabel, newValue: newLabel, performedBy: user.id });
       }
       const newFollowUp = followUp ? new Date(followUp).toISOString() : null;
-      const oldFollowUp = lead.next_follow_up_at;
-      if ((newFollowUp ?? "") !== (oldFollowUp ?? "")) {
-        historyEntries.push({
-          old: `follow-up:${oldFollowUp ? format(new Date(oldFollowUp), "dd MMM yyyy") : "none"}`,
-          new: `follow-up:${newFollowUp ? format(new Date(newFollowUp), "dd MMM yyyy") : "none"}`,
-        });
-      }
-
-      // Write all history entries
-      for (const entry of historyEntries) {
-        await addStatusHistory(id, entry.old, entry.new, user.id);
+      if ((newFollowUp ?? "") !== (lead.next_follow_up_at ?? "")) {
+        const oldFU = lead.next_follow_up_at ? format(new Date(lead.next_follow_up_at), "dd MMM yyyy") : "none";
+        const newFU = newFollowUp ? format(new Date(newFollowUp), "dd MMM yyyy") : "none";
+        await logActivity(id, "follow_up_changed", `Follow-up: ${oldFU} → ${newFU}`, { oldValue: oldFU, newValue: newFU, performedBy: user.id });
       }
 
       const updates: any = {
@@ -257,6 +202,7 @@ const OpsLeadDetail = () => {
 
       if (status === "converted" || outcome === "won" || status === "closed_lost" || outcome === "lost") {
         updates.closed_at = new Date().toISOString();
+        await logActivity(id, "lead_closed", `Lead closed as ${outcome}`, { performedBy: user.id });
       }
       if (status === "contacted" && lead.status === "new") {
         updates.last_contacted_at = new Date().toISOString();
@@ -265,7 +211,7 @@ const OpsLeadDetail = () => {
       const updated = await updateLead(id, updates);
       setLead(updated as LeadRow);
       toast.success("Lead updated");
-      loadNotesAndHistory();
+      loadDetails();
     } catch (e: any) {
       toast.error(e.message ?? "Failed to update");
     }
@@ -277,10 +223,9 @@ const OpsLeadDetail = () => {
     setAddingNote(true);
     try {
       await addLeadNote(id, newNote.trim(), user.id);
-      // Also log to activity
-      await addStatusHistory(id, null, `note: ${newNote.trim().slice(0, 80)}`, user.id);
+      await logActivity(id, "note_added", `Note: ${newNote.trim().slice(0, 80)}`, { performedBy: user.id });
       setNewNote("");
-      await loadNotesAndHistory();
+      await loadDetails();
       toast.success("Note added");
     } catch (e: any) {
       toast.error(e.message ?? "Failed to add note");
@@ -309,6 +254,11 @@ const OpsLeadDetail = () => {
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[lead.status] ?? "bg-muted text-muted-foreground"}`}>
             {lead.status.replace(/_/g, " ")}
           </span>
+          {attachments.length > 0 && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-1">
+              <Paperclip size={10} /> {attachments.length} file{attachments.length > 1 ? "s" : ""}
+            </span>
+          )}
         </div>
 
         {/* Quick actions */}
@@ -374,7 +324,14 @@ const OpsLeadDetail = () => {
                   { label: "Updated", value: format(new Date(lead.updated_at), "dd MMM yyyy, HH:mm") },
                   { label: "Last contacted", value: lead.last_contacted_at ? format(new Date(lead.last_contacted_at), "dd MMM yyyy") : null },
                   { label: "Closed at", value: lead.closed_at ? format(new Date(lead.closed_at), "dd MMM yyyy") : null },
-                ].map((r) => (
+                  { label: "Destination", value: lead.destination_type },
+                  { label: "Trip type", value: lead.detected_trip_type },
+                  { label: "Quote amount", value: lead.quote_amount ? `₹${Number(lead.quote_amount).toLocaleString()}` : null },
+                  { label: "Validation", value: lead.quote_validation_status },
+                  { label: "EMI eligible", value: lead.emi_flag ? "Yes" : null },
+                  { label: "Insurance fit", value: lead.insurance_flag ? "Yes" : null },
+                  { label: "PG eligible", value: lead.pg_flag ? "Yes" : null },
+                ].filter(r => r.value).map((r) => (
                   <div key={r.label} className="flex justify-between py-1 border-b border-border/50">
                     <span className="text-xs text-muted-foreground">{r.label}</span>
                     <span className="text-xs font-medium text-right capitalize">{r.value ?? "—"}</span>
@@ -383,32 +340,81 @@ const OpsLeadDetail = () => {
               </div>
             </div>
 
-            {/* Source-specific detail blocks */}
-            {sourceType === "contact_form" && <ContactFormDetails lead={lead} />}
-
-            {(sourceType === "traveler_quote_unlock" || sourceType === "agent_quote_review") && (
-              <QuoteDetails lead={lead} meta={meta} />
+            {/* C. Uploaded files */}
+            {(attachments.length > 0 || lead.quote_file_url) && (
+              <div className="border rounded-xl bg-card p-5 space-y-3">
+                <h2 className="text-sm font-heading font-semibold flex items-center gap-2">
+                  <Paperclip size={14} className="text-primary" /> Uploaded files
+                </h2>
+                <div className="space-y-2">
+                  {attachments.map((att) => {
+                    const Icon = getFileIcon(att.mime_type);
+                    const url = getAttachmentUrl(att.storage_path);
+                    return (
+                      <div key={att.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                          <Icon size={16} className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{att.file_name}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${getCategoryBadge(att.category)}`}>
+                              {att.category}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : ""} · {format(new Date(att.uploaded_at), "dd MMM yyyy, HH:mm")}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 shrink-0">
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><ExternalLink size={11} /> Open</Button>
+                          </a>
+                          <a href={url} download={att.file_name}>
+                            <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><Download size={11} /></Button>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {/* Legacy quote file fallback */}
+                  {attachments.length === 0 && lead.quote_file_url && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                        <FileText size={16} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.quote_file_name ?? "Attachment"}</p>
+                        <span className="text-[10px] text-muted-foreground capitalize">
+                          Source: {lead.lead_source_type?.replace(/_/g, " ") ?? "Unknown"}
+                        </span>
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        <a href={lead.quote_file_url} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><ExternalLink size={11} /> Open</Button>
+                        </a>
+                        <a href={lead.quote_file_url} download={lead.quote_file_name ?? "attachment"}>
+                          <Button variant="outline" size="sm" className="gap-1 text-xs h-7"><Download size={11} /></Button>
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
-            {(sourceType === "sandbox_access_request" || sourceType === "production_access_request") && (
-              <SandboxProductionDetails lead={lead} meta={meta} />
-            )}
-
-            {/* Generic message fallback for other source types */}
-            {sourceType !== "contact_form" && lead.message && sourceType !== "sandbox_access_request" && sourceType !== "production_access_request" && (
+            {/* D. Message / source-specific details */}
+            {lead.message && (
               <div className="border rounded-xl bg-card p-5 space-y-2">
                 <h2 className="text-sm font-heading font-semibold">Message</h2>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{lead.message}</p>
               </div>
             )}
 
-            {/* Metadata (collapsible raw JSON for any source) */}
+            {/* Metadata (collapsible) */}
             {meta && (
               <div className="border rounded-xl bg-card p-5 space-y-2">
-                <button
-                  onClick={() => setMetadataExpanded(!metadataExpanded)}
-                  className="flex items-center gap-2 w-full text-left"
-                >
+                <button onClick={() => setMetadataExpanded(!metadataExpanded)} className="flex items-center gap-2 w-full text-left">
                   <h2 className="text-sm font-heading font-semibold flex-1">Parsed metadata</h2>
                   {metadataExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
@@ -420,9 +426,7 @@ const OpsLeadDetail = () => {
                         <span className="text-[10px] font-medium text-right truncate max-w-[140px]">{String(v)}</span>
                       </div>
                     ))}
-                    {Object.keys(meta).length > 6 && (
-                      <p className="text-[10px] text-muted-foreground">+{Object.keys(meta).length - 6} more fields</p>
-                    )}
+                    {Object.keys(meta).length > 6 && <p className="text-[10px] text-muted-foreground">+{Object.keys(meta).length - 6} more</p>}
                   </div>
                 )}
                 {metadataExpanded && (
@@ -433,33 +437,28 @@ const OpsLeadDetail = () => {
               </div>
             )}
 
-            {/* Notes & History */}
+            {/* E. Notes, Activity, Files tabs */}
             <div className="border rounded-xl bg-card overflow-hidden">
               <div className="flex border-b">
-                <button
-                  onClick={() => setActiveTab("notes")}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === "notes" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <MessageSquare size={13} /> Notes ({leadNotes.length})
-                </button>
-                <button
-                  onClick={() => setActiveTab("history")}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === "history" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <History size={13} /> Activity ({history.length})
-                </button>
+                {([
+                  { key: "notes" as const, icon: MessageSquare, label: `Notes (${leadNotes.length})` },
+                  { key: "activity" as const, icon: History, label: `Activity (${activity.length})` },
+                  { key: "files" as const, icon: Paperclip, label: `Files (${attachments.length})` },
+                ]).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${activeTab === tab.key ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <tab.icon size={13} /> {tab.label}
+                  </button>
+                ))}
               </div>
               <div className="p-4">
                 {activeTab === "notes" && (
                   <div className="space-y-3">
                     <div className="flex gap-2">
-                      <Textarea
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
-                        placeholder="Add an internal note…"
-                        rows={2}
-                        className="text-sm flex-1 min-h-[60px]"
-                      />
+                      <Textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Add an internal note…" rows={2} className="text-sm flex-1 min-h-[60px]" />
                       <Button size="sm" onClick={handleAddNote} disabled={addingNote || !newNote.trim()} className="self-end gap-1">
                         {addingNote ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
                       </Button>
@@ -469,34 +468,46 @@ const OpsLeadDetail = () => {
                       <div key={note.id} className="bg-muted/50 rounded-lg p-3 space-y-1">
                         <p className="text-sm whitespace-pre-wrap">{note.note_text}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {note.created_by === user?.id ? (user?.email ?? "You") : note.created_by.slice(0, 8) + "…"} · {format(new Date(note.created_at), "dd MMM yyyy, HH:mm")}
+                          {teamNameMap[note.created_by] ?? note.created_by.slice(0, 8) + "…"} · {format(new Date(note.created_at), "dd MMM yyyy, HH:mm")}
                         </p>
                       </div>
                     ))}
                   </div>
                 )}
-                {activeTab === "history" && (
+                {activeTab === "activity" && (
                   <div className="space-y-2">
-                    {history.length === 0 && <p className="text-xs text-muted-foreground py-2">No activity recorded</p>}
-                    {history.map((entry) => (
+                    {activity.length === 0 && <p className="text-xs text-muted-foreground py-2">No activity recorded</p>}
+                    {activity.map((entry) => (
                       <div key={entry.id} className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
                         <Clock size={12} className="text-muted-foreground shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs">
-                            <span className="font-medium bg-muted px-1.5 py-0.5 rounded">
-                              {entry.old_status?.replace(/_/g, " ") ?? "—"}
-                            </span>
-                            <span className="mx-1.5 text-muted-foreground">→</span>
-                            <span className="font-semibold bg-muted px-1.5 py-0.5 rounded">
-                              {entry.new_status.replace(/_/g, " ")}
-                            </span>
+                            <span className="font-semibold">{activityTypeLabels[entry.activity_type] ?? entry.activity_type}</span>
+                            <span className="text-muted-foreground ml-1">— {entry.description}</span>
                           </p>
                         </div>
                         <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                          {entry.changed_by === user?.id ? (user?.email ?? "You") : entry.changed_by.slice(0, 8) + "…"} · {format(new Date(entry.changed_at), "dd MMM, HH:mm")}
+                          {entry.performed_by ? (teamNameMap[entry.performed_by] ?? entry.performed_by.slice(0, 8) + "…") : "System"} · {format(new Date(entry.created_at), "dd MMM, HH:mm")}
                         </span>
                       </div>
                     ))}
+                  </div>
+                )}
+                {activeTab === "files" && (
+                  <div className="space-y-2">
+                    {attachments.length === 0 && <p className="text-xs text-muted-foreground py-2">No files uploaded</p>}
+                    {attachments.map((att) => {
+                      const Icon = getFileIcon(att.mime_type);
+                      const url = getAttachmentUrl(att.storage_path);
+                      return (
+                        <div key={att.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30">
+                          <Icon size={14} className="text-muted-foreground shrink-0" />
+                          <span className="text-xs font-medium flex-1 truncate">{att.file_name}</span>
+                          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${getCategoryBadge(att.category)}`}>{att.category}</span>
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Open</a>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -542,7 +553,7 @@ const OpsLeadDetail = () => {
                     <SelectItem value="__unassigned__">Unassigned</SelectItem>
                     {teamMembers.map((m) => (
                       <SelectItem key={m.user_id} value={m.user_id}>
-                        {m.user_id === user?.id ? (user?.email ?? "You") : (teamEmails[m.user_id] ?? m.user_id.slice(0, 8) + "…")}
+                        {m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…"}
                         {m.user_id === user?.id ? " (You)" : ""}
                       </SelectItem>
                     ))}
