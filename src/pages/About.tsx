@@ -175,7 +175,7 @@ const About = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-20 bg-section-alt">
+      <section className="py-10 md:py-20 bg-section-alt">
         <motion.div {...fade} className="container max-w-2xl text-center space-y-5">
           <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
             See how SanKash works for your business

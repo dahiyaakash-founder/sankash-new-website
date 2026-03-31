@@ -270,7 +270,7 @@ const Contact = () => {
                 <form
                   ref={formRef}
                   onSubmit={handleSubmit}
-                  className="p-8 rounded-2xl border bg-card space-y-5"
+                  className="p-5 sm:p-8 rounded-2xl border bg-card space-y-5"
                 >
                   <div>
                     <h2 className="text-xl font-heading font-bold">
