@@ -79,7 +79,7 @@ const About = () => {
       </section>
 
       {/* What makes us different */}
-      <section className="py-20 md:py-28 bg-section-alt">
+      <section className="py-10 md:py-28 bg-section-alt">
         <div className="container max-w-4xl">
           <motion.div {...fade} className="space-y-10">
             <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-deep">
