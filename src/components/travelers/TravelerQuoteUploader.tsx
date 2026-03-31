@@ -164,9 +164,14 @@ const TravelerQuoteUploader = () => {
     setInsuranceInsight(null);
   };
 
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName.trim() || !leadPhone.trim()) return;
+    setLeadSubmitting(true);
+    setLeadError(null);
     try {
       const { createLead } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
@@ -197,10 +202,15 @@ const TravelerQuoteUploader = () => {
         await uploadLeadAttachment(uploadedFile, lead.id, { sourceType: "traveler_quote_unlock" }).catch(() => {});
         await logLeadCreated(lead.id, "for-travelers").catch(() => {});
       }
-    } catch {
-      // still show success
+
+      // Only show success after confirmed DB write
+      setLeadSubmitted(true);
+    } catch (err: any) {
+      console.error("Lead creation failed:", err);
+      setLeadError("Something went wrong. Please try again.");
+    } finally {
+      setLeadSubmitting(false);
     }
-    setLeadSubmitted(true);
   };
 
   return (

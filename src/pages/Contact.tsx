@@ -223,12 +223,21 @@ const Contact = () => {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {path.description}
                 </p>
-                {path.link ? (
+              {path.link ? (
                   <Link to={path.link}>
                     <Button variant="outline-primary" size="sm" className="gap-1.5 text-xs">
                       {path.cta} <ExternalLink size={12} />
                     </Button>
                   </Link>
+                ) : path.href?.startsWith("mailto:") ? (
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => window.location.href = path.href!}
+                  >
+                    {path.cta} <ArrowRight size={12} />
+                  </Button>
                 ) : (
                   <a href={path.href}>
                     <Button variant="outline-primary" size="sm" className="gap-1.5 text-xs">
