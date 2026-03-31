@@ -231,7 +231,7 @@ const Developers = () => {
       </section>
 
       {/* Authentication */}
-      <section className="py-20 md:py-28">
+      <section className="py-10 md:py-28">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
