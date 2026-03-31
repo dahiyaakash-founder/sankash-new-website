@@ -115,16 +115,31 @@ const ItineraryUploader = () => {
       setTimeout(() => {
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);
-        // Save agent_quote_review lead to database
-        import("@/lib/leads-service").then(({ createLead }) => {
-          createLead({
-            full_name: "Agent (anonymous)",
-            lead_source_page: "for-travel-agents",
-            lead_source_type: "agent_quote_review",
-            audience_type: "agent",
-            quote_file_name: file.name,
-            metadata_json: { confidence: result.confidence },
-          }).catch(() => { /* silent */ });
+        // Save agent_quote_review lead to database with file upload
+        import("@/lib/leads-service").then(async ({ createLead, uploadQuoteFile }) => {
+          try {
+            let quoteFileUrl: string | null = null;
+            const uploaded = await uploadQuoteFile(file);
+            quoteFileUrl = uploaded.url;
+
+            const lead = await createLead({
+              full_name: "Agent (anonymous)",
+              lead_source_page: "for-travel-agents",
+              lead_source_type: "agent_quote_review",
+              audience_type: "agent",
+              quote_file_name: file.name,
+              quote_file_url: quoteFileUrl,
+              metadata_json: { confidence: result.confidence },
+            });
+
+            // Attach file and log activity
+            if (lead?.id) {
+              const { uploadLeadAttachment } = await import("@/lib/attachments-service");
+              const { logLeadCreated } = await import("@/lib/activity-service");
+              await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => {});
+              await logLeadCreated(lead.id, "for-travel-agents").catch(() => {});
+            }
+          } catch { /* silent */ }
         });
       }, 2200);
     }, 800);
