@@ -349,8 +349,11 @@ const Contact = () => {
                     <label className="block text-xs font-medium mb-1.5">Message</label>
                     <textarea name="message" rows={3} className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full gap-2">
-                    Submit <ArrowRight size={16} />
+                  {formError && (
+                    <p className="text-sm text-destructive font-medium">{formError}</p>
+                  )}
+                  <Button type="submit" size="lg" className="w-full gap-2" disabled={submitting}>
+                    {submitting ? "Submitting…" : "Submit"} {!submitting && <ArrowRight size={16} />}
                   </Button>
                 </form>
               )}
