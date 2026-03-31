@@ -38,6 +38,17 @@ Deno.serve(async (req) => {
     // Admin client for privileged operations
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    const body = await req.json();
+    const { action } = body;
+
+    // ── ACTIVATE (self-service, no admin check needed) ──
+    if (action === "activate") {
+      await adminClient.from("profiles").update({ status: "active" }).eq("user_id", caller.id);
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check caller is super_admin or admin
     const { data: isSuperAdmin } = await adminClient.rpc("has_role", {
       _user_id: caller.id,
@@ -53,9 +64,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const body = await req.json();
-    const { action } = body;
 
     // ── INVITE ──
     if (action === "invite") {
@@ -77,35 +85,74 @@ Deno.serve(async (req) => {
       }
 
       const appUrl = "https://sankash-new-website.lovable.app";
-      const redirectTo = `${appUrl}/ops/login`;
+      const redirectTo = `${appUrl}/ops/accept-invite`;
 
       // Create user via admin API with invite
-      const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-        data: { full_name },
-        redirectTo,
-      });
-      if (createError) {
-        return new Response(JSON.stringify({ error: createError.message }), {
-          status: 400,
+      // First check if user already exists
+      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
+      const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+
+      let userId: string;
+
+      if (existingUser) {
+        userId = existingUser.id;
+
+        // Ensure role row exists
+        await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+
+        // Ensure profile exists
+        const { data: existingProfile } = await adminClient.from("profiles").select("id").eq("user_id", userId).maybeSingle();
+        if (!existingProfile) {
+          await adminClient.from("profiles").insert({ user_id: userId, full_name, status: "invited" });
+        }
+
+        // Generate magic link for existing user
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+          type: "magiclink",
+          email,
+          options: { redirectTo },
+        });
+
+        if (linkError) {
+          return new Response(JSON.stringify({ error: linkError.message }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const actionLink = linkData?.properties?.action_link;
+        return new Response(JSON.stringify({ success: true, user_id: userId, action_link: actionLink }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        // New user — send invite email
+        const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+          data: { full_name },
+          redirectTo,
+        });
+        if (createError) {
+          return new Response(JSON.stringify({ error: createError.message }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        userId = userData.user.id;
+
+        // Assign role
+        await adminClient.from("user_roles").insert({ user_id: userId, role });
+
+        // Create profile
+        await adminClient.from("profiles").insert({
+          user_id: userId,
+          full_name,
+          status: "invited",
+        });
+
+        return new Response(JSON.stringify({ success: true, user_id: userId }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      const userId = userData.user.id;
-
-      // Assign role
-      await adminClient.from("user_roles").insert({ user_id: userId, role });
-
-      // Create profile
-      await adminClient.from("profiles").insert({
-        user_id: userId,
-        full_name,
-        status: "invited",
-      });
-
-      return new Response(JSON.stringify({ success: true, user_id: userId }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     // ── UPDATE ROLE ──
@@ -213,7 +260,7 @@ Deno.serve(async (req) => {
       }
 
       const appUrl = "https://sankash-new-website.lovable.app";
-      const redirectTo = `${appUrl}/ops/login`;
+      const redirectTo = `${appUrl}/ops/accept-invite`;
 
       // Use magiclink type for existing users (invite type fails for registered users)
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
