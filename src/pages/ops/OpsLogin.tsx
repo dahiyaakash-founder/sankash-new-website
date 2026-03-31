@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const OpsLogin = () => {
-  const { user, loading, hasRole, signIn } = useAuth();
+  const { user, loading, hasRole, signIn, profileStatus } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +30,7 @@ const OpsLogin = () => {
     </div>
   );
 
+  if (user && profileStatus === "invited") return <Navigate to="/ops/accept-invite" replace />;
   if (user && hasRole) return <Navigate to="/ops/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +67,11 @@ const OpsLogin = () => {
             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
-          {user && !hasRole && <p className="text-xs text-destructive">Your account does not have ops dashboard access.</p>}
+          {user && !hasRole && (
+            <p className="text-xs text-destructive">
+              Your account is signed in, but CRM access is not ready yet. Ask an admin to send a fresh invite or confirm your role.
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Signing in…</> : "Sign in"}
           </Button>
