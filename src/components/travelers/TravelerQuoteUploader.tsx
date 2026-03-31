@@ -164,9 +164,14 @@ const TravelerQuoteUploader = () => {
     setInsuranceInsight(null);
   };
 
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName.trim() || !leadPhone.trim()) return;
+    setLeadSubmitting(true);
+    setLeadError(null);
     try {
       const { createLead } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
@@ -197,10 +202,15 @@ const TravelerQuoteUploader = () => {
         await uploadLeadAttachment(uploadedFile, lead.id, { sourceType: "traveler_quote_unlock" }).catch(() => {});
         await logLeadCreated(lead.id, "for-travelers").catch(() => {});
       }
-    } catch {
-      // still show success
+
+      // Only show success after confirmed DB write
+      setLeadSubmitted(true);
+    } catch (err: any) {
+      console.error("Lead creation failed:", err);
+      setLeadError("Something went wrong. Please try again.");
+    } finally {
+      setLeadSubmitting(false);
     }
-    setLeadSubmitted(true);
   };
 
   return (
@@ -634,11 +644,18 @@ const TravelerQuoteUploader = () => {
                   maxLength={255}
                 />
               </div>
+               {leadError && (
+                 <p className="text-xs text-destructive font-medium">{leadError}</p>
+               )}
                <p className="text-[11px] text-muted-foreground">
                  We will verify your details and share your detailed review.
                </p>
-               <Button type="submit" className="w-full gap-2">
-                 Unlock detailed review <ArrowRight size={14} />
+               <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
+                 {leadSubmitting ? (
+                   <><Loader2 size={14} className="animate-spin" /> Submitting…</>
+                 ) : (
+                   <>Unlock detailed review <ArrowRight size={14} /></>
+                 )}
                </Button>
             </form>
           )}
