@@ -42,9 +42,11 @@ export async function uploadLeadAttachment(
 
   const category = inferCategory(file.name, options?.sourceType);
 
-  const { data, error } = await supabase
+  const attachmentId = crypto.randomUUID();
+  const { error } = await supabase
     .from("lead_attachments" as any)
     .insert({
+      id: attachmentId,
       lead_id: leadId,
       storage_path: storagePath,
       file_name: file.name,
@@ -52,13 +54,11 @@ export async function uploadLeadAttachment(
       file_size: file.size,
       category,
       uploaded_by: options?.uploadedBy ?? null,
-    } as any)
-    .select()
-    .single();
+    } as any);
 
   if (error) throw error;
 
-  // Log activity
+  // Log activity (fire-and-forget, no .select() needed)
   await supabase.from("lead_activity" as any).insert({
     lead_id: leadId,
     activity_type: "file_uploaded",
@@ -67,7 +67,18 @@ export async function uploadLeadAttachment(
     performed_by: options?.uploadedBy ?? null,
   } as any);
 
-  return data as unknown as LeadAttachment;
+  return {
+    id: attachmentId,
+    lead_id: leadId,
+    storage_path: storagePath,
+    file_name: file.name,
+    mime_type: file.type || null,
+    file_size: file.size,
+    category,
+    uploaded_by: options?.uploadedBy ?? null,
+    uploaded_at: new Date().toISOString(),
+    parsed_text_excerpt: null,
+  } as LeadAttachment;
 }
 
 /** Fetch all attachments for a lead */
