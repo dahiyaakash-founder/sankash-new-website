@@ -112,6 +112,7 @@ const OpsLeads = () => {
   const [importOpen, setImportOpen] = useState(false);
 
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
+  const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
     setLoading(true);
     try {
