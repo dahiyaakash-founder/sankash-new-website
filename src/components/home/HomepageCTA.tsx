@@ -33,7 +33,7 @@ const HomepageCTA = () => {
               </Button>
             </Link>
             <Link to="/contact">
-              <Button variant="outline" size="lg" className="text-sm font-semibold border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 gap-2">
+              <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Book a Demo <ArrowRight size={16} />
               </Button>
             </Link>
