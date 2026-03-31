@@ -229,12 +229,17 @@ const Contact = () => {
                       {path.cta} <ExternalLink size={12} />
                     </Button>
                   </Link>
-                ) : path.href?.startsWith("mailto:") ? (
+              ) : path.href?.startsWith("mailto:") ? (
                   <Button
                     variant="outline-primary"
                     size="sm"
                     className="gap-1.5 text-xs"
-                    onClick={() => window.location.href = path.href!}
+                    onClick={() => {
+                      const form = document.getElementById("demo-form");
+                      if (form) {
+                        form.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }
+                    }}
                   >
                     {path.cta} <ArrowRight size={12} />
                   </Button>
