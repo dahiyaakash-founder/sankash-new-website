@@ -199,7 +199,7 @@ const Contact = () => {
       </div>
 
       {/* Escalation paths */}
-      <section id="escalation" className="py-16 md:py-20">
+      <section id="escalation" className="py-10 md:py-20">
         <div className="container max-w-4xl">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-heading font-bold">
