@@ -32,6 +32,14 @@ const SOURCE_OPTIONS: { value: LeadSourceType; label: string }[] = [
   { value: "demo_request", label: "Demo" },
   { value: "support_request", label: "Support" },
   { value: "integration_query", label: "Integration" },
+  { value: "excel_import", label: "Excel Import" },
+  { value: "manual_entry", label: "Manual Entry" },
+  { value: "offline_calling", label: "Offline Calling" },
+  { value: "whatsapp_inbound", label: "WhatsApp" },
+  { value: "referral", label: "Referral" },
+  { value: "existing_partner", label: "Existing Partner" },
+  { value: "event_lead", label: "Event Lead" },
+  { value: "itinerary_upload", label: "Itinerary Upload" },
 ];
 
 const AUDIENCE_OPTIONS: { value: AudienceType; label: string }[] = [
