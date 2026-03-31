@@ -85,12 +85,13 @@ const PAGE_SIZE = 25;
 
 const OpsLeads = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">(searchParams.get("status") as LeadStatus ?? "");
   const [sourceFilter, setSourceFilter] = useState<LeadSourceType | "">(searchParams.get("source") as LeadSourceType ?? "");
@@ -100,7 +101,9 @@ const OpsLeads = () => {
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [activePreset, setActivePreset] = useState("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [importOpen, setImportOpen] = useState(false);
 
+  const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const load = useCallback(async () => {
     setLoading(true);
     try {
