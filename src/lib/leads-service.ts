@@ -43,14 +43,65 @@ export interface TeamMember {
   status?: string;
 }
 
-/** Insert a lead from a public website form (anon) — with duplicate detection */
+/**
+ * Fetch the default assignee for new public leads.
+ * Strategy: round-robin across active supervisors, falling back to admins.
+ */
+async function resolveDefaultAssignee(): Promise<string | null> {
+  try {
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["team_supervisor", "admin", "super_admin"]);
+
+    if (!roles || roles.length === 0) return null;
+
+    const { data: profiles } = await supabase
+      .from("profiles" as any)
+      .select("user_id, status") as any;
+
+    const activeUserIds = new Set(
+      (profiles ?? []).filter((p: any) => p.status === "active").map((p: any) => p.user_id)
+    );
+
+    const supervisors = roles.filter((r: any) => r.role === "team_supervisor" && activeUserIds.has(r.user_id));
+    const admins = roles.filter((r: any) => (r.role === "admin" || r.role === "super_admin") && activeUserIds.has(r.user_id));
+    const candidates = supervisors.length > 0 ? supervisors : admins;
+
+    if (candidates.length === 0) return null;
+
+    // Simple round-robin: pick candidate with fewest open leads
+    const { data: leadCounts } = await supabase
+      .from("leads")
+      .select("assigned_to")
+      .in("assigned_to", candidates.map((c: any) => c.user_id))
+      .not("status", "in", '("converted","closed_lost")');
+
+    const counts: Record<string, number> = {};
+    candidates.forEach((c: any) => { counts[c.user_id] = 0; });
+    (leadCounts ?? []).forEach((l: any) => {
+      if (l.assigned_to && counts[l.assigned_to] !== undefined) counts[l.assigned_to]++;
+    });
+
+    return Object.entries(counts).sort((a, b) => a[1] - b[1])[0]?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Insert a lead from a public website form (anon) — with auto-assignment */
 export async function createLead(lead: LeadInsert) {
-  // Generate a client-side ID so we can return it without needing SELECT permission.
-  // Anon users can INSERT but cannot SELECT (RLS), so .select() would fail with 42501.
   const id = lead.id ?? crypto.randomUUID();
-  const { error } = await supabase.from("leads").insert({ ...lead, id });
+
+  // Try auto-assignment for new public leads (best-effort, don't block on failure)
+  let assignedTo = lead.assigned_to ?? null;
+  if (!assignedTo) {
+    assignedTo = await resolveDefaultAssignee();
+  }
+
+  const { error } = await supabase.from("leads").insert({ ...lead, id, assigned_to: assignedTo });
   if (error) throw error;
-  return { ...lead, id } as LeadRow;
+  return { ...lead, id, assigned_to: assignedTo } as LeadRow;
 }
 
 /**
