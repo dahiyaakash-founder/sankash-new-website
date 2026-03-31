@@ -76,9 +76,14 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Determine the site URL for redirect
+      const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || supabaseUrl;
+      const redirectTo = `${siteUrl}/ops/accept-invite`;
+
       // Create user via admin API with invite
       const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
         data: { full_name },
+        redirectTo,
       });
       if (createError) {
         return new Response(JSON.stringify({ error: createError.message }), {
