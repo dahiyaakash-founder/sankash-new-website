@@ -644,11 +644,18 @@ const TravelerQuoteUploader = () => {
                   maxLength={255}
                 />
               </div>
+               {leadError && (
+                 <p className="text-xs text-destructive font-medium">{leadError}</p>
+               )}
                <p className="text-[11px] text-muted-foreground">
                  We will verify your details and share your detailed review.
                </p>
-               <Button type="submit" className="w-full gap-2">
-                 Unlock detailed review <ArrowRight size={14} />
+               <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
+                 {leadSubmitting ? (
+                   <><Loader2 size={14} className="animate-spin" /> Submitting…</>
+                 ) : (
+                   <>Unlock detailed review <ArrowRight size={14} /></>
+                 )}
                </Button>
             </form>
           )}
