@@ -17,77 +17,105 @@ interface AnalysisRequest {
   audience_type?: string;
 }
 
-const EXTRACTION_PROMPT = `You are a travel itinerary/quote parser for SanKash, a travel fintech company. Extract structured data from the provided document text.
+const EXTRACTION_PROMPT = `You are a travel itinerary/quote parser for SanKash, an Indian travel fintech company. Extract structured data from the provided document.
 
-Return a JSON object with EXACTLY these fields (use null for unknown):
+Return a JSON object with EXACTLY these fields (use null for genuinely unknown values — never invent data):
 
 {
-  "domestic_or_international": "domestic" or "international" or null,
-  "destination_country": string or null,
-  "destination_city": string or null,
+  "domestic_or_international": "domestic" | "international" | null,
+  "destination_country": string | null,
+  "destination_city": string | null,
   "additional_destinations": [] array of other cities/places mentioned,
-  "travel_start_date": "YYYY-MM-DD" or null,
-  "travel_end_date": "YYYY-MM-DD" or null,
-  "duration_nights": number or null,
-  "duration_days": number or null,
-  "total_price": number (in original currency, no commas) or null,
-  "price_per_person": number or null,
-  "currency": "INR" or "USD" etc,
-  "traveller_count_total": number or null,
-  "adults_count": number or null,
-  "children_count": number or null,
-  "infants_count": number or null,
-  "travel_agent_name": string or null,
-  "customer_name": string or null,
+  "travel_start_date": "YYYY-MM-DD" | null,
+  "travel_end_date": "YYYY-MM-DD" | null,
+  "duration_nights": number | null,
+  "duration_days": number | null,
+  "total_price": number | null,
+  "price_per_person": number | null,
+  "alternate_prices": [] array of other price candidates found (as numbers),
+  "price_notes": string | null (e.g. "multiple prices found, chose package total"),
+  "currency": "INR" | "USD" | etc,
+  "traveller_count_total": number | null,
+  "adults_count": number | null,
+  "children_count": number | null,
+  "infants_count": number | null,
+  "travel_agent_name": string | null,
+  "customer_name": string | null,
   "hotel_names": [] array of hotel names,
   "airline_names": [] array of airlines,
   "sectors": [] array of flight sectors like "DEL-DXB",
-  "inclusions_text": string summary or null,
-  "exclusions_text": string summary or null,
+  "inclusions_text": string summary | null,
+  "exclusions_text": string summary | null,
   "visa_mentioned": boolean,
   "insurance_mentioned": boolean,
-  "parsing_confidence": "high" or "medium" or "low",
+  "parsing_confidence": "high" | "medium" | "low",
   "missing_fields": [] array of field names that could not be found,
-  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short)
+  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short),
+  "confidence_notes": string | null (explain why confidence is not high, if applicable)
 }
 
-Rules:
-- If India-only destinations, mark domestic. If any foreign country, mark international.
-- For prices, strip currency symbols and commas. Keep the number only.
-- If multiple prices exist, pick the most likely total package price.
-- Do not invent data. Use null for genuinely missing fields.
-- parsing_confidence: high if 4+ Ring 1 fields found, medium if 2-3, low if fewer.
-- Return ONLY valid JSON, no markdown, no explanation.`;
+CRITICAL RULES:
+
+Domestic vs International:
+- If ALL destinations are within India, mark "domestic".
+- If ANY destination is outside India, mark "international".
+- Do NOT guess from weak clues like currency alone. If only a city name is visible and it could be in India or abroad, use null.
+
+Destination handling:
+- destination_city = the PRIMARY destination (where most nights are spent, or the main package focus).
+- destination_country = the country of the primary destination.
+- additional_destinations = all OTHER cities/places mentioned.
+- Do NOT put the departure city (e.g. Delhi, Mumbai) as the primary destination unless the trip is TO that city.
+
+Price extraction:
+- total_price = the final package/total price. Look for labels like "Total", "Grand Total", "Package Cost", "Net Payable".
+- price_per_person = per-person cost ONLY if explicitly stated. Do NOT compute it by dividing.
+- If multiple prices exist, pick the one most likely to be the overall package total. Put others in alternate_prices.
+- Strip currency symbols, commas, spaces. Keep as a plain number.
+- If you cannot confidently identify which price is the total, set total_price to null and put all candidates in alternate_prices.
+
+People count:
+- Only set counts you can actually see. Do NOT assume 2 adults if not stated.
+- traveller_count_total should match adults + children + infants if all are visible.
+- If only "2 Pax" is visible, set traveller_count_total=2 and leave adults/children/infants as null.
+
+Name separation:
+- travel_agent_name = the company or agency that created this quote (look for letterhead, footer, "prepared by", agency branding).
+- customer_name = the person the quote is addressed TO (look for "Dear", "Mr/Mrs", "Guest Name", "Traveller").
+- Do NOT swap them. If you see only one name and cannot tell which role it is, put it in customer_name and note the ambiguity.
+
+Confidence:
+- "high": 4+ Ring 1 fields (destination, dates, price, traveller count) are clearly found.
+- "medium": 2-3 Ring 1 fields found, or some fields are weakly inferred.
+- "low": fewer than 2 Ring 1 fields, or document is unclear / partially readable.
+- Always fill confidence_notes explaining what's uncertain.
+
+Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
 
 async function extractTextFromUrl(fileUrl: string, fileName: string): Promise<string> {
-  // For PDFs and documents, we fetch the file and send to AI as-is
-  // For images, we'll use the AI model's vision capability
   const lower = fileName.toLowerCase();
-  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
-  
+  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp");
+
   if (isImage) {
     return `[IMAGE FILE: ${fileName}]`;
   }
-  
-  // For text-parseable files, try to fetch raw content
+
   try {
     const resp = await fetch(fileUrl);
     if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
     const blob = await resp.arrayBuffer();
-    // For PDFs/docs, we'll pass the URL to the AI model
     return `[DOCUMENT FILE: ${fileName}, size: ${blob.byteLength} bytes]`;
   } catch {
     return `[COULD NOT FETCH: ${fileName}]`;
   }
 }
 
-async function analyzeWithAI(fileUrl: string, fileName: string, rawHint: string): Promise<Record<string, unknown>> {
+async function analyzeWithAI(fileUrl: string, fileName: string, _rawHint: string): Promise<Record<string, unknown>> {
   const lower = fileName.toLowerCase();
-  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
+  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp");
 
-  // Build message content - use image_url for images, text+URL hint for documents
   const userContent: Array<Record<string, unknown>> = [];
-  
+
   if (isImage) {
     userContent.push({
       type: "image_url",
@@ -95,12 +123,12 @@ async function analyzeWithAI(fileUrl: string, fileName: string, rawHint: string)
     });
     userContent.push({
       type: "text",
-      text: `This is an image of a travel itinerary or quote. File name: ${fileName}. Extract all structured travel data from it.`,
+      text: `This is an image of a travel itinerary or quote. File name: ${fileName}. Extract all structured travel data from it following the schema exactly.`,
     });
   } else {
     userContent.push({
       type: "text",
-      text: `Analyze this travel document. File name: ${fileName}. The document is accessible at: ${fileUrl}\n\nExtract all structured travel data. If you cannot read the document content directly, infer what you can from the filename and any available context, and set parsing_confidence to "low".`,
+      text: `Analyze this travel document. File name: ${fileName}. The document is accessible at: ${fileUrl}\n\nExtract all structured travel data following the schema exactly. If you cannot read the document content directly, set parsing_confidence to "low" and explain in confidence_notes.`,
     });
   }
 
@@ -117,7 +145,7 @@ async function analyzeWithAI(fileUrl: string, fileName: string, rawHint: string)
         { role: "user", content: userContent },
       ],
       temperature: 0.1,
-      max_tokens: 2000,
+      max_tokens: 3000,
     }),
   });
 
@@ -128,11 +156,11 @@ async function analyzeWithAI(fileUrl: string, fileName: string, rawHint: string)
 
   const result = await response.json();
   const text = result.choices?.[0]?.message?.content ?? "";
-  
+
   // Extract JSON from response (handle potential markdown wrapping)
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("No JSON found in AI response");
-  
+
   return JSON.parse(jsonMatch[0]);
 }
 
@@ -140,12 +168,18 @@ function computeCommercialFlags(parsed: Record<string, unknown>) {
   const totalPrice = parsed.total_price as number | null;
   const isInternational = parsed.domestic_or_international === "international";
   const insuranceMentioned = parsed.insurance_mentioned === true;
-  
-  return {
-    emi_candidate: totalPrice != null && totalPrice >= 20000 && totalPrice <= 2000000,
-    insurance_candidate: isInternational || insuranceMentioned,
-    pg_candidate: totalPrice != null && totalPrice > 0,
-  };
+  const visaMentioned = parsed.visa_mentioned === true;
+
+  // EMI: practical range ₹20k–₹20L
+  const emi_candidate = totalPrice != null && totalPrice >= 20000 && totalPrice <= 2000000;
+
+  // Insurance: international OR travel insurance/visa mentioned
+  const insurance_candidate = isInternational || insuranceMentioned || (visaMentioned && isInternational);
+
+  // PG: any meaningful price exists
+  const pg_candidate = totalPrice != null && totalPrice > 0;
+
+  return { emi_candidate, insurance_candidate, pg_candidate };
 }
 
 Deno.serve(async (req) => {
@@ -171,11 +205,23 @@ Deno.serve(async (req) => {
 
     // Step 2: AI analysis
     const parsed = await analyzeWithAI(file_url, file_name, rawHint);
-    
+
     // Step 3: Compute commercial flags
     const flags = computeCommercialFlags(parsed);
 
-    // Step 4: Build record
+    // Step 4: Merge alternate prices and confidence notes into extracted_fields_json
+    const extractedFields: Record<string, unknown> = { ...parsed };
+    if (parsed.alternate_prices) {
+      extractedFields.alternate_prices = parsed.alternate_prices;
+    }
+    if (parsed.price_notes) {
+      extractedFields.price_notes = parsed.price_notes;
+    }
+    if (parsed.confidence_notes) {
+      extractedFields.confidence_notes = parsed.confidence_notes;
+    }
+
+    // Step 5: Build record
     const record = {
       lead_id,
       attachment_id: attachment_id || null,
@@ -187,15 +233,15 @@ Deno.serve(async (req) => {
       destination_city: (parsed.destination_city as string) || null,
       travel_start_date: (parsed.travel_start_date as string) || null,
       travel_end_date: (parsed.travel_end_date as string) || null,
-      duration_nights: (parsed.duration_nights as number) || null,
-      duration_days: (parsed.duration_days as number) || null,
-      total_price: (parsed.total_price as number) || null,
-      price_per_person: (parsed.price_per_person as number) || null,
+      duration_nights: typeof parsed.duration_nights === "number" ? parsed.duration_nights : null,
+      duration_days: typeof parsed.duration_days === "number" ? parsed.duration_days : null,
+      total_price: typeof parsed.total_price === "number" ? parsed.total_price : null,
+      price_per_person: typeof parsed.price_per_person === "number" ? parsed.price_per_person : null,
       currency: (parsed.currency as string) || "INR",
-      traveller_count_total: (parsed.traveller_count_total as number) || null,
-      adults_count: (parsed.adults_count as number) || null,
-      children_count: (parsed.children_count as number) || null,
-      infants_count: (parsed.infants_count as number) || null,
+      traveller_count_total: typeof parsed.traveller_count_total === "number" ? parsed.traveller_count_total : null,
+      adults_count: typeof parsed.adults_count === "number" ? parsed.adults_count : null,
+      children_count: typeof parsed.children_count === "number" ? parsed.children_count : null,
+      infants_count: typeof parsed.infants_count === "number" ? parsed.infants_count : null,
       travel_agent_name: (parsed.travel_agent_name as string) || null,
       customer_name: (parsed.customer_name as string) || null,
       hotel_names_json: parsed.hotel_names || [],
@@ -211,10 +257,10 @@ Deno.serve(async (req) => {
       pg_candidate: flags.pg_candidate,
       missing_fields_json: parsed.missing_fields || [],
       extracted_snippets_json: parsed.extracted_snippets || [],
-      extracted_fields_json: parsed,
+      extracted_fields_json: extractedFields,
     };
 
-    // Step 5: Upsert — check if analysis already exists for this lead
+    // Step 6: Upsert
     const { data: existing } = await supabaseAdmin
       .from("itinerary_analysis")
       .select("id")
@@ -242,23 +288,31 @@ Deno.serve(async (req) => {
       result = data;
     }
 
-    // Step 6: Update lead with extracted commercial flags
+    // Step 7: Update lead with extracted commercial flags (only set, never clear)
+    const leadUpdate: Record<string, unknown> = {
+      emi_flag: flags.emi_candidate,
+      insurance_flag: flags.insurance_candidate,
+      pg_flag: flags.pg_candidate,
+    };
+    if (parsed.domestic_or_international) {
+      leadUpdate.destination_type = parsed.domestic_or_international;
+    }
+    if (typeof parsed.total_price === "number" && parsed.total_price > 0) {
+      leadUpdate.quote_amount = parsed.total_price;
+    }
+
     await supabaseAdmin
       .from("leads")
-      .update({
-        emi_flag: flags.emi_candidate,
-        insurance_flag: flags.insurance_candidate,
-        pg_flag: flags.pg_candidate,
-        destination_type: (parsed.domestic_or_international as string) || undefined,
-        quote_amount: (parsed.total_price as number) || undefined,
-      })
+      .update(leadUpdate)
       .eq("id", lead_id);
 
-    // Step 7: Log activity
+    // Step 8: Log activity
+    const destLabel = parsed.destination_city || parsed.destination_country || "Unknown destination";
+    const confLabel = parsed.parsing_confidence || "low";
     await supabaseAdmin.from("lead_activity").insert({
       lead_id,
       activity_type: "itinerary_analyzed",
-      description: `Itinerary analyzed: ${parsed.destination_city || "Unknown destination"}, confidence: ${parsed.parsing_confidence || "low"}`,
+      description: `Itinerary analyzed: ${destLabel}, confidence: ${confLabel}`,
     });
 
     return new Response(JSON.stringify({ success: true, analysis: result }), {

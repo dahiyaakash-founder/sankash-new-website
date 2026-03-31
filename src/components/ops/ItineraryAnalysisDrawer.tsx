@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Loader2, MapPin, Calendar, Users, CreditCard, Shield, Wallet,
   Building2, Plane, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
-  XCircle, FileSearch, Sparkles,
+  XCircle, FileSearch, Sparkles, HelpCircle,
 } from "lucide-react";
 import { fetchItineraryAnalysis, triggerItineraryAnalysis, type ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
 import { toast } from "sonner";
@@ -30,13 +30,25 @@ const confidenceColors: Record<string, string> = {
   low: "bg-red-100 text-red-800",
 };
 
-function InfoRow({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon?: any }) {
-  if (value == null || value === "") return null;
+/** Always-visible row: shows placeholder when value is missing */
+function InfoRow({ label, value, icon: Icon, placeholder }: {
+  label: string;
+  value: string | number | null | undefined;
+  icon?: any;
+  placeholder?: string;
+}) {
+  const isEmpty = value == null || value === "";
   return (
     <div className="flex items-start gap-2 py-1.5 border-b border-border/30 last:border-0">
-      {Icon && <Icon size={13} className="text-muted-foreground shrink-0 mt-0.5" />}
+      {Icon && <Icon size={13} className={`shrink-0 mt-0.5 ${isEmpty ? "text-muted-foreground/40" : "text-muted-foreground"}`} />}
       <span className="text-xs text-muted-foreground min-w-[100px]">{label}</span>
-      <span className="text-xs font-medium text-foreground flex-1 text-right">{String(value)}</span>
+      {isEmpty ? (
+        <span className="text-xs text-muted-foreground/50 italic flex-1 text-right flex items-center justify-end gap-1">
+          <HelpCircle size={10} /> {placeholder || "Not found"}
+        </span>
+      ) : (
+        <span className="text-xs font-medium text-foreground flex-1 text-right">{String(value)}</span>
+      )}
     </div>
   );
 }
@@ -97,6 +109,10 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
   const airlines = (a?.airline_names_json ?? []) as string[];
   const sectors = (a?.sectors_json ?? []) as string[];
   const additionalDests = (a?.additional_destinations_json ?? []) as string[];
+  const extractedFields = (a?.extracted_fields_json ?? {}) as Record<string, unknown>;
+  const confidenceNotes = extractedFields.confidence_notes as string | undefined;
+  const priceNotes = extractedFields.price_notes as string | undefined;
+  const altPrices = (extractedFields.alternate_prices ?? []) as number[];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -149,84 +165,128 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                 </Button>
               </div>
 
-              {/* A. Extracted Summary */}
+              {/* Confidence notes */}
+              {confidenceNotes && (
+                <p className="text-[10px] text-muted-foreground bg-muted rounded px-2 py-1.5 italic">
+                  ℹ️ {confidenceNotes}
+                </p>
+              )}
+
+              {/* A. Extracted Summary — always show all Ring 1 fields */}
               <div className="border rounded-lg p-3 space-y-1">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Trip Summary</p>
-                <InfoRow label="Destination" value={[a.destination_city, a.destination_country].filter(Boolean).join(", ") || null} icon={MapPin} />
-                <InfoRow label="Type" value={a.domestic_or_international} icon={MapPin} />
+                <InfoRow
+                  label="Destination"
+                  value={[a.destination_city, a.destination_country].filter(Boolean).join(", ") || null}
+                  icon={MapPin}
+                  placeholder="Destination not detected"
+                />
+                <InfoRow label="Type" value={a.domestic_or_international} icon={MapPin} placeholder="Domestic/intl unclear" />
                 {additionalDests.length > 0 && (
                   <InfoRow label="Other places" value={additionalDests.join(", ")} icon={MapPin} />
                 )}
-                <InfoRow label="Travel dates" value={
-                  a.travel_start_date && a.travel_end_date
-                    ? `${a.travel_start_date} → ${a.travel_end_date}`
-                    : a.travel_start_date || a.travel_end_date || null
-                } icon={Calendar} />
-                <InfoRow label="Duration" value={
-                  a.duration_nights ? `${a.duration_nights}N / ${a.duration_days ?? a.duration_nights + 1}D` : null
-                } icon={Calendar} />
-                <InfoRow label="Travellers" value={
-                  a.traveller_count_total
-                    ? `${a.traveller_count_total} total${a.adults_count ? ` (${a.adults_count}A` : ""}${a.children_count ? ` ${a.children_count}C` : ""}${a.infants_count ? ` ${a.infants_count}I` : ""}${a.adults_count ? ")" : ""}`
-                    : null
-                } icon={Users} />
-                <InfoRow label="Total price" value={
-                  a.total_price ? `${a.currency} ${Number(a.total_price).toLocaleString("en-IN")}` : null
-                } icon={CreditCard} />
-                <InfoRow label="Per person" value={
-                  a.price_per_person ? `${a.currency} ${Number(a.price_per_person).toLocaleString("en-IN")}` : null
-                } icon={CreditCard} />
-                <InfoRow label="Uploaded by" value={a.uploaded_by_audience} icon={Users} />
-                <InfoRow label="Agent name" value={a.travel_agent_name} icon={Building2} />
-                <InfoRow label="Customer" value={a.customer_name} icon={Users} />
+                <InfoRow
+                  label="Travel dates"
+                  value={
+                    a.travel_start_date && a.travel_end_date
+                      ? `${a.travel_start_date} → ${a.travel_end_date}`
+                      : a.travel_start_date || a.travel_end_date || null
+                  }
+                  icon={Calendar}
+                  placeholder="Dates not found"
+                />
+                <InfoRow
+                  label="Duration"
+                  value={
+                    a.duration_nights ? `${a.duration_nights}N / ${a.duration_days ?? a.duration_nights + 1}D` : null
+                  }
+                  icon={Calendar}
+                  placeholder="Duration not found"
+                />
+                <InfoRow
+                  label="Travellers"
+                  value={
+                    a.traveller_count_total
+                      ? `${a.traveller_count_total} total${a.adults_count ? ` (${a.adults_count}A` : ""}${a.children_count ? ` ${a.children_count}C` : ""}${a.infants_count ? ` ${a.infants_count}I` : ""}${a.adults_count ? ")" : ""}`
+                      : null
+                  }
+                  icon={Users}
+                  placeholder="Traveller count not found"
+                />
+                <InfoRow
+                  label="Total price"
+                  value={a.total_price ? `${a.currency} ${Number(a.total_price).toLocaleString("en-IN")}` : null}
+                  icon={CreditCard}
+                  placeholder="Price not detected"
+                />
+                <InfoRow
+                  label="Per person"
+                  value={a.price_per_person ? `${a.currency} ${Number(a.price_per_person).toLocaleString("en-IN")}` : null}
+                  icon={CreditCard}
+                  placeholder="Not stated"
+                />
+                {/* Price notes if AI flagged ambiguity */}
+                {priceNotes && (
+                  <p className="text-[10px] text-amber-600 italic px-1 mt-0.5">💡 {priceNotes}</p>
+                )}
+                {altPrices.length > 0 && (
+                  <div className="text-[10px] text-muted-foreground px-1 mt-0.5">
+                    Other prices seen: {altPrices.map(p => `${a.currency} ${Number(p).toLocaleString("en-IN")}`).join(", ")}
+                  </div>
+                )}
+                <InfoRow label="Uploaded by" value={a.uploaded_by_audience} icon={Users} placeholder="Unknown" />
+                <InfoRow label="Agent name" value={a.travel_agent_name} icon={Building2} placeholder="Not identified" />
+                <InfoRow label="Customer" value={a.customer_name} icon={Users} placeholder="Not identified" />
               </div>
 
               {/* B. Travel Components */}
-              {(hotels.length > 0 || airlines.length > 0 || sectors.length > 0 || a.inclusions_text || a.exclusions_text || a.visa_mentioned || a.insurance_mentioned) && (
-                <div className="border rounded-lg p-3 space-y-2">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Travel Components</p>
-                  {hotels.length > 0 && (
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground font-medium">Hotels</span>
-                      <div className="flex flex-wrap gap-1">
-                        {hotels.map((h, i) => <Badge key={i} variant="secondary" className="text-[10px]">{h}</Badge>)}
-                      </div>
+              <div className="border rounded-lg p-3 space-y-2">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Travel Components</p>
+                {hotels.length > 0 ? (
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-muted-foreground font-medium">Hotels</span>
+                    <div className="flex flex-wrap gap-1">
+                      {hotels.map((h, i) => <Badge key={i} variant="secondary" className="text-[10px]">{h}</Badge>)}
                     </div>
-                  )}
-                  {airlines.length > 0 && (
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground font-medium">Airlines</span>
-                      <div className="flex flex-wrap gap-1">
-                        {airlines.map((a, i) => <Badge key={i} variant="secondary" className="text-[10px]">{a}</Badge>)}
-                      </div>
-                    </div>
-                  )}
-                  {sectors.length > 0 && (
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground font-medium">Sectors</span>
-                      <div className="flex flex-wrap gap-1">
-                        {sectors.map((s, i) => <Badge key={i} variant="outline" className="text-[10px]">{s}</Badge>)}
-                      </div>
-                    </div>
-                  )}
-                  {a.inclusions_text && (
-                    <div>
-                      <span className="text-[10px] text-muted-foreground font-medium">Inclusions</span>
-                      <p className="text-xs text-foreground mt-0.5">{a.inclusions_text}</p>
-                    </div>
-                  )}
-                  {a.exclusions_text && (
-                    <div>
-                      <span className="text-[10px] text-muted-foreground font-medium">Exclusions</span>
-                      <p className="text-xs text-foreground mt-0.5">{a.exclusions_text}</p>
-                    </div>
-                  )}
-                  <div className="flex gap-2 flex-wrap pt-1">
-                    {a.visa_mentioned != null && <FlagBadge label="Visa" active={a.visa_mentioned} variant="muted" />}
-                    {a.insurance_mentioned != null && <FlagBadge label="Insurance" active={a.insurance_mentioned} variant="muted" />}
                   </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground/50 italic">No hotels detected</p>
+                )}
+                {airlines.length > 0 ? (
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-muted-foreground font-medium">Airlines</span>
+                    <div className="flex flex-wrap gap-1">
+                      {airlines.map((al, i) => <Badge key={i} variant="secondary" className="text-[10px]">{al}</Badge>)}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground/50 italic">No airlines detected</p>
+                )}
+                {sectors.length > 0 && (
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-muted-foreground font-medium">Sectors</span>
+                    <div className="flex flex-wrap gap-1">
+                      {sectors.map((s, i) => <Badge key={i} variant="outline" className="text-[10px]">{s}</Badge>)}
+                    </div>
+                  </div>
+                )}
+                {a.inclusions_text && (
+                  <div>
+                    <span className="text-[10px] text-muted-foreground font-medium">Inclusions</span>
+                    <p className="text-xs text-foreground mt-0.5">{a.inclusions_text}</p>
+                  </div>
+                )}
+                {a.exclusions_text && (
+                  <div>
+                    <span className="text-[10px] text-muted-foreground font-medium">Exclusions</span>
+                    <p className="text-xs text-foreground mt-0.5">{a.exclusions_text}</p>
+                  </div>
+                )}
+                <div className="flex gap-2 flex-wrap pt-1">
+                  <FlagBadge label="Visa" active={a.visa_mentioned === true} variant="muted" />
+                  <FlagBadge label="Insurance" active={a.insurance_mentioned === true} variant="muted" />
                 </div>
-              )}
+              </div>
 
               {/* C. Commercial Flags */}
               <div className="border rounded-lg p-3 space-y-2">
