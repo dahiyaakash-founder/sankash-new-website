@@ -32,8 +32,8 @@ interface ProductionLeadPayload {
  * Submits production lead to Supabase leads table.
  */
 async function submitProductionLead(payload: ProductionLeadPayload): Promise<void> {
-  const { createLead } = await import("@/lib/leads-service");
-  await createLead({
+  const { createLeadWithDedup } = await import("@/lib/leads-service");
+  await createLeadWithDedup({
     full_name: payload.fullName,
     email: payload.workEmail,
     company_name: payload.companyName,

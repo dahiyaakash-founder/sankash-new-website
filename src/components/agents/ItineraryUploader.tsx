@@ -116,13 +116,13 @@ const ItineraryUploader = () => {
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);
         // Save agent_quote_review lead to database with file upload
-        import("@/lib/leads-service").then(async ({ createLead, uploadQuoteFile }) => {
+        import("@/lib/leads-service").then(async ({ createLeadWithDedup, uploadQuoteFile }) => {
           try {
             let quoteFileUrl: string | null = null;
             const uploaded = await uploadQuoteFile(file);
             quoteFileUrl = uploaded.url;
 
-            const lead = await createLead({
+            const { lead } = await createLeadWithDedup({
               full_name: "Agent (anonymous)",
               lead_source_page: "for-travel-agents",
               lead_source_type: "agent_quote_review",
