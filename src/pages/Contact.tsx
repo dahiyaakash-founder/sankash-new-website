@@ -107,7 +107,7 @@ const Contact = () => {
       "Other": "other",
     };
     try {
-      await createLead({
+      await createLeadWithDedup({
         full_name: fullName,
         email: email || null,
         mobile_number: (data.get("phone") as string)?.trim() || null,
