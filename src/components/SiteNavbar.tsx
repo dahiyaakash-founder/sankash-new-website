@@ -134,67 +134,63 @@ const SiteNavbar = () => {
       {/* Mobile menu — true fixed full-screen overlay */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-x-0 bottom-0 z-50 bg-background/98 backdrop-blur-xl border-t border-border/60"
-          style={{ top: `${MOBILE_NAV_TOP}px` }}
+          className="md:hidden fixed left-0 right-0 bottom-0 bg-background border-t border-border"
+          style={{ top: `${MOBILE_NAV_TOP}px`, zIndex: 9999 }}
         >
           <div
-            className="grid overflow-hidden"
-            style={{
-              height: `calc(100dvh - ${MOBILE_NAV_TOP}px)`,
-              maxHeight: `calc(100vh - ${MOBILE_NAV_TOP}px)`,
-              gridTemplateRows: "minmax(0,1fr) auto",
-            }}
+            className="flex flex-col overflow-hidden"
+            style={{ height: `calc(100dvh - ${MOBILE_NAV_TOP}px)` }}
           >
-          <div className="min-h-0 overflow-y-auto overscroll-contain px-4 pt-2 pb-4">
-            <div className="space-y-0.5">
-              {navItems.map((item) =>
-                item.dropdown ? (
-                  <div key={item.label}>
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[15px] font-medium text-foreground"
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-4">
+              <div className="space-y-0.5">
+                {navItems.map((item) =>
+                  item.dropdown ? (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-[15px] font-medium text-foreground active:bg-accent"
+                      >
+                        {item.label}
+                        <ChevronDown size={14} className={`transition-transform ${openDropdown === item.label ? 'rotate-180' : ''}`} />
+                      </button>
+                      {openDropdown === item.label && (
+                        <div className="space-y-0.5 pb-1 pl-3">
+                          {item.dropdown.map((child) => (
+                            <Link
+                              key={child.href}
+                              to={child.href}
+                              onClick={closeMobileMenu}
+                              className="block rounded-lg px-3 py-2.5 text-[14px] text-muted-foreground active:bg-accent"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      key={item.label}
+                      to={item.href!}
+                      onClick={closeMobileMenu}
+                      className="block rounded-lg px-3 py-3 text-[15px] font-medium text-foreground active:bg-accent"
                     >
                       {item.label}
-                      <ChevronDown size={14} className={`transition-transform ${openDropdown === item.label ? 'rotate-180' : ''}`} />
-                    </button>
-                    {openDropdown === item.label && (
-                      <div className="space-y-0.5 pb-1 pl-3">
-                        {item.dropdown.map((child) => (
-                          <Link
-                            key={child.href}
-                            to={child.href}
-                            onClick={closeMobileMenu}
-                            className="block rounded-lg px-3 py-2 text-[13px] text-muted-foreground"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link
-                    key={item.label}
-                    to={item.href!}
-                    onClick={closeMobileMenu}
-                    className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                )
-              )}
+                    </Link>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-          <div className="shrink-0 border-t border-border/60 bg-background/95 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-            <div className="flex gap-3">
-              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
-                <Button variant="outline" size="default" className="w-full text-sm">Agent Signup</Button>
-              </a>
-              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
-                <Button size="default" className="w-full text-sm">Agent Login</Button>
-              </a>
+            <div className="shrink-0 border-t border-border bg-background px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              <div className="flex gap-3">
+                <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+                  <Button variant="outline" size="default" className="w-full text-sm">Agent Signup</Button>
+                </a>
+                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+                  <Button size="default" className="w-full text-sm">Agent Login</Button>
+                </a>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       )}
