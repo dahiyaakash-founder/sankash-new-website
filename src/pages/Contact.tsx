@@ -138,9 +138,9 @@ const Contact = () => {
       </section>
 
       {/* Quick action cards */}
-      <section className="py-16 md:py-20">
+      <section className="py-10 md:py-20">
         <div className="container max-w-4xl">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {quickActions.map((action, i) => {
               const Inner = (
                 <motion.div
