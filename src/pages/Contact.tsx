@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   Mail,
+  Phone,
   MapPin,
   ArrowRight,
   FileText,
@@ -383,13 +384,10 @@ const Contact = () => {
               <h3 className="text-lg font-heading font-bold">Direct contact</h3>
               <div className="space-y-4">
                 {[
-                  { icon: Mail, label: "Email", value: "hello@sankash.in" },
-                  { icon: Mail, label: "Support", value: "support@sankash.in" },
-                  {
-                    icon: MapPin,
-                    label: "Office",
-                    value: "Gurugram, Haryana, India",
-                  },
+                  { icon: Mail, label: "Email", value: "hello@sankash.in", href: "mailto:hello@sankash.in" },
+                  { icon: Phone, label: "Phone", value: "+91 9999 000 483", href: "tel:+919999000483" },
+                  { icon: Mail, label: "Support", value: "support@sankash.in", href: "mailto:support@sankash.in" },
+                  { icon: MapPin, label: "Office", value: "Gurugram, Haryana, India", href: undefined },
                 ].map((c) => (
                   <div key={c.label} className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
@@ -397,7 +395,13 @@ const Contact = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">{c.label}</p>
-                      <p className="text-sm font-medium">{c.value}</p>
+                      {c.href ? (
+                        <a href={c.href} className="text-sm font-medium hover:text-primary transition-colors">
+                          {c.value}
+                        </a>
+                      ) : (
+                        <p className="text-sm font-medium">{c.value}</p>
+                      )}
                     </div>
                   </div>
                 ))}
