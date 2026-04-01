@@ -221,7 +221,7 @@ const TravelerQuoteUploader = () => {
 
       const { lead, isDuplicate } = await createLeadWithDedup({
         full_name: leadName.trim(),
-        mobile_number: leadPhone.trim(),
+        mobile_number: phoneValidation.normalized,
         email: leadEmail.trim() || null,
         lead_source_page: "for-travelers",
         lead_source_type: "traveler_quote_unlock",

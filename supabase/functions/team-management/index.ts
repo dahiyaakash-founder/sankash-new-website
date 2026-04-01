@@ -268,9 +268,15 @@ Deno.serve(async (req) => {
       const appUrl = "https://sankash-new-website.lovable.app";
       const redirectTo = `${appUrl}/ops/accept-invite`;
 
-      // Use magiclink type for existing users (invite type fails for registered users)
+      // Unban user if previously disabled
+      await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
+
+      // Reset profile to invited so accept-invite flow works
+      await adminClient.from("profiles").update({ status: "invited" }).eq("user_id", user_id);
+
+      // Use recovery link — longer-lived token (24h vs 5min for magiclink)
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "magiclink",
+        type: "recovery",
         email: userData.user.email!,
         options: {
           redirectTo,
