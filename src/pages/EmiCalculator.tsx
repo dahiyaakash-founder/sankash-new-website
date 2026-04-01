@@ -44,6 +44,14 @@ const EmiCalculator = () => {
   const [selectedTenure, setSelectedTenure] = useState(6);
   const [emiType, setEmiType] = useState<EmiType>("no_cost");
 
+  const hasTrackedView = useRef(false);
+  useEffect(() => {
+    if (!hasTrackedView.current) {
+      trackEmiCalculatorView();
+      hasTrackedView.current = true;
+    }
+  }, []);
+
   const clampedAmount = Math.min(EMI_MAX, Math.max(EMI_MIN, amount));
   const currentResult = calculateEmi(clampedAmount, selectedTenure, emiType);
   const allTenures = calculateAllTenures(clampedAmount);
