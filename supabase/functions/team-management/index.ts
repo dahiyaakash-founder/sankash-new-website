@@ -100,15 +100,21 @@ Deno.serve(async (req) => {
         // Ensure role row exists
         await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
 
-        // Ensure profile exists
+        // Ensure profile exists and is set to invited
         const { data: existingProfile } = await adminClient.from("profiles").select("id").eq("user_id", userId).maybeSingle();
         if (!existingProfile) {
           await adminClient.from("profiles").insert({ user_id: userId, full_name, status: "invited" });
+        } else {
+          await adminClient.from("profiles").update({ status: "invited" }).eq("user_id", userId);
         }
 
-        // Generate magic link for existing user
+        // Unban user if previously disabled, so they can accept the invite
+        await adminClient.auth.admin.updateUserById(userId, { ban_duration: "none" });
+
+        // Use recovery link — longer-lived token (default 24h vs 5min for magiclink)
+        // and compatible with the accept-invite password-set flow
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: "magiclink",
+          type: "recovery",
           email,
           options: { redirectTo },
         });
@@ -262,9 +268,15 @@ Deno.serve(async (req) => {
       const appUrl = "https://sankash-new-website.lovable.app";
       const redirectTo = `${appUrl}/ops/accept-invite`;
 
-      // Use magiclink type for existing users (invite type fails for registered users)
+      // Unban user if previously disabled
+      await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
+
+      // Reset profile to invited so accept-invite flow works
+      await adminClient.from("profiles").update({ status: "invited" }).eq("user_id", user_id);
+
+      // Use recovery link — longer-lived token (24h vs 5min for magiclink)
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "magiclink",
+        type: "recovery",
         email: userData.user.email!,
         options: {
           redirectTo,

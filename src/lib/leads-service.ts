@@ -134,6 +134,12 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
   if (error) throw error;
 
   const result = data as any;
+
+  // Backend validation can return an error field instead of throwing
+  if (result?.error) {
+    throw new Error(result.error);
+  }
+
   return {
     lead: { ...lead, id: result.id, assigned_to: result.assigned_to ?? lead.assigned_to ?? null } as LeadRow,
     isDuplicate: result.is_duplicate === true,
