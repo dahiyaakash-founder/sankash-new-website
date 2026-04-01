@@ -1,0 +1,83 @@
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Plane, Code2, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const SecondaryPaths = () => {
+  return (
+    <section className="py-10 md:py-20">
+      <div className="container">
+        <div className="max-w-lg mb-8 md:mb-10">
+          <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.1em] mb-3">Also on SanKash</p>
+          <h2 className="text-2xl md:text-3xl font-heading font-bold tracking-tight text-primary-deep">
+            For travelers and integrations
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Traveler card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.4 }}
+          >
+            <Link
+              to="/for-travelers"
+              className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all"
+            >
+              <div className="w-11 h-11 rounded-xl bg-brand-coral/10 text-brand-coral flex items-center justify-center mb-4">
+                <Plane size={20} />
+              </div>
+              <h3 className="text-lg font-heading font-bold text-primary-deep mb-2">For Travelers</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                Upload a trip quote, explore EMI options, and check if there's scope for better value — before you commit.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
+                  Upload My Quote <ArrowRight size={12} />
+                </Button>
+                <Link to="/emi-calculator">
+                  <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                    Check EMI Options
+                  </Button>
+                </Link>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Integrations card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ delay: 0.08, duration: 0.4 }}
+          >
+            <Link
+              to="/developers"
+              className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all"
+            >
+              <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                <Code2 size={20} />
+              </div>
+              <h3 className="text-lg font-heading font-bold text-primary-deep mb-2">For Integrations</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                Integrate lending, insurance, and payments via API. Clean docs, sandbox access, and production-ready SDKs.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
+                  View Docs <ArrowRight size={12} />
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                  Get Sandbox Access
+                </Button>
+              </div>
+            </Link>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default SecondaryPaths;
