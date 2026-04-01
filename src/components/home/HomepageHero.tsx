@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Upload, Calculator } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
-import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
+import { AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackAgentSignupClick } from "@/lib/analytics";
 
 const agentActions = [
   {
@@ -71,11 +71,11 @@ const HomepageHero = () => {
                   Get Started as an Agent <ArrowRight size={16} />
                 </Button>
               </a>
-              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
-                <Button variant="outline" size="lg" className="text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
-                  Agent Login
+              <Link to="/for-travel-agents">
+                <Button variant="outline" size="lg" className="gap-2 text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
+                  <Upload size={15} /> Upload a Quote
                 </Button>
-              </a>
+              </Link>
             </div>
 
             {/* Quick-access tools */}
