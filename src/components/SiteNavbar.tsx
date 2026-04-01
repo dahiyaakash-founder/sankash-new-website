@@ -140,12 +140,12 @@ const SiteNavbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentSignupClick({ cta_location: "navbar" })}>
               <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentLoginClick({ cta_location: "navbar" })}>
               <Button size="sm" className="text-[13px]">
                 Agent Login
               </Button>

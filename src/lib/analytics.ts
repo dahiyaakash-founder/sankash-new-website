@@ -70,6 +70,27 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
     window.gtag("event", eventName, enrichedParams);
   }
 
+  // Google Ads conversions — fire on confirmed success events only
+  if (window.gtag) {
+    const gadsConversions: Record<string, string> = {
+      demo_request_submit: "AW-939281479/cilNCO7wzJMcEMeY8b8D",
+      contact_form_submit: "AW-939281479/SxRgCPHwzJMcEMeY8b8D",
+      sandbox_request_submit: "AW-939281479/9o-wCPTwzJMcEMeY8b8D",
+      production_request_submit: "AW-939281479/3P-YCPfwzJMcEMeY8b8D",
+      traveler_unlock_submit: "AW-939281479/H-TwCPrwzJMcEMeY8b8D",
+    };
+    const sendTo = gadsConversions[eventName];
+    if (sendTo) {
+      window.gtag("event", "conversion", { send_to: sendTo });
+      if (IS_DEV) {
+        console.log(
+          `%c[GAds] conversion → ${sendTo}`,
+          "color: #f59e0b; font-weight: bold;"
+        );
+      }
+    }
+  }
+
   // Meta Pixel — map to standard events where possible
   if (window.fbq) {
     const metaMapping: Record<string, string> = {
