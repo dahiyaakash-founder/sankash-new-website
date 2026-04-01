@@ -13,6 +13,8 @@ const OpsLogin = () => {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [noAdmin, setNoAdmin] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     supabase.rpc("admin_exists").then(({ data }) => {
@@ -42,6 +44,29 @@ const OpsLogin = () => {
     if (error) setError(error.message);
   };
 
+  const handleForgotPassword = async () => {
+    setError("");
+    setResetSent(false);
+
+    if (!email.trim()) {
+      setError("Enter your work email first, then use Forgot password.");
+      return;
+    }
+
+    setResetting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/ops/accept-invite`,
+    });
+    setResetting(false);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setResetSent(true);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
@@ -67,11 +92,20 @@ const OpsLogin = () => {
             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
+          {resetSent && <p className="text-xs text-primary">Reset link sent. Open it to set a new password, then sign in again.</p>}
           {user && !hasRole && (
             <p className="text-xs text-destructive">
               Your account is signed in, but CRM access is not ready yet. Ask an admin to send a fresh invite or confirm your role.
             </p>
           )}
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={resetting}
+            className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
+          >
+            {resetting ? "Sending reset link…" : "Forgot password?"}
+          </button>
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Signing in…</> : "Sign in"}
           </Button>
