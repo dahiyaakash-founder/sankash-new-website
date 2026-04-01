@@ -31,6 +31,7 @@ const OpsAcceptInvite = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
 
   useEffect(() => {
     let mounted = true;
