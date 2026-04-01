@@ -588,6 +588,7 @@ export type Database = {
         | "existing_partner"
         | "event_lead"
         | "itinerary_upload"
+        | "insurance_query"
       lead_stage:
         | "new"
         | "reviewed"
@@ -756,6 +757,7 @@ export const Constants = {
         "existing_partner",
         "event_lead",
         "itinerary_upload",
+        "insurance_query",
       ],
       lead_stage: [
         "new",
