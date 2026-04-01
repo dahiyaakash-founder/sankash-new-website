@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
-import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
+import { AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackGetStartedAgentClick, trackBookDemoClick } from "@/lib/analytics";
 import { Link } from "react-router-dom";
 
 const HomepageCTA = () => {
