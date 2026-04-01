@@ -138,7 +138,7 @@ const SiteNavbar = () => {
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={() => { trackAgentLoginClick(); closeMobileMenu(); }} className="flex-1">
               <Button size="default" className="w-full text-sm">
                 Agent Login
               </Button>
