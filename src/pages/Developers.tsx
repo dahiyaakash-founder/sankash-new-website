@@ -11,7 +11,7 @@ import ProductionAccessModal from "@/components/developers/ProductionAccessModal
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
 import { SANKASH_DOCS_URL } from "@/lib/constants";
-import { trackDocsClick } from "@/lib/analytics";
+import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
   initial: { opacity: 0, y: 20 },
