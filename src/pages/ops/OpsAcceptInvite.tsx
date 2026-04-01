@@ -71,6 +71,22 @@ const OpsAcceptInvite = () => {
       const hasRecoveryParams = Boolean(code || (accessToken && refreshToken) || recoveryType === "recovery");
 
       if (!hasRecoveryParams) {
+        // No recovery params — check if user already has a valid session
+        // (e.g. redirected from OpsLogin with status "invited")
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        if (existingSession?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("status")
+            .eq("user_id", existingSession.user.id)
+            .maybeSingle();
+
+          if (profile?.status === "invited") {
+            console.info("[ops-invite] already-authenticated invited user, showing password form directly");
+            markRecoveryReady();
+            return;
+          }
+        }
         return;
       }
 
