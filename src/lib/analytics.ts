@@ -22,11 +22,34 @@ const IS_OPS_ROUTE = () => window.location.pathname.startsWith("/ops");
 
 interface EventParams {
   page_path?: string;
+  page_type?: string;
   source_type?: string;
   audience_type?: string;
+  lead_source_type?: string;
   trip_amount?: number;
   file_uploaded?: boolean;
+  file_type?: string;
+  destination_type?: string;
+  cta_location?: string;
+  cta_label?: string;
   [key: string]: any;
+}
+
+// ── Page classification ──
+
+export function classifyPage(pathname: string): string {
+  if (pathname === "/") return "homepage";
+  if (pathname.startsWith("/for-travel-agents")) return "agent";
+  if (pathname.startsWith("/for-travelers")) return "traveler";
+  if (pathname.startsWith("/developers")) return "integrations";
+  if (pathname.startsWith("/solutions")) return "solutions";
+  if (pathname.startsWith("/emi-calculator")) return "emi_calculator";
+  if (pathname.startsWith("/contact")) return "contact";
+  if (pathname.startsWith("/about")) return "about";
+  if (pathname.startsWith("/insurance")) return "insurance";
+  if (pathname.startsWith("/lending")) return "lending";
+  if (pathname.startsWith("/payments")) return "payments";
+  return "other";
 }
 
 /**
@@ -38,6 +61,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
 
   const enrichedParams = {
     page_path: window.location.pathname,
+    page_type: classifyPage(window.location.pathname),
     ...params,
   };
 
@@ -58,6 +82,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
       traveler_quote_upload: "InitiateCheckout",
       agent_quote_upload: "InitiateCheckout",
       emi_calculator_view: "ViewContent",
+      agent_signup_click: "CompleteRegistration",
     };
 
     const standardEvent = metaMapping[eventName];
@@ -78,7 +103,46 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
   }
 }
 
-// ── Convenience helpers ──
+// ── SPA Page View ──
+
+export function trackPageView(pathname: string) {
+  if (pathname.startsWith("/ops")) return;
+
+  const pageType = classifyPage(pathname);
+
+  // GA4 page_view
+  if (window.gtag) {
+    window.gtag("config", "GA_MEASUREMENT_ID", { page_path: pathname });
+  }
+
+  // Meta PageView
+  if (window.fbq) {
+    window.fbq("track", "PageView");
+  }
+
+  // Audience-specific page view events
+  const audiencePageEvents: Record<string, string> = {
+    agent: "page_view_agent",
+    traveler: "page_view_traveler",
+    integrations: "page_view_integrations",
+    emi_calculator: "page_view_emi",
+  };
+
+  const audienceEvent = audiencePageEvents[pageType];
+  if (audienceEvent) {
+    trackEvent(audienceEvent, { page_path: pathname, page_type: pageType });
+  }
+
+  if (IS_DEV) {
+    console.log(
+      `%c[Analytics] page_view`,
+      "color: #059669; font-weight: bold;",
+      { page_path: pathname, page_type: pageType }
+    );
+  }
+}
+
+// ── Lead / conversion events ──
 
 export const trackContactFormSubmit = (params: { source_type: string; audience_type: string }) =>
   trackEvent("contact_form_submit", params);
@@ -92,20 +156,37 @@ export const trackSandboxRequestSubmit = () =>
 export const trackProductionRequestSubmit = () =>
   trackEvent("production_request_submit", { source_type: "production_access_request", audience_type: "developer" });
 
-export const trackTravelerQuoteUpload = (params: { file_uploaded: boolean }) =>
+export const trackTravelerQuoteUpload = (params: { file_uploaded: boolean; file_type?: string }) =>
   trackEvent("traveler_quote_upload", { audience_type: "traveler", ...params });
 
 export const trackTravelerUnlockSubmit = (params: { trip_amount?: number }) =>
   trackEvent("traveler_unlock_submit", { audience_type: "traveler", source_type: "traveler_quote_unlock", ...params });
 
-export const trackAgentQuoteUpload = (params: { file_uploaded: boolean }) =>
+export const trackAgentQuoteUpload = (params: { file_uploaded: boolean; file_type?: string }) =>
   trackEvent("agent_quote_upload", { audience_type: "agent", ...params });
 
-export const trackAgentSignupClick = () =>
-  trackEvent("agent_signup_click", { audience_type: "agent" });
+export const trackIntegrationQuestionSubmit = () =>
+  trackEvent("integration_question_submit", { source_type: "integration_query", audience_type: "developer" });
 
-export const trackAgentLoginClick = () =>
-  trackEvent("agent_login_click", { audience_type: "agent" });
+// ── Commercial intent / CTA click events ──
+
+export const trackAgentSignupClick = (params?: { cta_location?: string }) =>
+  trackEvent("agent_signup_click", { audience_type: "agent", ...params });
+
+export const trackAgentLoginClick = (params?: { cta_location?: string }) =>
+  trackEvent("agent_login_click", { audience_type: "agent", ...params });
+
+export const trackGetStartedAgentClick = (params?: { cta_location?: string }) =>
+  trackEvent("get_started_agent_click", { audience_type: "agent", ...params });
+
+export const trackUploadQuoteClick = (params?: { audience_type?: string; cta_location?: string }) =>
+  trackEvent("upload_quote_click", params);
+
+export const trackBookDemoClick = (params?: { cta_location?: string }) =>
+  trackEvent("book_demo_click", params);
+
+export const trackGetSandboxAccessClick = () =>
+  trackEvent("get_sandbox_access_click", { audience_type: "developer" });
 
 export const trackEmiCalculatorView = () =>
   trackEvent("emi_calculator_view", { source_type: "emi_calculator" });
@@ -119,5 +200,10 @@ export const trackDocsClick = (params?: { source_page?: string }) =>
 export const trackSupportClick = (params?: { source_page?: string }) =>
   trackEvent("support_click", { source_type: "support", ...params });
 
-export const trackIntegrationQuestionSubmit = () =>
-  trackEvent("integration_question_submit", { source_type: "integration_query", audience_type: "developer" });
+// ── Engagement events ──
+
+export const trackQuoteAnalysisRequested = (params?: { audience_type?: string }) =>
+  trackEvent("quote_analysis_requested", params);
+
+export const trackItineraryAnalysisOpened = () =>
+  trackEvent("itinerary_analysis_opened", { source_type: "ops_itinerary" });
