@@ -27,7 +27,7 @@ const MOBILE_NAV_TOP = 56;
 
 const SiteNavbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const location = useLocation();
   const location = useLocation();
 
   const isActive = (href: string) => location.pathname === href;
