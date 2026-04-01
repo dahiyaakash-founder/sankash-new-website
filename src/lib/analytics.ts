@@ -133,7 +133,7 @@ export function trackPageView(pathname: string) {
 
   // GA4 page_view
   if (window.gtag) {
-    window.gtag("config", "GA_MEASUREMENT_ID", { page_path: pathname });
+    window.gtag("config", "G-TY2M6S2EKS", { page_path: pathname });
   }
 
   // Meta PageView
