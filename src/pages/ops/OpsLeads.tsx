@@ -275,7 +275,7 @@ const OpsLeads = () => {
                   <th className="px-3 py-2.5 w-8">
                     <input type="checkbox" checked={selected.size === leads.length && leads.length > 0} onChange={toggleSelectAll} className="rounded" />
                   </th>
-                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Date</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Last Activity</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden md:table-cell">Company</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Phone</th>
