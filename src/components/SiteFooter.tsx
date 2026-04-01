@@ -3,20 +3,19 @@ import sankashMark from "@/assets/sankash-mark.png";
 
 const footerSections = [
   {
-    title: "Solutions",
+    title: "For Agents",
     links: [
+      { label: "For Travel Agents", href: "/for-travel-agents" },
+      { label: "EMI Calculator", href: "/emi-calculator" },
       { label: "Lending", href: "/solutions/lending" },
       { label: "Insurance", href: "/solutions/insurance" },
       { label: "Payments", href: "/solutions/payments" },
-      { label: "EMI Calculator", href: "/emi-calculator" },
-      { label: "Overview", href: "/solutions" },
     ],
   },
   {
-    title: "For You",
+    title: "More",
     links: [
-      { label: "Travel Agents", href: "/for-travel-agents" },
-      { label: "Travelers", href: "/for-travelers" },
+      { label: "For Travelers", href: "/for-travelers" },
       { label: "Integrations", href: "/developers" },
     ],
   },

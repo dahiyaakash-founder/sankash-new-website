@@ -69,7 +69,7 @@ const AgentValueProp = () => {
 
             <Link to="/for-travel-agents">
               <Button size="lg" className="gap-2 text-sm mt-2 bg-primary-foreground text-primary-deep hover:bg-primary-foreground/90">
-                Explore Agent Solutions <ArrowRight size={16} />
+                Upload a Quote <ArrowRight size={16} />
               </Button>
             </Link>
           </motion.div>
