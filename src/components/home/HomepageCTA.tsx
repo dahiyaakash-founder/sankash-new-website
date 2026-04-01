@@ -29,7 +29,7 @@ const HomepageCTA = () => {
             review quotes, and collect payments — all from one platform.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackGetStartedAgentClick({ cta_location: "bottom_cta" })}>
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
                 Get Started as an Agent <ArrowRight size={16} />
               </Button>
