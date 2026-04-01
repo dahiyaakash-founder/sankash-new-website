@@ -29,7 +29,7 @@ import {
   type ValidationErrorType,
 } from "@/lib/upload-validation";
 import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
-import { trackAgentQuoteUpload } from "@/lib/analytics";
+import { trackAgentQuoteUpload, trackQuoteAnalysisRequested } from "@/lib/analytics";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
@@ -114,6 +114,7 @@ const ItineraryUploader = () => {
 
       setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
+      trackQuoteAnalysisRequested({ audience_type: "agent" });
       setTimeout(() => {
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);

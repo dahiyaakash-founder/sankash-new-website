@@ -29,7 +29,7 @@ import {
   sampleAcceptedFiles,
   type ValidationErrorType,
 } from "@/lib/upload-validation";
-import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit } from "@/lib/analytics";
+import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
 import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
   Dialog,
@@ -132,6 +132,7 @@ const TravelerQuoteUploader = () => {
 
       setInsuranceInsight(getInsuranceInsight(file.name));
       setStage("analyzing");
+      trackQuoteAnalysisRequested({ audience_type: "traveler" });
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
       }, 2400);
