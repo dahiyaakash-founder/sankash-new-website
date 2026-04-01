@@ -205,18 +205,20 @@ const OpsAcceptInvite = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
-        throw new Error("We couldn't confirm your invite session. Please open the latest invite link again.");
+        throw new Error("Session expired. Please go back to login and use Forgot password to get a fresh link.");
       }
 
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
-      const activation = await supabase.functions.invoke("team-management", {
-        body: { action: "activate" },
-      });
-
-      if (activation.error) throw activation.error;
-      if (activation.data?.error) throw new Error(activation.data.error);
+      // Only call activate for invited users (skip for active users doing password reset)
+      if (!isPasswordReset) {
+        const activation = await supabase.functions.invoke("team-management", {
+          body: { action: "activate" },
+        });
+        if (activation.error) throw activation.error;
+        if (activation.data?.error) throw new Error(activation.data.error);
+      }
 
       const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
       if (signOutError) throw signOutError;
