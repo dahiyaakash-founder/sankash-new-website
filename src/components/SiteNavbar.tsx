@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "For Travel Agents", href: "/for-travel-agents" },
   { label: "For Travelers", href: "/for-travelers" },
+  { label: "Solutions", href: "/solutions" },
   { label: "Integrations", href: "/developers" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
