@@ -76,6 +76,8 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
       await submitProductionLead(payload);
       trackProductionRequestSubmit();
       setSubmitted(true);
+    } catch {
+      alert("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }

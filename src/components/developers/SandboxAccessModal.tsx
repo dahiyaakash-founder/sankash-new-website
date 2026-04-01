@@ -72,6 +72,9 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
       await submitSandboxLead(payload);
       trackSandboxRequestSubmit();
       setSubmitted(true);
+    } catch {
+      // Show error instead of silent success
+      alert("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
