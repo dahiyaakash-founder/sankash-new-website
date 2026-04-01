@@ -171,6 +171,7 @@ const OpsAcceptInvite = () => {
       console.info("[ops-invite] auth event", { event, hasSession: Boolean(session) });
       if (event === "PASSWORD_RECOVERY") {
         markRecoveryReady();
+        setIsPasswordReset(true);
       }
 
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "PASSWORD_RECOVERY") && session && hasRecoveryReady()) {
