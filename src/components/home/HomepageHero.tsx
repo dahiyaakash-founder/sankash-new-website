@@ -68,7 +68,7 @@ const HomepageHero = () => {
             <div className="flex flex-wrap gap-3 pt-1">
               <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
                 <Button size="lg" className="gap-2 text-sm font-semibold">
-                  Start Selling with SanKash <ArrowRight size={16} />
+                  Get Started as an Agent <ArrowRight size={16} />
                 </Button>
               </a>
               <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
