@@ -71,9 +71,8 @@ const OpsAcceptInvite = () => {
       const recoveryType = hashParams.get("type") || url.searchParams.get("type");
       const hasRecoveryParams = Boolean(code || (accessToken && refreshToken) || recoveryType === "recovery");
 
-      if (!hasRecoveryParams) {
-        // No recovery params — check if user already has a valid session
-        // (e.g. redirected from OpsLogin with status "invited")
+      // Helper: check existing session and allow password form for invited OR active users doing recovery
+      const tryExistingSession = async (reason: string) => {
         const { data: { session: existingSession } } = await supabase.auth.getSession();
         if (existingSession?.user) {
           const { data: profile } = await supabase
@@ -82,12 +81,18 @@ const OpsAcceptInvite = () => {
             .eq("user_id", existingSession.user.id)
             .maybeSingle();
 
-          if (profile?.status === "invited") {
-            console.info("[ops-invite] already-authenticated invited user, showing password form directly");
+          if (profile?.status === "invited" || profile?.status === "active") {
+            console.info(`[ops-invite] ${reason}, profile status: ${profile?.status}, showing password form`);
+            if (profile?.status === "active") setIsPasswordReset(true);
             markRecoveryReady();
-            return;
+            return true;
           }
         }
+        return false;
+      };
+
+      if (!hasRecoveryParams) {
+        await tryExistingSession("no recovery params, checking existing session");
         return;
       }
 
@@ -97,7 +102,17 @@ const OpsAcceptInvite = () => {
 
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+          if (error) {
+            // PKCE code_verifier mismatch (opened in different browser/tab)
+            // Fall back to checking if Supabase redirect already set a session
+            console.warn("[ops-invite] code exchange failed (likely PKCE mismatch), trying session fallback", error.message);
+            const recovered = await tryExistingSession("PKCE fallback after code exchange failure");
+            if (!recovered) throw error;
+            url.searchParams.delete("code");
+            url.searchParams.delete("type");
+            window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+            return;
+          }
           markRecoveryReady();
           url.searchParams.delete("code");
           url.searchParams.delete("type");
@@ -119,7 +134,7 @@ const OpsAcceptInvite = () => {
       } catch (error: any) {
         console.error("[ops-invite] session bootstrap failed", error);
         clearRecoveryReady();
-        setErrorMsg(error?.message || "This activation link is invalid or has expired. Ask your admin for a fresh invite or use Forgot password from login.");
+        setErrorMsg("This link is invalid or has expired. Go back to login and use Forgot password to get a fresh link.");
         setStatus("error");
       }
     };
