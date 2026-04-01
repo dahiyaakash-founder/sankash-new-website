@@ -114,6 +114,7 @@ const TravelerQuoteUploader = () => {
 
     setFileName(file.name);
     setUploadedFile(file);
+    trackTravelerQuoteUpload({ file_uploaded: true });
     setStage("validating");
 
     setTimeout(() => {
