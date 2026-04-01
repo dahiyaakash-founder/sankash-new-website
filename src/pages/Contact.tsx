@@ -392,7 +392,7 @@ const Contact = () => {
                 {[
                   { icon: Mail, label: "Email", value: "hello@sankash.in", href: "mailto:hello@sankash.in" },
                   { icon: Phone, label: "Phone", value: "+91 9999 000 483", href: "tel:+919999000483" },
-                  { icon: Mail, label: "Support", value: "support@sankash.in", href: "mailto:support@sankash.in" },
+                  { icon: Mail, label: "Support", value: "support@sankash.in", href: "mailto:support@sankash.in", track: () => trackSupportClick({ source_page: "contact" }) },
                   { icon: MapPin, label: "Office", value: "Gurugram, Haryana, India", href: undefined },
                 ].map((c) => (
                   <div key={c.label} className="flex items-start gap-3">
