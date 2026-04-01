@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+const INVITE_RECOVERY_FLAG = "ops-invite-recovery";
+
 const readAuthError = () => {
   const candidates = [window.location.search, window.location.hash]
     .map((value) => value.replace(/^[?#]/, ""))
@@ -34,6 +36,10 @@ const OpsAcceptInvite = () => {
     let mounted = true;
     let attempts = 0;
 
+    const markRecoveryReady = () => window.sessionStorage.setItem(INVITE_RECOVERY_FLAG, "ready");
+    const clearRecoveryReady = () => window.sessionStorage.removeItem(INVITE_RECOVERY_FLAG);
+    const hasRecoveryReady = () => window.sessionStorage.getItem(INVITE_RECOVERY_FLAG) === "ready";
+
     let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!el) {
       el = document.createElement("meta");
@@ -46,7 +52,7 @@ const OpsAcceptInvite = () => {
       const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
       if (!mounted) return false;
 
-      if (session?.user) {
+      if (session?.user && hasRecoveryReady()) {
         console.info("[ops-invite] activation session ready", { userId: session.user.id });
         setStatus("set_password");
         return true;
@@ -61,28 +67,49 @@ const OpsAcceptInvite = () => {
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const accessToken = hashParams.get("access_token");
       const refreshToken = hashParams.get("refresh_token");
+      const recoveryType = hashParams.get("type") || url.searchParams.get("type");
+      const hasRecoveryParams = Boolean(code || (accessToken && refreshToken) || recoveryType === "recovery");
+
+      if (!hasRecoveryParams) {
+        return;
+      }
 
       try {
+        clearRecoveryReady();
+        await supabase.auth.signOut({ scope: "local" });
+
         if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          markRecoveryReady();
           url.searchParams.delete("code");
+          url.searchParams.delete("type");
           window.history.replaceState({}, "", `${url.pathname}${url.search}`);
           return;
         }
 
         if (accessToken && refreshToken) {
-          await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (error) throw error;
+          markRecoveryReady();
           window.history.replaceState({}, "", url.pathname);
+          return;
+        }
+
+        if (recoveryType === "recovery") {
+          markRecoveryReady();
         }
       } catch (error: any) {
         console.error("[ops-invite] session bootstrap failed", error);
-        setErrorMsg(error?.message || "This activation link is invalid or has expired. Ask your admin for a fresh invite.");
+        clearRecoveryReady();
+        setErrorMsg(error?.message || "This activation link is invalid or has expired. Ask your admin for a fresh invite or use Forgot password from login.");
         setStatus("error");
       }
     };
 
     const authError = readAuthError();
     if (authError) {
+      clearRecoveryReady();
       setErrorMsg(authError);
       setStatus("error");
       return () => {
@@ -101,7 +128,8 @@ const OpsAcceptInvite = () => {
       if (hasSession || attempts >= 20) {
         window.clearInterval(timer);
         if (!hasSession && mounted) {
-          setErrorMsg("This activation link is invalid or has expired. Ask your admin for a fresh invite.");
+          clearRecoveryReady();
+          setErrorMsg("This activation link is invalid or has expired. Ask your admin for a fresh invite or use Forgot password from login.");
           setStatus("error");
         }
       }
@@ -109,7 +137,11 @@ const OpsAcceptInvite = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.info("[ops-invite] auth event", { event, hasSession: Boolean(session) });
-      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "PASSWORD_RECOVERY") && session) {
+      if (event === "PASSWORD_RECOVERY") {
+        markRecoveryReady();
+      }
+
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "PASSWORD_RECOVERY") && session && hasRecoveryReady()) {
         window.clearInterval(timer);
         setStatus("set_password");
       }
@@ -139,6 +171,11 @@ const OpsAcceptInvite = () => {
     setSubmitting(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error("We couldn't confirm your invite session. Please open the latest invite link again.");
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
@@ -149,7 +186,19 @@ const OpsAcceptInvite = () => {
       if (activation.error) throw activation.error;
       if (activation.data?.error) throw new Error(activation.data.error);
 
+      const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+      if (signOutError) throw signOutError;
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password,
+      });
+      if (signInError) {
+        throw new Error("Password was set, but sign-in could not be completed. Use Forgot password or the latest invite link again.");
+      }
+
       await refreshAccess();
+      window.sessionStorage.removeItem(INVITE_RECOVERY_FLAG);
 
       setStatus("success");
       toast.success("Password set successfully!");
@@ -183,6 +232,7 @@ const OpsAcceptInvite = () => {
           <div className="space-y-2">
             <h1 className="text-xl font-heading font-bold text-foreground">Activation link expired</h1>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
+            <p className="text-xs text-muted-foreground">Go back to login and use Forgot password if you already have access but can’t sign in.</p>
           </div>
           <Button variant="outline" onClick={() => navigate("/ops/login")}>
             Go to Login
