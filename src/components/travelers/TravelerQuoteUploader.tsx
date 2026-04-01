@@ -29,6 +29,7 @@ import {
   sampleAcceptedFiles,
   type ValidationErrorType,
 } from "@/lib/upload-validation";
+import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit } from "@/lib/analytics";
 import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
   Dialog,
