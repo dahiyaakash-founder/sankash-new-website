@@ -132,6 +132,7 @@ const TravelerQuoteUploader = () => {
 
       setInsuranceInsight(getInsuranceInsight(file.name));
       setStage("analyzing");
+      trackQuoteAnalysisRequested({ audience_type: "traveler" });
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
       }, 2400);

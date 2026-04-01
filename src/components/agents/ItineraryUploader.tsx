@@ -114,6 +114,7 @@ const ItineraryUploader = () => {
 
       setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
+      trackQuoteAnalysisRequested({ audience_type: "agent" });
       setTimeout(() => {
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);
