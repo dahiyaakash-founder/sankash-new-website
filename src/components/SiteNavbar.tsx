@@ -133,7 +133,7 @@ const SiteNavbar = () => {
 
         <div className="shrink-0 border-t border-border bg-background px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <div className="flex gap-3">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => { trackAgentSignupClick(); closeMobileMenu(); }} className="flex-1">
               <Button variant="outline" size="default" className="w-full text-sm">
                 Agent Signup
               </Button>
