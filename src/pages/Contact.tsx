@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import SiteLayout from "@/components/SiteLayout";
 import { createLeadWithDedup } from "@/lib/leads-service";
+import { trackContactFormSubmit, trackDemoRequestSubmit, trackSupportClick } from "@/lib/analytics";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
