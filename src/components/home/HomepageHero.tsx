@@ -95,9 +95,9 @@ const HomepageHero = () => {
             {/* Trust stats inline */}
             <div className="grid grid-cols-3 gap-3 sm:gap-8 pt-4 border-t border-border/60">
               {[
+                { v: "20%", l: "Sales Lift" },
+                { v: "40%", l: "Better Conversion" },
                 { v: "10,000+", l: "Travel Partners" },
-                { v: "T+1", l: "Settlement" },
-                { v: "5 Million+", l: "Travelers Served" },
               ].map((s) => (
                 <div key={s.l}>
                   <div className="text-base sm:text-xl font-heading font-bold text-primary-deep">{s.v}</div>
