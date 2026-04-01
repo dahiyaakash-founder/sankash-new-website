@@ -71,7 +71,7 @@ const HomepageHero = () => {
                   Get Started as an Agent <ArrowRight size={16} />
                 </Button>
               </a>
-              <Link to="/for-travel-agents">
+              <Link to="/for-travel-agents" onClick={() => trackUploadQuoteClick({ audience_type: "agent", cta_location: "hero" })}>
                 <Button variant="outline" size="lg" className="gap-2 text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
                   <Upload size={15} /> Upload a Quote
                 </Button>
