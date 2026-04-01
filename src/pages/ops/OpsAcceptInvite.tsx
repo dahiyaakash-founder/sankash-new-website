@@ -31,6 +31,7 @@ const OpsAcceptInvite = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -61,6 +62,26 @@ const OpsAcceptInvite = () => {
       return false;
     };
 
+    // Helper: check existing session and allow password form for invited OR active users
+    const tryExistingSession = async (reason: string) => {
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("status")
+          .eq("user_id", existingSession.user.id)
+          .maybeSingle();
+
+        if (profile?.status === "invited" || profile?.status === "active") {
+          console.info(`[ops-invite] ${reason}, profile status: ${profile?.status}, showing password form`);
+          if (profile?.status === "active") setIsPasswordReset(true);
+          markRecoveryReady();
+          return true;
+        }
+      }
+      return false;
+    };
+
     const bootstrapInviteSession = async () => {
       const url = new URL(window.location.href);
       const code = url.searchParams.get("code");
@@ -71,22 +92,7 @@ const OpsAcceptInvite = () => {
       const hasRecoveryParams = Boolean(code || (accessToken && refreshToken) || recoveryType === "recovery");
 
       if (!hasRecoveryParams) {
-        // No recovery params — check if user already has a valid session
-        // (e.g. redirected from OpsLogin with status "invited")
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        if (existingSession?.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("status")
-            .eq("user_id", existingSession.user.id)
-            .maybeSingle();
-
-          if (profile?.status === "invited") {
-            console.info("[ops-invite] already-authenticated invited user, showing password form directly");
-            markRecoveryReady();
-            return;
-          }
-        }
+        await tryExistingSession("no recovery params, checking existing session");
         return;
       }
 
@@ -96,7 +102,16 @@ const OpsAcceptInvite = () => {
 
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+          if (error) {
+            // PKCE code_verifier mismatch (opened in different browser/tab)
+            console.warn("[ops-invite] code exchange failed (likely PKCE mismatch), trying session fallback", error.message);
+            const recovered = await tryExistingSession("PKCE fallback after code exchange failure");
+            if (!recovered) throw error;
+            url.searchParams.delete("code");
+            url.searchParams.delete("type");
+            window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+            return;
+          }
           markRecoveryReady();
           url.searchParams.delete("code");
           url.searchParams.delete("type");
@@ -118,7 +133,7 @@ const OpsAcceptInvite = () => {
       } catch (error: any) {
         console.error("[ops-invite] session bootstrap failed", error);
         clearRecoveryReady();
-        setErrorMsg(error?.message || "This activation link is invalid or has expired. Ask your admin for a fresh invite or use Forgot password from login.");
+        setErrorMsg("This link is invalid or has expired. Go back to login and use Forgot password to get a fresh link.");
         setStatus("error");
       }
     };
@@ -145,7 +160,7 @@ const OpsAcceptInvite = () => {
         window.clearInterval(timer);
         if (!hasSession && mounted) {
           clearRecoveryReady();
-          setErrorMsg("This activation link is invalid or has expired. Ask your admin for a fresh invite or use Forgot password from login.");
+          setErrorMsg("This link is invalid or has expired. Go back to login and use Forgot password to get a fresh link.");
           setStatus("error");
         }
       }
@@ -155,6 +170,7 @@ const OpsAcceptInvite = () => {
       console.info("[ops-invite] auth event", { event, hasSession: Boolean(session) });
       if (event === "PASSWORD_RECOVERY") {
         markRecoveryReady();
+        setIsPasswordReset(true);
       }
 
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "PASSWORD_RECOVERY") && session && hasRecoveryReady()) {
@@ -189,18 +205,20 @@ const OpsAcceptInvite = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
-        throw new Error("We couldn't confirm your invite session. Please open the latest invite link again.");
+        throw new Error("Session expired. Please go back to login and use Forgot password to get a fresh link.");
       }
 
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
-      const activation = await supabase.functions.invoke("team-management", {
-        body: { action: "activate" },
-      });
-
-      if (activation.error) throw activation.error;
-      if (activation.data?.error) throw new Error(activation.data.error);
+      // Only call activate for invited users (skip for active users doing password reset)
+      if (!isPasswordReset) {
+        const activation = await supabase.functions.invoke("team-management", {
+          body: { action: "activate" },
+        });
+        if (activation.error) throw activation.error;
+        if (activation.data?.error) throw new Error(activation.data.error);
+      }
 
       const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
       if (signOutError) throw signOutError;
@@ -221,7 +239,7 @@ const OpsAcceptInvite = () => {
       window.setTimeout(() => navigate("/ops/dashboard", { replace: true }), 1200);
     } catch (err: any) {
       console.error("[ops-invite] activation failed", err);
-      setErrorMsg(err.message || "Failed to activate account");
+      setErrorMsg(err.message || "Failed to set password");
     } finally {
       setSubmitting(false);
     }
@@ -232,7 +250,7 @@ const OpsAcceptInvite = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
           <Loader2 className="animate-spin text-primary mx-auto" size={28} />
-          <p className="text-sm text-muted-foreground">Preparing your CRM access…</p>
+          <p className="text-sm text-muted-foreground">Preparing your access…</p>
         </div>
       </div>
     );
@@ -246,9 +264,8 @@ const OpsAcceptInvite = () => {
             <AlertCircle className="text-destructive" size={24} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-heading font-bold text-foreground">Activation link expired</h1>
+            <h1 className="text-xl font-heading font-bold text-foreground">Link expired</h1>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
-            <p className="text-xs text-muted-foreground">Go back to login and use Forgot password if you already have access but can’t sign in.</p>
           </div>
           <Button variant="outline" onClick={() => navigate("/ops/login")}>
             Go to Login
@@ -266,7 +283,7 @@ const OpsAcceptInvite = () => {
             <CheckCircle2 className="text-primary" size={24} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-heading font-bold text-foreground">You’re all set</h1>
+            <h1 className="text-xl font-heading font-bold text-foreground">You're all set</h1>
             <p className="text-sm text-muted-foreground">Redirecting you to the ops dashboard…</p>
           </div>
         </div>
@@ -278,8 +295,12 @@ const OpsAcceptInvite = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-heading font-bold text-foreground">Activate SanKash Ops</h1>
-          <p className="text-sm text-muted-foreground">Create your password to finish setup</p>
+          <h1 className="text-2xl font-heading font-bold text-foreground">
+            {isPasswordReset ? "Reset Your Password" : "Activate SanKash Ops"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isPasswordReset ? "Enter a new password for your account" : "Create your password to finish setup"}
+          </p>
         </div>
 
         <form onSubmit={handleSetPassword} className="space-y-4 p-6 rounded-2xl border bg-card">
@@ -309,7 +330,7 @@ const OpsAcceptInvite = () => {
           {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Activating…</> : "Set Password & Continue"}
+            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Saving…</> : (isPasswordReset ? "Reset Password & Continue" : "Set Password & Continue")}
           </Button>
         </form>
       </div>
