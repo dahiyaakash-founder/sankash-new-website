@@ -23,6 +23,8 @@ import {
   type EmiResult,
 } from "@/lib/emi-calculator";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
+import { trackEmiCalculatorView, trackEmiAmountChange } from "@/lib/analytics";
+import { useEffect, useRef } from "react";
 
 const EMI_MIN = 50000;
 const EMI_MAX = 500000;
