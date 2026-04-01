@@ -3,7 +3,7 @@ import { ArrowRight, Upload, Calculator } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AGENT_SIGNUP_URL } from "@/lib/constants";
-import { trackAgentSignupClick } from "@/lib/analytics";
+import { trackAgentSignupClick, trackUploadQuoteClick } from "@/lib/analytics";
 
 const agentActions = [
   {
@@ -66,12 +66,12 @@ const HomepageHero = () => {
             </p>
 
             <div className="flex flex-wrap gap-3 pt-1">
-              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentSignupClick({ cta_location: "hero" })}>
                 <Button size="lg" className="gap-2 text-sm font-semibold">
                   Get Started as an Agent <ArrowRight size={16} />
                 </Button>
               </a>
-              <Link to="/for-travel-agents">
+              <Link to="/for-travel-agents" onClick={() => trackUploadQuoteClick({ audience_type: "agent", cta_location: "hero" })}>
                 <Button variant="outline" size="lg" className="gap-2 text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
                   <Upload size={15} /> Upload a Quote
                 </Button>

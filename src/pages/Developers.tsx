@@ -11,7 +11,7 @@ import ProductionAccessModal from "@/components/developers/ProductionAccessModal
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
 import { SANKASH_DOCS_URL } from "@/lib/constants";
-import { trackDocsClick } from "@/lib/analytics";
+import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
   initial: { opacity: 0, y: 20 },
@@ -84,7 +84,7 @@ const Developers = () => {
                   View Docs <ExternalLink size={16} />
                 </a>
               </Button>
-              <Button size="xl" variant="outline" onClick={() => setSandboxOpen(true)}>
+              <Button size="xl" variant="outline" onClick={() => { trackGetSandboxAccessClick(); setSandboxOpen(true); }}>
                 Get Sandbox Access
               </Button>
             </div>
@@ -111,7 +111,7 @@ const Developers = () => {
             {gettingStartedSteps.map((step, i) => {
               const handleClick = () => {
                 if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
-                else if (step.action === "sandbox") setSandboxOpen(true);
+                else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
                 else if (step.action === "production") setProductionOpen(true);
               };
               return (

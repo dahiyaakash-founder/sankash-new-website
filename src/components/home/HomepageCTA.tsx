@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
-import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
+import { AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackGetStartedAgentClick, trackBookDemoClick } from "@/lib/analytics";
 import { Link } from "react-router-dom";
 
 const HomepageCTA = () => {
@@ -29,12 +29,12 @@ const HomepageCTA = () => {
             review quotes, and collect payments — all from one platform.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackGetStartedAgentClick({ cta_location: "bottom_cta" })}>
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
                 Get Started as an Agent <ArrowRight size={16} />
               </Button>
             </a>
-            <Link to="/contact?intent=demo">
+            <Link to="/contact?intent=demo" onClick={() => trackBookDemoClick({ cta_location: "bottom_cta" })}>
               <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Book a Demo <ArrowRight size={16} />
               </Button>
