@@ -302,14 +302,20 @@ export async function uploadQuoteFile(file: File) {
   return { url: data.publicUrl, name: file.name };
 }
 
+/** Known owner email mapping for export */
+const OWNER_EMAIL_MAP: Record<string, string> = {
+  "301e2938-8952-4cf1-ba33-4c26d2f88bc6": "shibani.dhiman2@sankash.in",
+  "1362c9d5-692d-4bf7-a40c-cb5701a27982": "madhumita@sankash.in",
+  "f244475a-1c04-408d-9c9e-68b41a4987d9": "lakshay@sankash.in",
+  "078484c9-32d3-4203-a334-6ee5bee926a9": "ayushi@sankash.in",
+  "16b27648-73e6-468e-8d87-6b48a406ce1a": "akash@sankash.in",
+};
+
 /** Export leads to CSV with human-readable owner names */
 export function leadsToCSV(leads: LeadRow[], teamMembers?: TeamMember[]): string {
-  // Build owner lookup from team members
   const ownerNameMap: Record<string, string> = {};
-  const ownerEmailMap: Record<string, string> = {};
   (teamMembers ?? []).forEach((m) => {
     if (m.full_name) ownerNameMap[m.user_id] = m.full_name;
-    if (m.email) ownerEmailMap[m.user_id] = m.email;
   });
 
   const headers = [
@@ -322,7 +328,7 @@ export function leadsToCSV(leads: LeadRow[], teamMembers?: TeamMember[]): string
     l.company_name ?? "", l.city ?? "",
     l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.priority ?? "", l.outcome,
     ownerNameMap[l.assigned_to] ?? (l.assigned_to ? "Unknown" : "Unassigned"),
-    ownerEmailMap[l.assigned_to] ?? "",
+    OWNER_EMAIL_MAP[l.assigned_to] ?? "",
     l.next_follow_up_at ?? "",
   ]);
   return [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
