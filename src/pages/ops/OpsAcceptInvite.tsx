@@ -296,8 +296,12 @@ const OpsAcceptInvite = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-heading font-bold text-foreground">Activate SanKash Ops</h1>
-          <p className="text-sm text-muted-foreground">Create your password to finish setup</p>
+          <h1 className="text-2xl font-heading font-bold text-foreground">
+            {isPasswordReset ? "Reset Your Password" : "Activate SanKash Ops"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isPasswordReset ? "Enter a new password for your account" : "Create your password to finish setup"}
+          </p>
         </div>
 
         <form onSubmit={handleSetPassword} className="space-y-4 p-6 rounded-2xl border bg-card">
