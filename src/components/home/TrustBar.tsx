@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { Users, ArrowLeftRight, Plane, FileCheck } from "lucide-react";
 
 const proofPoints = [
-  { icon: Users, value: "10,000+", label: "Active Partners" },
   { icon: ArrowLeftRight, value: "T+1", label: "Settlement Cycle" },
   { icon: Plane, value: "5 Million+", label: "Travelers Served" },
   { icon: FileCheck, value: "₹200Cr+", label: "Payment Volume Enabled" },
+  { icon: Users, value: "15+", label: "Lending Partners" },
 ];
 
 const TrustBar = () => {

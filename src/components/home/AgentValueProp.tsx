@@ -21,8 +21,8 @@ const proofBlocks = [
   },
   {
     eyebrow: "Collections",
-    title: "T+1 collections · eligible PG waiver",
-    detail: "Move faster on settlements with cleaner collection and reconciliation flows.",
+    title: "T+1 settlement · lower payment friction",
+    detail: "Get settled the next business day with cleaner collection and reconciliation flows.",
   },
 ];
 

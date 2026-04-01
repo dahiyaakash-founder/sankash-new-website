@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Upload, Calculator } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
-import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
+import { AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackAgentSignupClick } from "@/lib/analytics";
 
 const agentActions = [
   {
