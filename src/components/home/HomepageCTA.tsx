@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { AGENT_SIGNUP_URL, AGENT_LOGIN_URL } from "@/lib/constants";
+import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
+import { Link } from "react-router-dom";
 
 const HomepageCTA = () => {
   return (
     <section className="relative py-12 md:py-28 bg-brand-deep overflow-hidden">
-      {/* Subtle grid pattern */}
       <div className="absolute inset-0 opacity-[0.04]" style={{
         backgroundImage: 'linear-gradient(hsl(189 99% 35%) 1px, transparent 1px), linear-gradient(90deg, hsl(189 99% 35%) 1px, transparent 1px)',
         backgroundSize: '48px 48px',
@@ -21,17 +22,18 @@ const HomepageCTA = () => {
           className="max-w-2xl mx-auto text-center space-y-6"
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
-            Ready to grow your travel business?
+            Ready to close more bookings?
           </h2>
           <p className="text-primary-foreground/50 text-base">
-            Turn quote review, EMI, protection, and collections into one cleaner booking workflow for your travel business.
+            Join 10,000+ travel partners using SanKash to offer EMI, attach protection, 
+            review quotes, and collect payments — all from one platform.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-            <Link to="/solutions">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
-                Explore Solutions <ArrowRight size={16} />
+                Start Selling with SanKash <ArrowRight size={16} />
               </Button>
-            </Link>
+            </a>
             <Link to="/contact?intent=demo">
               <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Book a Demo <ArrowRight size={16} />

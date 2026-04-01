@@ -15,9 +15,9 @@ const solutionsDropdown = [
 ];
 
 const navItems = [
-  { label: "Solutions", dropdown: solutionsDropdown },
   { label: "For Travel Agents", href: "/for-travel-agents" },
   { label: "For Travelers", href: "/for-travelers" },
+  { label: "Solutions", dropdown: solutionsDropdown },
   { label: "Integrations", href: "/developers" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
