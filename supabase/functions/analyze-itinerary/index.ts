@@ -132,7 +132,7 @@ async function analyzeWithAI(fileUrl: string, fileName: string, _rawHint: string
     });
   }
 
-  const response = await fetch("https://api.lovable.dev/api/chat/completions", {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
