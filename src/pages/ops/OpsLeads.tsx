@@ -162,7 +162,7 @@ const OpsLeads = () => {
 
   const handleExport = async () => {
     const all = await fetchLeads({ search, status: statusFilter || undefined, sourceType: sourceFilter || undefined, audience: audienceFilter || undefined, priority: priorityFilter || undefined, pageSize: 10000 });
-    const csv = leadsToCSV(all.data);
+    const csv = leadsToCSV(all.data, teamMembers);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
