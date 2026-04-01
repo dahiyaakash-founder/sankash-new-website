@@ -96,6 +96,7 @@ const ItineraryUploader = () => {
     }
 
     setFileName(file.name);
+    trackAgentQuoteUpload({ file_uploaded: true });
     setStage("validating");
 
     setTimeout(() => {

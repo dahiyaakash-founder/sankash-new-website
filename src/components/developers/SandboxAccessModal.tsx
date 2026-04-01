@@ -70,6 +70,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
     setSubmitting(true);
     try {
       await submitSandboxLead(payload);
+      trackSandboxRequestSubmit();
       setSubmitted(true);
     } finally {
       setSubmitting(false);

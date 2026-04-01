@@ -47,6 +47,7 @@ const IntegrationQuestionModal = ({ open, onOpenChange }: IntegrationQuestionMod
         audience_type: "developer",
         metadata_json: { product_interest: product || "general" },
       });
+      trackIntegrationQuestionSubmit();
       setSubmitted(true);
     } catch {
       setError("Something went wrong. Please try again.");

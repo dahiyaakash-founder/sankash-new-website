@@ -206,6 +206,7 @@ const TravelerQuoteUploader = () => {
       }
 
       // Only show success after confirmed DB write
+      trackTravelerUnlockSubmit({});
       setLeadSubmitted(true);
     } catch (err: any) {
       console.error("Lead creation failed:", err);

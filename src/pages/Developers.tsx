@@ -110,7 +110,7 @@ const Developers = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {gettingStartedSteps.map((step, i) => {
               const handleClick = () => {
-                if (step.action === "docs") window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer");
+                if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
                 else if (step.action === "sandbox") setSandboxOpen(true);
                 else if (step.action === "production") setProductionOpen(true);
               };

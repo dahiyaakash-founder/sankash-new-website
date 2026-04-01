@@ -131,6 +131,11 @@ const Contact = () => {
         lead_source_page: "contact",
         lead_source_type: isDemoIntent ? "demo_request" : "contact_form",
       });
+      if (isDemoIntent) {
+        trackDemoRequestSubmit({ audience_type: audienceMap[(data.get("audience") as string)] ?? "other" });
+      } else {
+        trackContactFormSubmit({ source_type: "contact_form", audience_type: audienceMap[(data.get("audience") as string)] ?? "other" });
+      }
       setSubmitted(true);
     } catch {
       setFormError("Something went wrong. Please try again.");
