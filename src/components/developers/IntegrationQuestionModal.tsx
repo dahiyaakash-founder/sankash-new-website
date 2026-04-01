@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { createLeadWithDedup } from "@/lib/leads-service";
+import { trackIntegrationQuestionSubmit } from "@/lib/analytics";
 
 interface IntegrationQuestionModalProps {
   open: boolean;
@@ -46,6 +47,7 @@ const IntegrationQuestionModal = ({ open, onOpenChange }: IntegrationQuestionMod
         audience_type: "developer",
         metadata_json: { product_interest: product || "general" },
       });
+      trackIntegrationQuestionSubmit();
       setSubmitted(true);
     } catch {
       setError("Something went wrong. Please try again.");

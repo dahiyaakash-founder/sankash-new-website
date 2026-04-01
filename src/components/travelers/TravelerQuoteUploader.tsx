@@ -29,6 +29,7 @@ import {
   sampleAcceptedFiles,
   type ValidationErrorType,
 } from "@/lib/upload-validation";
+import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit } from "@/lib/analytics";
 import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import {
   Dialog,
@@ -113,6 +114,7 @@ const TravelerQuoteUploader = () => {
 
     setFileName(file.name);
     setUploadedFile(file);
+    trackTravelerQuoteUpload({ file_uploaded: true });
     setStage("validating");
 
     setTimeout(() => {
@@ -204,6 +206,7 @@ const TravelerQuoteUploader = () => {
       }
 
       // Only show success after confirmed DB write
+      trackTravelerUnlockSubmit({});
       setLeadSubmitted(true);
     } catch (err: any) {
       console.error("Lead creation failed:", err);

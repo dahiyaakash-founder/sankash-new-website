@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import SiteLayout from "@/components/SiteLayout";
 import { createLeadWithDedup } from "@/lib/leads-service";
+import { trackContactFormSubmit, trackDemoRequestSubmit, trackSupportClick } from "@/lib/analytics";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -130,6 +131,11 @@ const Contact = () => {
         lead_source_page: "contact",
         lead_source_type: isDemoIntent ? "demo_request" : "contact_form",
       });
+      if (isDemoIntent) {
+        trackDemoRequestSubmit({ audience_type: audienceMap[(data.get("audience") as string)] ?? "other" });
+      } else {
+        trackContactFormSubmit({ source_type: "contact_form", audience_type: audienceMap[(data.get("audience") as string)] ?? "other" });
+      }
       setSubmitted(true);
     } catch {
       setFormError("Something went wrong. Please try again.");

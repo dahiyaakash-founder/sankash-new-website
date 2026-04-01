@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { AGENT_LOGIN_URL, AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const solutionsDropdown = [
@@ -132,12 +133,12 @@ const SiteNavbar = () => {
 
         <div className="shrink-0 border-t border-border bg-background px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <div className="flex gap-3">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => { trackAgentSignupClick(); closeMobileMenu(); }} className="flex-1">
               <Button variant="outline" size="default" className="w-full text-sm">
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={closeMobileMenu} className="flex-1">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={() => { trackAgentLoginClick(); closeMobileMenu(); }} className="flex-1">
               <Button size="default" className="w-full text-sm">
                 Agent Login
               </Button>
@@ -207,12 +208,12 @@ const SiteNavbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
               <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
               <Button size="sm" className="text-[13px]">
                 Agent Login
               </Button>

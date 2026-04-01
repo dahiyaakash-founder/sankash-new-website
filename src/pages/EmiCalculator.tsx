@@ -23,6 +23,8 @@ import {
   type EmiResult,
 } from "@/lib/emi-calculator";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
+import { trackEmiCalculatorView, trackEmiAmountChange } from "@/lib/analytics";
+import { useEffect, useRef } from "react";
 
 const EMI_MIN = 50000;
 const EMI_MAX = 500000;
@@ -41,6 +43,14 @@ const EmiCalculator = () => {
   const [amountError, setAmountError] = useState<string | null>(null);
   const [selectedTenure, setSelectedTenure] = useState(6);
   const [emiType, setEmiType] = useState<EmiType>("no_cost");
+
+  const hasTrackedView = useRef(false);
+  useEffect(() => {
+    if (!hasTrackedView.current) {
+      trackEmiCalculatorView();
+      hasTrackedView.current = true;
+    }
+  }, []);
 
   const clampedAmount = Math.min(EMI_MAX, Math.max(EMI_MIN, amount));
   const currentResult = calculateEmi(clampedAmount, selectedTenure, emiType);
@@ -98,7 +108,10 @@ const EmiCalculator = () => {
                       setAmount(v);
                       if (v < EMI_MIN) setAmountError(`Minimum amount is ₹${EMI_MIN.toLocaleString("en-IN")}`);
                       else if (v > EMI_MAX) setAmountError(`Maximum amount is ₹${EMI_MAX.toLocaleString("en-IN")}`);
-                      else setAmountError(null);
+                      else {
+                        setAmountError(null);
+                        trackEmiAmountChange({ trip_amount: v, tenure: selectedTenure, emi_type: emiType });
+                      }
                     }}
                     min={EMI_MIN}
                     max={EMI_MAX}

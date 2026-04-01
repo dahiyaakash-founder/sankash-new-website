@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
+import { trackProductionRequestSubmit } from "@/lib/analytics";
 
 interface ProductionAccessModalProps {
   open: boolean;
@@ -73,6 +74,7 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
     setSubmitting(true);
     try {
       await submitProductionLead(payload);
+      trackProductionRequestSubmit();
       setSubmitted(true);
     } finally {
       setSubmitting(false);
