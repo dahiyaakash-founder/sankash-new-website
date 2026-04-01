@@ -29,6 +29,7 @@ import OpsLeadDetail from "./pages/ops/OpsLeadDetail";
 import OpsTeamManagement from "./pages/ops/OpsTeamManagement";
 import OpsAcceptInvite from "./pages/ops/OpsAcceptInvite";
 import ProtectedOpsRoute from "./components/ops/ProtectedOpsRoute";
+import RouteTracker from "./components/RouteTracker";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
+          <RouteTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/for-agents" element={<ForAgents />} />

@@ -34,7 +34,7 @@ const HomepageCTA = () => {
                 Get Started as an Agent <ArrowRight size={16} />
               </Button>
             </a>
-            <Link to="/contact?intent=demo">
+            <Link to="/contact?intent=demo" onClick={() => trackBookDemoClick({ cta_location: "bottom_cta" })}>
               <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Book a Demo <ArrowRight size={16} />
               </Button>

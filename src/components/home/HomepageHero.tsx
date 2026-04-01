@@ -66,7 +66,7 @@ const HomepageHero = () => {
             </p>
 
             <div className="flex flex-wrap gap-3 pt-1">
-              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+              <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentSignupClick({ cta_location: "hero" })}>
                 <Button size="lg" className="gap-2 text-sm font-semibold">
                   Get Started as an Agent <ArrowRight size={16} />
                 </Button>
