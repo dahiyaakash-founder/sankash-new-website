@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { AGENT_LOGIN_URL, AGENT_SIGNUP_URL } from "@/lib/constants";
+import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const solutionsDropdown = [
