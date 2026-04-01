@@ -331,7 +331,7 @@ const OpsAcceptInvite = () => {
           {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Activating…</> : "Set Password & Continue"}
+            {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Saving…</> : (isPasswordReset ? "Reset Password & Continue" : "Set Password & Continue")}
           </Button>
         </form>
       </div>
