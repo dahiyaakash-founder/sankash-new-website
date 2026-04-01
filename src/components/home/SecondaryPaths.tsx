@@ -22,10 +22,7 @@ const SecondaryPaths = () => {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.4 }}
           >
-            <Link
-              to="/for-travelers"
-              className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all"
-            >
+            <div className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all">
               <div className="w-11 h-11 rounded-xl bg-brand-coral/10 text-brand-coral flex items-center justify-center mb-4">
                 <Plane size={20} />
               </div>
@@ -34,16 +31,18 @@ const SecondaryPaths = () => {
                 Upload a trip quote, explore EMI options, and check if there's scope for better value — before you commit.
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
-                  Upload My Quote <ArrowRight size={12} />
-                </Button>
+                <Link to="/for-travelers">
+                  <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
+                    Upload My Quote <ArrowRight size={12} />
+                  </Button>
+                </Link>
                 <Link to="/emi-calculator">
                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
                     Check EMI Options
                   </Button>
                 </Link>
               </div>
-            </Link>
+            </div>
           </motion.div>
 
           {/* Integrations card */}
@@ -53,10 +52,7 @@ const SecondaryPaths = () => {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: 0.08, duration: 0.4 }}
           >
-            <Link
-              to="/developers"
-              className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all"
-            >
+            <div className="group flex flex-col h-full rounded-2xl border bg-card p-5 sm:p-7 hover:shadow-card-hover hover:border-primary/15 transition-all">
               <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
                 <Code2 size={20} />
               </div>
@@ -65,14 +61,18 @@ const SecondaryPaths = () => {
                 Integrate lending, insurance, and payments via API. Clean docs, sandbox access, and production-ready SDKs.
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
-                  View Docs <ArrowRight size={12} />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                  Get Sandbox Access
-                </Button>
+                <a href="https://docs.sankash.in" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
+                    View Docs <ArrowRight size={12} />
+                  </Button>
+                </a>
+                <Link to="/developers">
+                  <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                    Get Sandbox Access
+                  </Button>
+                </Link>
               </div>
-            </Link>
+            </div>
           </motion.div>
         </div>
       </div>
