@@ -111,7 +111,7 @@ const Developers = () => {
             {gettingStartedSteps.map((step, i) => {
               const handleClick = () => {
                 if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
-                else if (step.action === "sandbox") setSandboxOpen(true);
+                else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
                 else if (step.action === "production") setProductionOpen(true);
               };
               return (
