@@ -40,6 +40,57 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action } = body;
+    const appUrl = "https://sankash-new-website.lovable.app";
+    const redirectTo = `${appUrl}/ops/accept-invite`;
+
+    const ensureInviteState = async ({
+      userId,
+      fullName,
+      role,
+    }: {
+      userId: string;
+      fullName: string;
+      role: string;
+    }) => {
+      await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+
+      const { data: existingProfile } = await adminClient
+        .from("profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        await adminClient.from("profiles").insert({ user_id: userId, full_name: fullName, status: "invited" });
+      } else {
+        await adminClient.from("profiles").update({ full_name: fullName, status: "invited" }).eq("user_id", userId);
+      }
+
+      await adminClient.auth.admin.updateUserById(userId, {
+        ban_duration: "none",
+        email_confirm: true,
+        user_metadata: { full_name: fullName },
+      });
+    };
+
+    const generateActivationLink = async (email: string) => {
+      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+        type: "recovery",
+        email,
+        options: { redirectTo },
+      });
+
+      if (linkError) {
+        throw new Error(linkError.message);
+      }
+
+      const actionLink = linkData?.properties?.action_link;
+      if (!actionLink) {
+        throw new Error("Failed to generate activation link");
+      }
+
+      return actionLink;
+    };
 
     // ── ACTIVATE (self-service, no admin check needed) ──
     if (action === "activate") {
@@ -84,10 +135,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      const appUrl = "https://sankash-new-website.lovable.app";
-      const redirectTo = `${appUrl}/ops/accept-invite`;
-
-      // Create user via admin API with invite
       // First check if user already exists
       const { data: existingUsers } = await adminClient.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
@@ -96,46 +143,14 @@ Deno.serve(async (req) => {
 
       if (existingUser) {
         userId = existingUser.id;
-
-        // Ensure role row exists
-        await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
-
-        // Ensure profile exists and is set to invited
-        const { data: existingProfile } = await adminClient.from("profiles").select("id").eq("user_id", userId).maybeSingle();
-        if (!existingProfile) {
-          await adminClient.from("profiles").insert({ user_id: userId, full_name, status: "invited" });
-        } else {
-          await adminClient.from("profiles").update({ status: "invited" }).eq("user_id", userId);
-        }
-
-        // Unban user if previously disabled, so they can accept the invite
-        await adminClient.auth.admin.updateUserById(userId, { ban_duration: "none" });
-
-        // Use recovery link — longer-lived token (default 24h vs 5min for magiclink)
-        // and compatible with the accept-invite password-set flow
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: "recovery",
-          email,
-          options: { redirectTo },
-        });
-
-        if (linkError) {
-          return new Response(JSON.stringify({ error: linkError.message }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-
-        const actionLink = linkData?.properties?.action_link;
-        return new Response(JSON.stringify({ success: true, user_id: userId, action_link: actionLink }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
       } else {
-        // New user — send invite email
-        const { data: userData, error: createError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-          data: { full_name },
-          redirectTo,
+        const { data: userData, error: createError } = await adminClient.auth.admin.createUser({
+          email,
+          password: crypto.randomUUID() + crypto.randomUUID(),
+          email_confirm: true,
+          user_metadata: { full_name },
         });
+
         if (createError) {
           return new Response(JSON.stringify({ error: createError.message }), {
             status: 400,
@@ -144,21 +159,14 @@ Deno.serve(async (req) => {
         }
 
         userId = userData.user.id;
-
-        // Assign role
-        await adminClient.from("user_roles").insert({ user_id: userId, role });
-
-        // Create profile
-        await adminClient.from("profiles").insert({
-          user_id: userId,
-          full_name,
-          status: "invited",
-        });
-
-        return new Response(JSON.stringify({ success: true, user_id: userId }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
       }
+
+      await ensureInviteState({ userId, fullName: full_name, role });
+
+      const actionLink = await generateActivationLink(email);
+      return new Response(JSON.stringify({ success: true, user_id: userId, action_link: actionLink }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // ── UPDATE ROLE ──
@@ -265,37 +273,25 @@ Deno.serve(async (req) => {
         });
       }
 
-      const appUrl = "https://sankash-new-website.lovable.app";
-      const redirectTo = `${appUrl}/ops/accept-invite`;
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user_id)
+        .maybeSingle();
+      const { data: roleRow } = await adminClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user_id)
+        .limit(1)
+        .maybeSingle();
 
-      // Unban user if previously disabled
-      await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "none" });
-
-      // Reset profile to invited so accept-invite flow works
-      await adminClient.from("profiles").update({ status: "invited" }).eq("user_id", user_id);
-
-      // Use recovery link — longer-lived token (24h vs 5min for magiclink)
-      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "recovery",
-        email: userData.user.email!,
-        options: {
-          redirectTo,
-        },
+      await ensureInviteState({
+        userId: user_id,
+        fullName: profile?.full_name ?? userData.user.user_metadata?.full_name ?? userData.user.email ?? "Team Member",
+        role: roleRow?.role ?? "team_member",
       });
-      if (linkError) {
-        return new Response(JSON.stringify({ error: linkError.message }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
 
-      const actionLink = linkData?.properties?.action_link;
-      if (!actionLink) {
-        return new Response(JSON.stringify({ error: "Failed to generate invite link" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      const actionLink = await generateActivationLink(userData.user.email!);
 
       return new Response(JSON.stringify({ success: true, action_link: actionLink }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

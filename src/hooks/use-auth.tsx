@@ -70,19 +70,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    const scheduleAccessResolution = (nextUser: User | null) => {
+      window.setTimeout(() => {
+        if (!mounted) return;
+        void resolveAccess(nextUser);
+      }, 0);
+    };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      void resolveAccess(session?.user ?? null);
+      scheduleAccessResolution(session?.user ?? null);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
-      void resolveAccess(session?.user ?? null);
+      scheduleAccessResolution(session?.user ?? null);
     });
 
     return () => {
