@@ -402,7 +402,7 @@ const Contact = () => {
                     <div>
                       <p className="text-xs text-muted-foreground">{c.label}</p>
                       {c.href ? (
-                        <a href={c.href} className="text-sm font-medium hover:text-primary transition-colors">
+                        <a href={c.href} onClick={() => (c as any).track?.()} className="text-sm font-medium hover:text-primary transition-colors">
                           {c.value}
                         </a>
                       ) : (

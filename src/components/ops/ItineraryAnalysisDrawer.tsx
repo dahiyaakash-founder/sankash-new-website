@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { fetchItineraryAnalysis, triggerItineraryAnalysis, type ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
 import { toast } from "sonner";
+import { trackItineraryAnalysisOpened } from "@/lib/analytics";
 
 interface Props {
   leadId: string;
