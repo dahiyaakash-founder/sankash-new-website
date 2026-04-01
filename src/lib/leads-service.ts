@@ -302,18 +302,28 @@ export async function uploadQuoteFile(file: File) {
   return { url: data.publicUrl, name: file.name };
 }
 
-/** Export leads to CSV */
-export function leadsToCSV(leads: LeadRow[]): string {
+/** Export leads to CSV with human-readable owner names */
+export function leadsToCSV(leads: LeadRow[], teamMembers?: TeamMember[]): string {
+  // Build owner lookup from team members
+  const ownerNameMap: Record<string, string> = {};
+  const ownerEmailMap: Record<string, string> = {};
+  (teamMembers ?? []).forEach((m) => {
+    if (m.full_name) ownerNameMap[m.user_id] = m.full_name;
+    if (m.email) ownerEmailMap[m.user_id] = m.email;
+  });
+
   const headers = [
-    "Date", "Name", "Email", "Mobile", "Company", "City",
+    "Date", "Last Activity", "Name", "Email", "Mobile", "Company", "City",
     "Source Type", "Audience", "Status", "Priority", "Outcome",
-    "Owner", "Next Follow Up",
+    "Owner Name", "Owner Email", "Next Follow Up",
   ];
   const rows = leads.map((l: any) => [
-    l.created_at, l.full_name, l.email ?? "", l.mobile_number ?? "",
+    l.created_at, l.updated_at, l.full_name, l.email ?? "", l.mobile_number ?? "",
     l.company_name ?? "", l.city ?? "",
     l.lead_source_type ?? "", l.audience_type ?? "", l.status, l.priority ?? "", l.outcome,
-    l.assigned_to ?? "", l.next_follow_up_at ?? "",
+    ownerNameMap[l.assigned_to] ?? (l.assigned_to ? "Unknown" : "Unassigned"),
+    ownerEmailMap[l.assigned_to] ?? "",
+    l.next_follow_up_at ?? "",
   ]);
   return [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
 }
