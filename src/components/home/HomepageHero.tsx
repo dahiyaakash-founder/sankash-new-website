@@ -71,11 +71,11 @@ const HomepageHero = () => {
                   Get Started as an Agent <ArrowRight size={16} />
                 </Button>
               </a>
-              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
-                <Button variant="outline" size="lg" className="text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
-                  Agent Login
+              <Link to="/for-travel-agents">
+                <Button variant="outline" size="lg" className="gap-2 text-sm font-semibold border-primary/25 text-primary hover:bg-accent">
+                  <Upload size={15} /> Upload a Quote
                 </Button>
-              </a>
+              </Link>
             </div>
 
             {/* Quick-access tools */}
