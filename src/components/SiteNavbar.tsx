@@ -145,7 +145,7 @@ const SiteNavbar = () => {
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentLoginClick({ cta_location: "navbar" })}>
               <Button size="sm" className="text-[13px]">
                 Agent Login
               </Button>

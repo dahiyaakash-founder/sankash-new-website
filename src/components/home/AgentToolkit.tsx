@@ -78,7 +78,7 @@ const AgentToolkit = () => {
         </div>
 
         <div className="text-center mt-8 md:mt-10">
-          <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
+          <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentSignupClick({ cta_location: "agent_toolkit" })}>
             <Button size="lg" className="gap-2 text-sm font-semibold">
               Get Started as an Agent <ArrowRight size={16} />
             </Button>
