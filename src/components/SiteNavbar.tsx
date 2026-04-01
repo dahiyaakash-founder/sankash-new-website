@@ -208,7 +208,7 @@ const SiteNavbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer">
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentSignupClick}>
               <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground hover:text-foreground">
                 Agent Signup
               </Button>
