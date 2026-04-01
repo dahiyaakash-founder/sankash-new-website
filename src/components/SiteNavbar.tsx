@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import sankashLogo from "@/assets/sankash-logo-primary.svg";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { AGENT_LOGIN_URL, AGENT_SIGNUP_URL } from "@/lib/constants";
 import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
-const solutionsDropdown = [
-  { label: "Overview", href: "/solutions", desc: "Lending · Insurance · Payments" },
-  { label: "Lending", href: "/solutions/lending", desc: "Travel financing & EMI" },
-  { label: "Insurance", href: "/solutions/insurance", desc: "Embedded travel protection" },
-  { label: "Payments", href: "/solutions/payments", desc: "Settlement & collections" },
+const navItems = [
+  { label: "For Travel Agents", href: "/for-travel-agents" },
+  { label: "For Travelers", href: "/for-travelers" },
+  { label: "Integrations", href: "/developers" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const navItems = [
