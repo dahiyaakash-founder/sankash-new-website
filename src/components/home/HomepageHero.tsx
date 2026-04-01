@@ -80,11 +80,6 @@ const HomepageHero = () => {
 
             {/* Quick-access tools */}
             <div className="flex flex-wrap gap-2 pt-1">
-              <Link to="/for-travel-agents">
-                <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-primary">
-                  <Upload size={13} /> Upload a Quote
-                </Button>
-              </Link>
               <Link to="/emi-calculator">
                 <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-primary">
                   <Calculator size={13} /> EMI Calculator
