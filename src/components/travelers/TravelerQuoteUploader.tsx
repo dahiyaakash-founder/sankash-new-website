@@ -664,10 +664,17 @@ const TravelerQuoteUploader = () => {
                   type="tel"
                   placeholder="+91 98765 43210"
                   value={leadPhone}
-                  onChange={(e) => setLeadPhone(e.target.value)}
+                  onChange={(e) => {
+                    setLeadPhone(e.target.value);
+                    if (phoneError) setPhoneError(null);
+                  }}
                   required
                   maxLength={15}
+                  className={phoneError ? "border-destructive" : ""}
                 />
+                {phoneError && (
+                  <p className="text-xs text-destructive">{phoneError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
