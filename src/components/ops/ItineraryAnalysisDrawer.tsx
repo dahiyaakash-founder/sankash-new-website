@@ -1,17 +1,19 @@
 /**
  * Slide-over drawer for itinerary analysis results.
  * Opened via "View Itinerary Analysis" button on lead detail.
+ *
+ * Four states: loading | loaded | no_analysis | error
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2, MapPin, Calendar, Users, CreditCard, Shield, Wallet,
   Building2, Plane, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
-  XCircle, FileSearch, Sparkles, HelpCircle,
+  XCircle, FileSearch, Sparkles, HelpCircle, RefreshCw,
 } from "lucide-react";
 import { fetchItineraryAnalysis, triggerItineraryAnalysis, type ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
 import { toast } from "sonner";
@@ -23,6 +25,8 @@ interface Props {
   fileName: string;
   audienceType?: string;
 }
+
+type DrawerState = "loading" | "loaded" | "no_analysis" | "error";
 
 const confidenceColors: Record<string, string> = {
   high: "bg-emerald-100 text-emerald-800",
@@ -69,23 +73,48 @@ function FlagBadge({ label, active, variant }: { label: string; active: boolean;
 export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl, fileName, audienceType }: Props) {
   const [open, setOpen] = useState(false);
   const [analysis, setAnalysis] = useState<ItineraryAnalysis | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [drawerState, setDrawerState] = useState<DrawerState>("loading");
   const [analyzing, setAnalyzing] = useState(false);
   const [rawExpanded, setRawExpanded] = useState(false);
   const [snippetsExpanded, setSnippetsExpanded] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
+  // Reset fetch flag when drawer closes or leadId changes
   useEffect(() => {
-    if (open && !analysis && !loading) {
-      setLoading(true);
-      fetchItineraryAnalysis(leadId)
-        .then((data) => setAnalysis(data))
-        .catch(() => {})
-        .finally(() => setLoading(false));
+    if (!open) {
+      hasFetched.current = false;
+      setAnalysis(null);
+      setDrawerState("loading");
+      setErrorMsg(null);
     }
-  }, [open, leadId, analysis, loading]);
+  }, [open, leadId]);
+
+  // Fetch analysis once when drawer opens
+  useEffect(() => {
+    if (!open || hasFetched.current) return;
+    hasFetched.current = true;
+    setDrawerState("loading");
+
+    fetchItineraryAnalysis(leadId)
+      .then((data) => {
+        if (data) {
+          setAnalysis(data);
+          setDrawerState("loaded");
+        } else {
+          setDrawerState("no_analysis");
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch itinerary analysis:", err);
+        setErrorMsg(err?.message || "Unknown error");
+        setDrawerState("error");
+      });
+  }, [open, leadId]);
 
   const handleAnalyze = async () => {
     setAnalyzing(true);
+    setErrorMsg(null);
     try {
       const result = await triggerItineraryAnalysis({
         lead_id: leadId,
@@ -95,11 +124,36 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
         audience_type: audienceType,
       });
       setAnalysis(result);
+      setDrawerState("loaded");
       toast.success("Itinerary analyzed");
     } catch (err: any) {
-      toast.error(err.message || "Analysis failed");
+      const msg = err.message || "Analysis failed";
+      toast.error(msg);
+      setErrorMsg(msg);
+      setDrawerState("error");
     }
     setAnalyzing(false);
+  };
+
+  const handleRetry = () => {
+    hasFetched.current = false;
+    setDrawerState("loading");
+    setErrorMsg(null);
+    setAnalysis(null);
+
+    fetchItineraryAnalysis(leadId)
+      .then((data) => {
+        if (data) {
+          setAnalysis(data);
+          setDrawerState("loaded");
+        } else {
+          setDrawerState("no_analysis");
+        }
+      })
+      .catch((err) => {
+        setErrorMsg(err?.message || "Unknown error");
+        setDrawerState("error");
+      });
   };
 
   const a = analysis;
@@ -126,21 +180,43 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
           <SheetTitle className="text-sm font-heading flex items-center gap-2">
             <Sparkles size={16} className="text-primary" /> Itinerary Analysis
           </SheetTitle>
+          <SheetDescription className="text-xs text-muted-foreground">
+            AI-extracted travel details for {fileName}
+          </SheetDescription>
         </SheetHeader>
 
         <div className="mt-4 space-y-4">
-          {/* Loading state */}
-          {loading && (
-            <div className="flex items-center justify-center py-10">
+          {/* 1. Loading state */}
+          {drawerState === "loading" && (
+            <div className="flex flex-col items-center justify-center py-10 gap-2">
               <Loader2 size={24} className="animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">Loading analysis…</p>
             </div>
           )}
 
-          {/* No analysis yet */}
-          {!loading && !a && (
+          {/* 2. Error state */}
+          {drawerState === "error" && (
+            <div className="text-center py-8 space-y-3">
+              <AlertTriangle size={32} className="mx-auto text-amber-500" />
+              <p className="text-sm text-muted-foreground">We could not load itinerary analysis right now.</p>
+              {errorMsg && <p className="text-xs text-muted-foreground/70">{errorMsg}</p>}
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleRetry} variant="outline" size="sm" className="gap-1.5">
+                  <RefreshCw size={13} /> Retry
+                </Button>
+                <Button onClick={handleAnalyze} disabled={analyzing} size="sm" className="gap-1.5">
+                  {analyzing ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  {analyzing ? "Analyzing…" : "Run Analysis"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 3. No analysis yet */}
+          {drawerState === "no_analysis" && (
             <div className="text-center py-8 space-y-3">
               <FileSearch size={32} className="mx-auto text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No analysis yet for this itinerary</p>
+              <p className="text-sm text-muted-foreground">No analysis available for this file yet.</p>
               <Button onClick={handleAnalyze} disabled={analyzing} size="sm" className="gap-1.5">
                 {analyzing ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                 {analyzing ? "Analyzing…" : "Run Analysis"}
@@ -151,8 +227,8 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
             </div>
           )}
 
-          {/* Analysis results */}
-          {a && (
+          {/* 4. Loaded successfully */}
+          {drawerState === "loaded" && a && (
             <>
               {/* Confidence + re-run */}
               <div className="flex items-center justify-between">
@@ -225,7 +301,6 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                   icon={CreditCard}
                   placeholder="Not stated"
                 />
-                {/* Price notes if AI flagged ambiguity */}
                 {priceNotes && (
                   <p className="text-[10px] text-amber-600 italic px-1 mt-0.5">💡 {priceNotes}</p>
                 )}
