@@ -84,7 +84,7 @@ const Developers = () => {
                   View Docs <ExternalLink size={16} />
                 </a>
               </Button>
-              <Button size="xl" variant="outline" onClick={() => setSandboxOpen(true)}>
+              <Button size="xl" variant="outline" onClick={() => { trackGetSandboxAccessClick(); setSandboxOpen(true); }}>
                 Get Sandbox Access
               </Button>
             </div>
