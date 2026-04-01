@@ -187,7 +187,7 @@ const TravelerQuoteUploader = () => {
         quoteFileUrl = uploaded.url;
       }
 
-      const { lead } = await createLeadWithDedup({
+      const { lead, isDuplicate } = await createLeadWithDedup({
         full_name: leadName.trim(),
         mobile_number: leadPhone.trim(),
         email: leadEmail.trim() || null,
@@ -202,7 +202,9 @@ const TravelerQuoteUploader = () => {
       // Attach file to lead record
       if (uploadedFile && lead?.id) {
         await uploadLeadAttachment(uploadedFile, lead.id, { sourceType: "traveler_quote_unlock" }).catch(() => {});
-        await logLeadCreated(lead.id, "for-travelers").catch(() => {});
+        if (!isDuplicate) {
+          await logLeadCreated(lead.id, "for-travelers").catch(() => {});
+        }
       }
 
       // Only show success after confirmed DB write
