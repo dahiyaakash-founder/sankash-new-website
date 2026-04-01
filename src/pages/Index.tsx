@@ -11,9 +11,7 @@ import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 const homepagePrompts = [
   { label: "Upload a holiday quote", link: "/for-travel-agents" },
   { label: "Open EMI calculator", link: "/emi-calculator" },
-  { label: "Explore agent solutions", link: "/for-travel-agents" },
   { label: "Get integration help", link: "/developers" },
-  { label: "Book a demo", link: "/contact?intent=demo" },
 ];
 
 const Index = () => {
