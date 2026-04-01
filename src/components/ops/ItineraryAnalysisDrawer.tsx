@@ -95,6 +95,7 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
   useEffect(() => {
     if (!open || hasFetched.current) return;
     hasFetched.current = true;
+    trackItineraryAnalysisOpened();
     setDrawerState("loading");
 
     fetchItineraryAnalysis(leadId)
