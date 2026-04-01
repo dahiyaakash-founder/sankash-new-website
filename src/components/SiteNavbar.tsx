@@ -213,7 +213,7 @@ const SiteNavbar = () => {
                 Agent Signup
               </Button>
             </a>
-            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
+            <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" onClick={trackAgentLoginClick}>
               <Button size="sm" className="text-[13px]">
                 Agent Login
               </Button>

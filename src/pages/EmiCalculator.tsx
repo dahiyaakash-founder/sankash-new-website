@@ -108,7 +108,10 @@ const EmiCalculator = () => {
                       setAmount(v);
                       if (v < EMI_MIN) setAmountError(`Minimum amount is ₹${EMI_MIN.toLocaleString("en-IN")}`);
                       else if (v > EMI_MAX) setAmountError(`Maximum amount is ₹${EMI_MAX.toLocaleString("en-IN")}`);
-                      else setAmountError(null);
+                      else {
+                        setAmountError(null);
+                        trackEmiAmountChange({ trip_amount: v, tenure: selectedTenure, emi_type: emiType });
+                      }
                     }}
                     min={EMI_MIN}
                     max={EMI_MAX}
