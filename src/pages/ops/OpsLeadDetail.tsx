@@ -67,6 +67,7 @@ const copyToClipboard = (text: string, label: string) => {
 const activityTypeLabels: Record<string, string> = {
   lead_created: "Lead created",
   file_uploaded: "File uploaded",
+  resubmission: "Resubmission merged",
   status_changed: "Status changed",
   priority_changed: "Priority changed",
   owner_changed: "Owner changed",

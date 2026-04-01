@@ -135,7 +135,7 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
 
   const result = data as any;
   return {
-    lead: { ...lead, id: result.id } as LeadRow,
+    lead: { ...lead, id: result.id, assigned_to: result.assigned_to ?? lead.assigned_to ?? null } as LeadRow,
     isDuplicate: result.is_duplicate === true,
   };
 }
@@ -155,7 +155,7 @@ export async function fetchLeads(opts: {
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
 
