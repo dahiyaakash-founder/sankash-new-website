@@ -40,6 +40,7 @@ const SOURCE_OPTIONS: { value: LeadSourceType; label: string }[] = [
   { value: "existing_partner", label: "Existing Partner" },
   { value: "event_lead", label: "Event Lead" },
   { value: "itinerary_upload", label: "Itinerary Upload" },
+  { value: "insurance_query" as LeadSourceType, label: "Insurance Query" },
 ];
 
 const AUDIENCE_OPTIONS: { value: AudienceType; label: string }[] = [
