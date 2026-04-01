@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ const readAuthError = () => {
 
 const OpsAcceptInvite = () => {
   const navigate = useNavigate();
+  const { refreshAccess } = useAuth();
   const [status, setStatus] = useState<"loading" | "set_password" | "error" | "success">("loading");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,6 +55,32 @@ const OpsAcceptInvite = () => {
       return false;
     };
 
+    const bootstrapInviteSession = async () => {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+
+      try {
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code);
+          url.searchParams.delete("code");
+          window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+          return;
+        }
+
+        if (accessToken && refreshToken) {
+          await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          window.history.replaceState({}, "", url.pathname);
+        }
+      } catch (error: any) {
+        console.error("[ops-invite] session bootstrap failed", error);
+        setErrorMsg(error?.message || "This activation link is invalid or has expired. Ask your admin for a fresh invite.");
+        setStatus("error");
+      }
+    };
+
     const authError = readAuthError();
     if (authError) {
       setErrorMsg(authError);
@@ -62,11 +90,15 @@ const OpsAcceptInvite = () => {
       };
     }
 
+    void bootstrapInviteSession().then(() => {
+      void syncSession();
+    });
+
     const timer = window.setInterval(async () => {
       attempts += 1;
       const hasSession = await syncSession();
 
-      if (hasSession || attempts >= 12) {
+      if (hasSession || attempts >= 20) {
         window.clearInterval(timer);
         if (!hasSession && mounted) {
           setErrorMsg("This activation link is invalid or has expired. Ask your admin for a fresh invite.");
@@ -82,8 +114,6 @@ const OpsAcceptInvite = () => {
         setStatus("set_password");
       }
     });
-
-    void syncSession();
 
     return () => {
       mounted = false;
@@ -118,6 +148,8 @@ const OpsAcceptInvite = () => {
 
       if (activation.error) throw activation.error;
       if (activation.data?.error) throw new Error(activation.data.error);
+
+      await refreshAccess();
 
       setStatus("success");
       toast.success("Password set successfully!");
