@@ -169,10 +169,41 @@ const TravelerQuoteUploader = () => {
 
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  /** Validate Indian mobile: strip +91/91/0 prefix, must be exactly 10 digits starting with 6-9 */
+  const validateIndianMobile = (raw: string): { valid: boolean; normalized: string; error?: string } => {
+    const stripped = raw.replace(/[\s\-().]+/g, "");
+    let digits = stripped.replace(/[^0-9]/g, "");
+
+    // Remove leading +91 / 91 / 0 prefix
+    if (digits.startsWith("91") && digits.length > 10) {
+      digits = digits.slice(digits.length === 12 ? 2 : 2);
+    }
+    if (digits.startsWith("0") && digits.length === 11) {
+      digits = digits.slice(1);
+    }
+
+    if (digits.length !== 10) {
+      return { valid: false, normalized: digits, error: "Enter a valid 10-digit Indian mobile number" };
+    }
+    if (!/^[6-9]/.test(digits)) {
+      return { valid: false, normalized: digits, error: "Indian mobile numbers start with 6, 7, 8, or 9" };
+    }
+    return { valid: true, normalized: digits };
+  };
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadName.trim() || !leadPhone.trim()) return;
+
+    // Validate mobile number
+    const phoneValidation = validateIndianMobile(leadPhone);
+    if (!phoneValidation.valid) {
+      setPhoneError(phoneValidation.error!);
+      return;
+    }
+    setPhoneError(null);
     setLeadSubmitting(true);
     setLeadError(null);
     try {
