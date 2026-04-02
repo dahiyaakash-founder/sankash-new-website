@@ -22,6 +22,8 @@ interface TeamStats {
   userId: string;
   name: string;
   role: string;
+  supervisorId?: string | null;
+  supervisorName?: string | null;
   openLeads: number;
   overdueLeads: number;
   convertedThisMonth: number;
