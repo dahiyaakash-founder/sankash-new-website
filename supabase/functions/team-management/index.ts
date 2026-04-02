@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action } = body;
-    const appUrl = "https://sankash-new-website.lovable.app";
+    const appUrl = "https://www.sankash.in";
     const redirectTo = `${appUrl}/ops/accept-invite`;
 
     const ensureInviteState = async ({
