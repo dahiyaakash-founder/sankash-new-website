@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const OpsLogin = () => {
+  const location = useLocation();
   const { user, loading, hasRole, signIn, profileStatus } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +26,20 @@ const OpsLogin = () => {
     if (!el) { el = document.createElement("meta"); el.setAttribute("name", "robots"); document.head.appendChild(el); }
     el.setAttribute("content", "noindex, nofollow");
   }, []);
+
+  const searchParams = new URLSearchParams(location.search);
+  const hashParams = new URLSearchParams(location.hash.replace(/^#/, ""));
+  const hasRecoveryParams = Boolean(
+    searchParams.get("code") ||
+    hashParams.get("access_token") ||
+    hashParams.get("refresh_token") ||
+    searchParams.get("type") === "recovery" ||
+    hashParams.get("type") === "recovery",
+  );
+
+  if (hasRecoveryParams) {
+    return <Navigate to={`/ops/accept-invite${location.search}${location.hash}`} replace />;
+  }
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
