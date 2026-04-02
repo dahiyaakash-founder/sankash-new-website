@@ -470,7 +470,7 @@ const ItineraryUploader = () => {
               </span>
             </div>
 
-            {/* What we found — agent commercial cards */}
+            {/* What we found — agent commercial cards, mobile-friendly */}
             <div className="space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Opportunities Identified
@@ -483,12 +483,12 @@ const ItineraryUploader = () => {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.12, duration: 0.3 }}
-                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                    className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40"
                   >
                     <Icon size={15} className="text-primary shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{insight.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{insight.label}</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">{insight.detail}</p>
                     </div>
                   </motion.div>
                 );
