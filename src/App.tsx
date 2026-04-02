@@ -64,6 +64,7 @@ const App = () => (
             <Route path="/security" element={<Security />} />
             <Route path="/link" element={<LinkRedirect />} />
             {/* Ops Dashboard — protected */}
+            <Route path="/ops" element={<Navigate to="/ops/dashboard" replace />} />
             <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
             <Route path="/ops/accept-invite" element={<OpsAcceptInvite />} />
