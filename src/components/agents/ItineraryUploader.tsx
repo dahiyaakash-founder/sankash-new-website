@@ -135,12 +135,24 @@ const ItineraryUploader = () => {
               metadata_json: { confidence: result.confidence },
             });
 
-            // Attach file and log activity
+            // Attach file, log activity, and trigger AI analysis
             if (lead?.id) {
               const { uploadLeadAttachment } = await import("@/lib/attachments-service");
               const { logLeadCreated } = await import("@/lib/activity-service");
-              await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => {});
+              const attachment = await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => null);
               await logLeadCreated(lead.id, "for-travel-agents").catch(() => {});
+
+              // Trigger AI analysis for structured data extraction
+              if (attachment && quoteFileUrl) {
+                const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+                await triggerItineraryAnalysis({
+                  lead_id: lead.id,
+                  attachment_id: attachment.id,
+                  file_url: quoteFileUrl,
+                  file_name: file.name,
+                  audience_type: "agent",
+                }).catch((err) => console.warn("Itinerary analysis failed (non-blocking):", err));
+              }
             }
           } catch { /* silent */ }
         });
@@ -458,7 +470,7 @@ const ItineraryUploader = () => {
               </span>
             </div>
 
-            {/* What we found — agent commercial cards */}
+            {/* What we found — agent commercial cards, mobile-friendly */}
             <div className="space-y-2">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Opportunities Identified
@@ -471,12 +483,12 @@ const ItineraryUploader = () => {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.12, duration: 0.3 }}
-                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                    className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40"
                   >
                     <Icon size={15} className="text-primary shrink-0 mt-0.5" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{insight.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{insight.label}</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">{insight.detail}</p>
                     </div>
                   </motion.div>
                 );
@@ -496,24 +508,24 @@ const ItineraryUploader = () => {
                   {gatedInsights.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                      className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40"
                     >
                       <CheckCircle2 size={15} className="text-primary shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{item.label}</p>
-                        <p className="text-[11px] text-muted-foreground">{item.detail}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{item.label}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{item.detail}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl px-4">
                 <Lock size={18} className="text-primary mb-2" />
-                 <p className="font-heading font-bold text-sm text-foreground mb-1">
+                 <p className="font-heading font-bold text-xs sm:text-sm text-foreground mb-1 text-center">
                    Unlock detailed commercial review
                  </p>
-                 <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[240px]">
+                 <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[280px] leading-relaxed">
                    Login to access EMI fit, protection fit, and payment activation for this itinerary
                 </p>
                 <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
