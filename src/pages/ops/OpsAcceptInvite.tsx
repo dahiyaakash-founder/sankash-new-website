@@ -27,6 +27,10 @@ const OpsAcceptInvite = () => {
   const navigate = useNavigate();
   const { refreshAccess } = useAuth();
   const [status, setStatus] = useState<"loading" | "set_password" | "error" | "success">("loading");
+  const [pkceFailure, setPkceFailure] = useState(false);
+  const [rereqEmail, setRereqEmail] = useState("");
+  const [rereqSending, setRereqSending] = useState(false);
+  const [rereqSent, setRereqSent] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -106,7 +110,16 @@ const OpsAcceptInvite = () => {
             // PKCE code_verifier mismatch (opened in different browser/tab)
             console.warn("[ops-invite] code exchange failed (likely PKCE mismatch), trying session fallback", error.message);
             const recovered = await tryExistingSession("PKCE fallback after code exchange failure");
-            if (!recovered) throw error;
+            if (!recovered) {
+              // Don't dead-end — show re-request form
+              setPkceFailure(true);
+              setErrorMsg("This link was opened in a different browser or app than where you requested it. Request a fresh link below to continue.");
+              setStatus("error");
+              url.searchParams.delete("code");
+              url.searchParams.delete("type");
+              window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+              return;
+            }
             url.searchParams.delete("code");
             url.searchParams.delete("type");
             window.history.replaceState({}, "", `${url.pathname}${url.search}`);
@@ -133,7 +146,8 @@ const OpsAcceptInvite = () => {
       } catch (error: any) {
         console.error("[ops-invite] session bootstrap failed", error);
         clearRecoveryReady();
-        setErrorMsg("This link is invalid or has expired. Go back to login and use Forgot password to get a fresh link.");
+        setPkceFailure(true);
+        setErrorMsg("This link could not be verified. Request a fresh link below, or go back to login and use Forgot password.");
         setStatus("error");
       }
     };
@@ -160,7 +174,8 @@ const OpsAcceptInvite = () => {
         window.clearInterval(timer);
         if (!hasSession && mounted) {
           clearRecoveryReady();
-          setErrorMsg("This link is invalid or has expired. Go back to login and use Forgot password to get a fresh link.");
+          setPkceFailure(true);
+          setErrorMsg("This link could not be verified. Request a fresh link below, or go back to login and use Forgot password.");
           setStatus("error");
         }
       }
@@ -185,6 +200,24 @@ const OpsAcceptInvite = () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  const handleRerequestReset = async () => {
+    if (!rereqEmail.trim()) {
+      setErrorMsg("Enter your work email to receive a fresh reset link.");
+      return;
+    }
+    setRereqSending(true);
+    setErrorMsg("");
+    const { error } = await supabase.auth.resetPasswordForEmail(rereqEmail.trim(), {
+      redirectTo: `${window.location.origin}/ops/accept-invite`,
+    });
+    setRereqSending(false);
+    if (error) {
+      setErrorMsg(error.message);
+      return;
+    }
+    setRereqSent(true);
+  };
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,11 +297,32 @@ const OpsAcceptInvite = () => {
             <AlertCircle className="text-destructive" size={24} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-heading font-bold text-foreground">Link expired</h1>
+            <h1 className="text-xl font-heading font-bold text-foreground">
+              {pkceFailure ? "Link opened in wrong browser" : "Link expired"}
+            </h1>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/ops/login")}>
-            Go to Login
+          {pkceFailure && !rereqSent && (
+            <div className="space-y-3 p-4 rounded-xl border bg-card text-left">
+              <label className="text-xs font-medium">Your work email</label>
+              <Input
+                type="email"
+                value={rereqEmail}
+                onChange={(e) => setRereqEmail(e.target.value)}
+                placeholder="you@sankash.in"
+              />
+              <Button className="w-full" onClick={handleRerequestReset} disabled={rereqSending}>
+                {rereqSending ? <><Loader2 size={16} className="animate-spin mr-2" /> Sending…</> : "Send fresh reset link"}
+              </Button>
+            </div>
+          )}
+          {rereqSent && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <p className="text-sm text-primary font-medium">Fresh link sent! Check your email and open the link in this browser.</p>
+            </div>
+          )}
+          <Button variant="outline" onClick={() => navigate("/ops/login")} className="w-full">
+            Back to Login
           </Button>
         </div>
       </div>
