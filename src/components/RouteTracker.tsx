@@ -2,13 +2,34 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { trackPageView } from "@/lib/analytics";
 
+const CLARITY_PROJECT_ID = "w582zyv5xn";
+
 /**
  * Invisible component that fires page view events on SPA route changes.
+ * Also initializes Microsoft Clarity on public routes (excludes /ops).
  * Must be placed inside <BrowserRouter>.
  */
 const RouteTracker = () => {
   const location = useLocation();
   const prevPath = useRef<string | null>(null);
+  const clarityLoaded = useRef(false);
+
+  // Initialize Clarity once, only on public routes
+  useEffect(() => {
+    if (clarityLoaded.current) return;
+    if (location.pathname.startsWith("/ops")) return;
+
+    ((c: any, l: Document, a: string, r: string, i: string) => {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+      const t = l.createElement(r) as HTMLScriptElement;
+      t.async = true;
+      t.src = "https://www.clarity.ms/tag/" + i;
+      const y = l.getElementsByTagName(r)[0];
+      y.parentNode!.insertBefore(t, y);
+    })(window, document, "clarity", "script", CLARITY_PROJECT_ID);
+
+    clarityLoaded.current = true;
+  }, [location.pathname]);
 
   useEffect(() => {
     // Avoid duplicate fires for the same path
