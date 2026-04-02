@@ -112,7 +112,9 @@ const OpsLeads = () => {
   const [activePreset, setActivePreset] = useState("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importOpen, setImportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
