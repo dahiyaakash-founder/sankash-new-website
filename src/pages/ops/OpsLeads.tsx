@@ -195,6 +195,11 @@ const OpsLeads = () => {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
            <div className="flex items-center gap-2">
+            {selected.size > 0 && canDelete && (
+              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} className="gap-1.5 text-xs">
+                <Trash2 size={14} /> Delete ({selected.size})
+              </Button>
+            )}
             {selected.size > 0 && <span className="text-xs text-muted-foreground">{selected.size} selected</span>}
             {canImport && (
               <>
