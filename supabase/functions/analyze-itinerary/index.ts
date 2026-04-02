@@ -98,28 +98,17 @@ Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
 /** Extract text from DOCX by unzipping and parsing word/document.xml */
 async function extractTextFromDocx(bytes: Uint8Array): Promise<string> {
   try {
-    // DOCX is a ZIP file. We need to find word/document.xml inside it.
-    // Minimal ZIP parser for this specific use case.
-    const zip = await parseZipEntries(bytes);
-    const docXmlEntry = zip.find(
-      (e) => e.name === "word/document.xml" || e.name === "word\\document.xml"
-    );
-    if (!docXmlEntry) return "[DOCX: could not find word/document.xml]";
+    const unzipped = unzipSync(bytes);
+    const docXml = unzipped["word/document.xml"];
+    if (!docXml) return "[DOCX: could not find word/document.xml]";
 
-    const xmlText = new TextDecoder().decode(docXmlEntry.data);
-    // Extract text from <w:t> tags
-    const textParts: string[] = [];
-    const regex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
-    let match;
-    while ((match = regex.exec(xmlText)) !== null) {
-      textParts.push(match[1]);
-    }
-    // Also detect paragraph breaks from </w:p>
-    const fullXml = xmlText;
+    const xmlText = new TextDecoder().decode(docXml);
+
+    // Extract text paragraph by paragraph from <w:p> blocks
     const paragraphs: string[] = [];
     const pRegex = /<w:p[\s>][\s\S]*?<\/w:p>/g;
     let pMatch;
-    while ((pMatch = pRegex.exec(fullXml)) !== null) {
+    while ((pMatch = pRegex.exec(xmlText)) !== null) {
       const pBlock = pMatch[0];
       const pTexts: string[] = [];
       const tRegex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
@@ -132,7 +121,7 @@ async function extractTextFromDocx(bytes: Uint8Array): Promise<string> {
       }
     }
 
-    const extracted = paragraphs.length > 0 ? paragraphs.join("\n") : textParts.join(" ");
+    const extracted = paragraphs.join("\n");
     if (!extracted.trim()) return "[DOCX: no readable text found in document.xml]";
 
     // Truncate to ~40K chars to stay within AI token limits
@@ -141,66 +130,6 @@ async function extractTextFromDocx(bytes: Uint8Array): Promise<string> {
     console.error("DOCX extraction error:", err);
     return `[DOCX extraction failed: ${(err as Error).message}]`;
   }
-}
-
-/** Minimal ZIP parser — extracts uncompressed and DEFLATE-compressed entries */
-async function parseZipEntries(
-  data: Uint8Array
-): Promise<Array<{ name: string; data: Uint8Array }>> {
-  const entries: Array<{ name: string; data: Uint8Array }> = [];
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  let offset = 0;
-
-  while (offset + 30 <= data.length) {
-    const sig = view.getUint32(offset, true);
-    if (sig !== 0x04034b50) break; // Not a local file header
-
-    const compressionMethod = view.getUint16(offset + 8, true);
-    const compressedSize = view.getUint32(offset + 18, true);
-    const uncompressedSize = view.getUint32(offset + 22, true);
-    const nameLen = view.getUint16(offset + 26, true);
-    const extraLen = view.getUint16(offset + 28, true);
-    const name = new TextDecoder().decode(data.slice(offset + 30, offset + 30 + nameLen));
-    const dataStart = offset + 30 + nameLen + extraLen;
-    const rawData = data.slice(dataStart, dataStart + compressedSize);
-
-    if (compressedSize > 0) {
-      if (compressionMethod === 0) {
-        // Stored (no compression)
-        entries.push({ name, data: rawData });
-      } else if (compressionMethod === 8) {
-        // DEFLATE
-        try {
-          const ds = new DecompressionStream("raw");
-          const writer = ds.writable.getWriter();
-          writer.write(rawData);
-          writer.close();
-          const reader = ds.readable.getReader();
-          const chunks: Uint8Array[] = [];
-          let totalLen = 0;
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            totalLen += value.length;
-          }
-          const result = new Uint8Array(totalLen);
-          let pos = 0;
-          for (const chunk of chunks) {
-            result.set(chunk, pos);
-            pos += chunk.length;
-          }
-          entries.push({ name, data: result });
-        } catch {
-          // Skip entries we can't decompress
-        }
-      }
-    }
-
-    offset = dataStart + compressedSize;
-  }
-
-  return entries;
 }
 
 /** Determine file type and fetch content appropriately */
