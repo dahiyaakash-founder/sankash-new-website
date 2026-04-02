@@ -63,6 +63,26 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/security" element={<Security />} />
             <Route path="/link" element={<LinkRedirect />} />
+            {/* Legacy .html redirects — old indexed/backlinked URLs */}
+            <Route path="/contact-us.html" element={<Navigate to="/contact" replace />} />
+            <Route path="/contact-us" element={<Navigate to="/contact" replace />} />
+            <Route path="/about-us.html" element={<Navigate to="/about" replace />} />
+            <Route path="/about-us" element={<Navigate to="/about" replace />} />
+            <Route path="/privacy-policy.html" element={<Navigate to="/privacy" replace />} />
+            <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
+            <Route path="/terms-of-service.html" element={<Navigate to="/terms" replace />} />
+            <Route path="/terms-and-conditions.html" element={<Navigate to="/terms" replace />} />
+            <Route path="/terms-and-conditions" element={<Navigate to="/terms" replace />} />
+            <Route path="/index.html" element={<Navigate to="/" replace />} />
+            <Route path="/home.html" element={<Navigate to="/" replace />} />
+            <Route path="/solutions.html" element={<Navigate to="/solutions" replace />} />
+            <Route path="/developers.html" element={<Navigate to="/developers" replace />} />
+            <Route path="/emi-calculator.html" element={<Navigate to="/emi-calculator" replace />} />
+            <Route path="/resources.html" element={<Navigate to="/resources" replace />} />
+            <Route path="/blog.html" element={<Navigate to="/resources" replace />} />
+            <Route path="/insurance.html" element={<Navigate to="/solutions/insurance" replace />} />
+            <Route path="/lending.html" element={<Navigate to="/solutions/lending" replace />} />
+            <Route path="/payments.html" element={<Navigate to="/solutions/payments" replace />} />
             {/* Ops Dashboard — protected */}
             <Route path="/ops" element={<Navigate to="/ops/dashboard" replace />} />
             <Route path="/ops/setup" element={<OpsSetup />} />
