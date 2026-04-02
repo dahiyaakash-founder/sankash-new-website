@@ -401,6 +401,10 @@ const OpsTeamManagement = () => {
                   <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Temporary Password</label>
                   <p className="text-sm font-mono font-bold select-all">{credentialsModal.password}</p>
                 </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Login URL</label>
+                  <p className="text-sm font-mono select-all text-primary">https://www.sankash.in/ops/login</p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -408,7 +412,7 @@ const OpsTeamManagement = () => {
                   className="flex-1"
                   onClick={async () => {
                     await navigator.clipboard.writeText(
-                      `Email: ${credentialsModal.email}\nPassword: ${credentialsModal.password}\nLogin: ${window.location.origin}/ops/login`
+                      `SanKash Ops Login Credentials\n\nLogin URL: https://www.sankash.in/ops/login\nEmail: ${credentialsModal.email}\nPassword: ${credentialsModal.password}\n\nPlease change your password after first login using Forgot Password.`
                     );
                     toast.success("Credentials copied to clipboard");
                   }}
