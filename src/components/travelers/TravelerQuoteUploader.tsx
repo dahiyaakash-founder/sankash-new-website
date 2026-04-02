@@ -586,12 +586,12 @@ const TravelerQuoteUploader = () => {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.12, duration: 0.3 }}
-                      className="flex items-start gap-2.5 p-2.5 rounded-lg bg-accent/40"
+                      className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40"
                     >
                       <Icon size={15} className="text-primary shrink-0 mt-0.5" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground">{insight.label}</p>
-                        <p className="text-[11px] text-muted-foreground">{insight.detail}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{insight.label}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{insight.detail}</p>
                         {insight.hasBlurredValue && (
                           <span className="inline-block mt-1 text-sm font-bold text-primary select-none" style={{ filter: "blur(5px)" }} aria-hidden>
                             Possible savings: ₹2,450
