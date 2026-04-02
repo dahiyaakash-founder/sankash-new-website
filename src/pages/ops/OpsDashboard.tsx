@@ -83,7 +83,15 @@ const OpsDashboard = () => {
 
           // Team stats
           const members = await fetchTeamMembers();
+          // Fetch profiles for supervisor_id
+          const { data: profiles } = await supabase.from("profiles" as any).select("*") as any;
+          const profileMap: Record<string, { supervisor_id?: string }> = {};
+          (profiles ?? []).forEach((p: any) => { profileMap[p.user_id] = { supervisor_id: p.supervisor_id }; });
+
           const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+          const nameMap: Record<string, string> = {};
+          members.forEach(m => { if (m.full_name) nameMap[m.user_id] = m.full_name; });
+
           const stats: TeamStats[] = members.map((m) => {
             const memberLeads = allOpen.data.filter((lead: any) => lead.assigned_to === m.user_id);
             const openLeads = memberLeads.filter((lead: any) => !["converted", "closed_lost"].includes(lead.status)).length;
@@ -93,16 +101,23 @@ const OpsDashboard = () => {
             const convertedThisMonth = memberLeads.filter((lead: any) =>
               lead.status === "converted" && lead.updated_at >= startOfMonth
             ).length;
+            const supId = profileMap[m.user_id]?.supervisor_id;
             return {
               userId: m.user_id,
               name: m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…",
               role: m.role,
+              supervisorId: supId,
+              supervisorName: supId ? nameMap[supId] ?? null : null,
               openLeads,
               overdueLeads,
               convertedThisMonth,
               totalLeads: memberLeads.length,
             };
-          }).sort((a, b) => b.totalLeads - a.totalLeads);
+          }).sort((a, b) => {
+            const roleOrder: Record<string, number> = { super_admin: 0, admin: 1, team_supervisor: 2, team_member: 3 };
+            const diff = (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9);
+            return diff !== 0 ? diff : b.totalLeads - a.totalLeads;
+          });
           setTeamStats(stats);
         }
       } catch { /* */ }
