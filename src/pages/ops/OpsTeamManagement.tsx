@@ -54,6 +54,7 @@ const OpsTeamManagement = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState({ full_name: "", email: "", role: "team_member", supervisor_id: "" });
+  const [credentialsModal, setCredentialsModal] = useState<{ email: string; password: string; name: string } | null>(null);
 
   useEffect(() => { loadMembers(); }, []);
 
@@ -133,13 +134,12 @@ const OpsTeamManagement = () => {
         }
         throw new Error(errMsg);
       }
-      if (res.data?.action_link) {
-        await navigator.clipboard.writeText(res.data.action_link);
-        toast.success(`Invite created for ${inviteForm.full_name}. Activation link copied as a fallback in case email delivery is delayed.`);
-      } else {
-        toast.success(`Invited ${inviteForm.full_name} as ${roleLabels[inviteForm.role] ?? inviteForm.role}. They will receive an email to set their password.`);
-      }
       setInviteOpen(false);
+      setCredentialsModal({
+        email: inviteForm.email,
+        password: res.data?.temp_password ?? "",
+        name: inviteForm.full_name,
+      });
       setInviteForm({ full_name: "", email: "", role: "team_member", supervisor_id: "" });
       loadMembers();
     } catch (err: any) {
@@ -194,13 +194,11 @@ const OpsTeamManagement = () => {
         body: { action: "reinvite", user_id: userId },
       });
       if (res.data?.error) throw new Error(res.data.error);
-      if (res.data?.action_link) {
-        // Copy link to clipboard as fallback since generateLink doesn't send email
-        await navigator.clipboard.writeText(res.data.action_link);
-        toast.success("Invite link copied to clipboard. Share it with the team member directly.");
-      } else {
-        toast.success("Invite re-sent successfully");
-      }
+      setCredentialsModal({
+        email: res.data?.email ?? "",
+        password: res.data?.temp_password ?? "",
+        name: "Team Member",
+      });
     } catch (err: any) {
       toast.error(err.message || "Failed to re-send invite");
     }
@@ -344,7 +342,7 @@ const OpsTeamManagement = () => {
         {isAdminOrAbove && (
           <div className="p-4 rounded-xl bg-accent/50 border border-border/50">
             <p className="text-xs text-muted-foreground">
-              <strong>Invite flow:</strong> Every team invite opens the live activation page at <code>/ops/accept-invite</code>, where the user sets a password and then enters CRM.
+              <strong>Invite flow:</strong> When you invite a member, a temporary password is generated. Share it with them privately. They can change it later from Forgot password.
             </p>
           </div>
         )}
@@ -380,6 +378,49 @@ const OpsTeamManagement = () => {
               {inviting ? <><Loader2 size={16} className="animate-spin mr-2" /> Sending invite…</> : "Send Invite"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credentials modal */}
+      <Dialog open={!!credentialsModal} onOpenChange={() => setCredentialsModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Temporary Login Credentials</DialogTitle>
+          </DialogHeader>
+          {credentialsModal && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Share these credentials privately with <strong>{credentialsModal.name}</strong>. They can change the password later using Forgot password.
+              </p>
+              <div className="space-y-3 p-4 rounded-xl border bg-muted/30">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Email</label>
+                  <p className="text-sm font-mono select-all">{credentialsModal.email}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Temporary Password</label>
+                  <p className="text-sm font-mono font-bold select-all">{credentialsModal.password}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(
+                      `Email: ${credentialsModal.email}\nPassword: ${credentialsModal.password}\nLogin: ${window.location.origin}/ops/login`
+                    );
+                    toast.success("Credentials copied to clipboard");
+                  }}
+                >
+                  Copy All
+                </Button>
+                <Button className="flex-1" onClick={() => setCredentialsModal(null)}>
+                  Done
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </OpsLayout>
