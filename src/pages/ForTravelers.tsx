@@ -93,6 +93,14 @@ const faqs = [
 
 const ForTravelers = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
+  const [emiAmount, setEmiAmount] = React.useState(85000);
+  const emiExamples = React.useMemo(() => computeEmiExamples(emiAmount), [emiAmount]);
+
+  const handleEmiAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    const num = parseInt(raw || "0", 10);
+    if (num <= 500000) setEmiAmount(num);
+  };
 
   const scrollToUploader = () => {
     uploaderRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
