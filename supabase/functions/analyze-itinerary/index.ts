@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { unzipSync } from "https://esm.sh/fflate@0.8.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,43 +93,151 @@ Confidence:
 
 Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
 
-async function extractTextFromUrl(fileUrl: string, fileName: string): Promise<string> {
-  const lower = fileName.toLowerCase();
-  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp");
+// ── File content extraction ──────────────────────────────────────
 
-  if (isImage) {
-    return `[IMAGE FILE: ${fileName}]`;
+/** Extract text from DOCX by unzipping and parsing word/document.xml */
+async function extractTextFromDocx(bytes: Uint8Array): Promise<string> {
+  try {
+    const unzipped = unzipSync(bytes);
+    const docXml = unzipped["word/document.xml"];
+    if (!docXml) return "[DOCX: could not find word/document.xml]";
+
+    const xmlText = new TextDecoder().decode(docXml);
+
+    // Extract text paragraph by paragraph from <w:p> blocks
+    const paragraphs: string[] = [];
+    const pRegex = /<w:p[\s>][\s\S]*?<\/w:p>/g;
+    let pMatch;
+    while ((pMatch = pRegex.exec(xmlText)) !== null) {
+      const pBlock = pMatch[0];
+      const pTexts: string[] = [];
+      const tRegex = /<w:t[^>]*>([\s\S]*?)<\/w:t>/g;
+      let tMatch;
+      while ((tMatch = tRegex.exec(pBlock)) !== null) {
+        pTexts.push(tMatch[1]);
+      }
+      if (pTexts.length > 0) {
+        paragraphs.push(pTexts.join(""));
+      }
+    }
+
+    const extracted = paragraphs.join("\n");
+    if (!extracted.trim()) return "[DOCX: no readable text found in document.xml]";
+
+    // Truncate to ~40K chars to stay within AI token limits
+    return extracted.length > 40000 ? extracted.slice(0, 40000) + "\n[...truncated]" : extracted;
+  } catch (err) {
+    console.error("DOCX extraction error:", err);
+    return `[DOCX extraction failed: ${(err as Error).message}]`;
   }
+}
+
+/** Determine file type and fetch content appropriately */
+async function fetchFileContent(
+  fileUrl: string,
+  fileName: string
+): Promise<{ rawText: string; fileBytes: Uint8Array | null; mimeType: string | null }> {
+  const lower = fileName.toLowerCase();
+  const isImage =
+    lower.endsWith(".jpg") ||
+    lower.endsWith(".jpeg") ||
+    lower.endsWith(".png") ||
+    lower.endsWith(".webp");
+  const isPdf = lower.endsWith(".pdf");
+  const isDocx = lower.endsWith(".docx");
 
   try {
     const resp = await fetch(fileUrl);
     if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-    const blob = await resp.arrayBuffer();
-    return `[DOCUMENT FILE: ${fileName}, size: ${blob.byteLength} bytes]`;
-  } catch {
-    return `[COULD NOT FETCH: ${fileName}]`;
+    const arrayBuf = await resp.arrayBuffer();
+    const fileBytes = new Uint8Array(arrayBuf);
+
+    if (isImage) {
+      // Images will be sent via image_url to AI
+      return { rawText: `[IMAGE FILE: ${fileName}]`, fileBytes, mimeType: "image" };
+    }
+
+    if (isPdf) {
+      // PDFs will be sent as inline base64 to Gemini (native PDF support)
+      return {
+        rawText: `[PDF FILE: ${fileName}, ${fileBytes.length} bytes — sent as native PDF to AI]`,
+        fileBytes,
+        mimeType: "application/pdf",
+      };
+    }
+
+    if (isDocx) {
+      const extractedText = await extractTextFromDocx(fileBytes);
+      return { rawText: extractedText, fileBytes: null, mimeType: "text" };
+    }
+
+    // Fallback: try to read as text
+    const textContent = new TextDecoder().decode(fileBytes);
+    return {
+      rawText: textContent.length > 40000 ? textContent.slice(0, 40000) : textContent,
+      fileBytes: null,
+      mimeType: "text",
+    };
+  } catch (err) {
+    console.error("File fetch error:", err);
+    return {
+      rawText: `[COULD NOT FETCH: ${fileName}: ${(err as Error).message}]`,
+      fileBytes: null,
+      mimeType: null,
+    };
   }
 }
 
-async function analyzeWithAI(fileUrl: string, fileName: string, _rawHint: string): Promise<Record<string, unknown>> {
+// ── AI analysis ──────────────────────────────────────────────────
+
+/** Encode bytes to base64 */
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+async function analyzeWithAI(
+  fileUrl: string,
+  fileName: string,
+  content: { rawText: string; fileBytes: Uint8Array | null; mimeType: string | null }
+): Promise<Record<string, unknown>> {
   const lower = fileName.toLowerCase();
-  const isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp");
+  const isImage =
+    lower.endsWith(".jpg") ||
+    lower.endsWith(".jpeg") ||
+    lower.endsWith(".png") ||
+    lower.endsWith(".webp");
 
   const userContent: Array<Record<string, unknown>> = [];
 
   if (isImage) {
-    userContent.push({
-      type: "image_url",
-      image_url: { url: fileUrl },
-    });
+    // Send image via URL
+    userContent.push({ type: "image_url", image_url: { url: fileUrl } });
     userContent.push({
       type: "text",
       text: `This is an image of a travel itinerary or quote. File name: ${fileName}. Extract all structured travel data from it following the schema exactly.`,
     });
-  } else {
+  } else if (content.mimeType === "application/pdf" && content.fileBytes) {
+    // Send PDF as native inline_data (Gemini supports PDFs natively)
+    const base64Data = uint8ToBase64(content.fileBytes);
+    userContent.push({
+      type: "image_url",
+      image_url: { url: `data:application/pdf;base64,${base64Data}` },
+    });
     userContent.push({
       type: "text",
-      text: `Analyze this travel document. File name: ${fileName}. The document is accessible at: ${fileUrl}\n\nExtract all structured travel data following the schema exactly. If you cannot read the document content directly, set parsing_confidence to "low" and explain in confidence_notes.`,
+      text: `This is a PDF travel itinerary or quote document. File name: ${fileName}. Extract all structured travel data from it following the schema exactly. Pay attention to tables, pricing sections, flight details, and hotel information.`,
+    });
+  } else {
+    // Send extracted text content (DOCX, TXT, etc.)
+    const textPreview =
+      content.rawText.length > 35000 ? content.rawText.slice(0, 35000) + "\n[...truncated]" : content.rawText;
+    userContent.push({
+      type: "text",
+      text: `Analyze this travel document. File name: ${fileName}.\n\n--- DOCUMENT CONTENT START ---\n${textPreview}\n--- DOCUMENT CONTENT END ---\n\nExtract all structured travel data following the schema exactly.`,
     });
   }
 
@@ -157,12 +266,13 @@ async function analyzeWithAI(fileUrl: string, fileName: string, _rawHint: string
   const result = await response.json();
   const text = result.choices?.[0]?.message?.content ?? "";
 
-  // Extract JSON from response (handle potential markdown wrapping)
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("No JSON found in AI response");
 
   return JSON.parse(jsonMatch[0]);
 }
+
+// ── Commercial flags ─────────────────────────────────────────────
 
 function computeCommercialFlags(parsed: Record<string, unknown>) {
   const totalPrice = parsed.total_price as number | null;
@@ -170,17 +280,14 @@ function computeCommercialFlags(parsed: Record<string, unknown>) {
   const insuranceMentioned = parsed.insurance_mentioned === true;
   const visaMentioned = parsed.visa_mentioned === true;
 
-  // EMI: practical range ₹20k–₹20L
   const emi_candidate = totalPrice != null && totalPrice >= 20000 && totalPrice <= 2000000;
-
-  // Insurance: international OR travel insurance/visa mentioned
   const insurance_candidate = isInternational || insuranceMentioned || (visaMentioned && isInternational);
-
-  // PG: any meaningful price exists
   const pg_candidate = totalPrice != null && totalPrice > 0;
 
   return { emi_candidate, insurance_candidate, pg_candidate };
 }
+
+// ── Main handler ─────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -200,33 +307,27 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Step 1: Extract text hint
-    const rawHint = await extractTextFromUrl(file_url, file_name);
+    // Step 1: Fetch and extract file content
+    console.log(`Processing file: ${file_name} for lead: ${lead_id}`);
+    const content = await fetchFileContent(file_url, file_name);
+    console.log(`Content extracted: ${content.rawText.slice(0, 200)}...`);
 
-    // Step 2: AI analysis
-    const parsed = await analyzeWithAI(file_url, file_name, rawHint);
+    // Step 2: AI analysis with actual content
+    const parsed = await analyzeWithAI(file_url, file_name, content);
+    console.log(`AI extraction complete. Confidence: ${parsed.parsing_confidence}`);
 
     // Step 3: Compute commercial flags
     const flags = computeCommercialFlags(parsed);
 
-    // Step 4: Merge alternate prices and confidence notes into extracted_fields_json
+    // Step 4: Merge extra fields into extracted_fields_json
     const extractedFields: Record<string, unknown> = { ...parsed };
-    if (parsed.alternate_prices) {
-      extractedFields.alternate_prices = parsed.alternate_prices;
-    }
-    if (parsed.price_notes) {
-      extractedFields.price_notes = parsed.price_notes;
-    }
-    if (parsed.confidence_notes) {
-      extractedFields.confidence_notes = parsed.confidence_notes;
-    }
 
     // Step 5: Build record
     const record = {
       lead_id,
       attachment_id: attachment_id || null,
       uploaded_by_audience: audience_type || null,
-      raw_text: rawHint.length > 50000 ? rawHint.slice(0, 50000) : rawHint,
+      raw_text: content.rawText.length > 50000 ? content.rawText.slice(0, 50000) : content.rawText,
       parsing_confidence: (parsed.parsing_confidence as string) || "low",
       domestic_or_international: (parsed.domestic_or_international as string) || null,
       destination_country: (parsed.destination_country as string) || null,
@@ -238,7 +339,8 @@ Deno.serve(async (req) => {
       total_price: typeof parsed.total_price === "number" ? parsed.total_price : null,
       price_per_person: typeof parsed.price_per_person === "number" ? parsed.price_per_person : null,
       currency: (parsed.currency as string) || "INR",
-      traveller_count_total: typeof parsed.traveller_count_total === "number" ? parsed.traveller_count_total : null,
+      traveller_count_total:
+        typeof parsed.traveller_count_total === "number" ? parsed.traveller_count_total : null,
       adults_count: typeof parsed.adults_count === "number" ? parsed.adults_count : null,
       children_count: typeof parsed.children_count === "number" ? parsed.children_count : null,
       infants_count: typeof parsed.infants_count === "number" ? parsed.infants_count : null,
@@ -288,7 +390,7 @@ Deno.serve(async (req) => {
       result = data;
     }
 
-    // Step 7: Update lead with extracted commercial flags (only set, never clear)
+    // Step 7: Update lead with extracted commercial flags
     const leadUpdate: Record<string, unknown> = {
       emi_flag: flags.emi_candidate,
       insurance_flag: flags.insurance_candidate,
@@ -301,10 +403,7 @@ Deno.serve(async (req) => {
       leadUpdate.quote_amount = parsed.total_price;
     }
 
-    await supabaseAdmin
-      .from("leads")
-      .update(leadUpdate)
-      .eq("id", lead_id);
+    await supabaseAdmin.from("leads").update(leadUpdate).eq("id", lead_id);
 
     // Step 8: Log activity
     const destLabel = parsed.destination_city || parsed.destination_country || "Unknown destination";
