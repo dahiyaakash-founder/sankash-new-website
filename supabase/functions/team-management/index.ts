@@ -5,6 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/** Generate a readable temporary password like "SanKash-Ab3xK7" */
+function generateTempPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let suffix = "";
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `SanKash-${suffix}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -40,17 +50,16 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action } = body;
-    const appUrl = "https://www.sankash.in";
-    const redirectTo = `${appUrl}/ops/accept-invite`;
-
     const ensureInviteState = async ({
       userId,
       fullName,
       role,
+      setActive,
     }: {
       userId: string;
       fullName: string;
       role: string;
+      setActive?: boolean;
     }) => {
       await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
 
@@ -61,9 +70,9 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!existingProfile) {
-        await adminClient.from("profiles").insert({ user_id: userId, full_name: fullName, status: "invited" });
+        await adminClient.from("profiles").insert({ user_id: userId, full_name: fullName, status: setActive ? "active" : "invited" });
       } else {
-        await adminClient.from("profiles").update({ full_name: fullName, status: "invited" }).eq("user_id", userId);
+        await adminClient.from("profiles").update({ full_name: fullName, status: setActive ? "active" : "invited" }).eq("user_id", userId);
       }
 
       await adminClient.auth.admin.updateUserById(userId, {
@@ -71,25 +80,6 @@ Deno.serve(async (req) => {
         email_confirm: true,
         user_metadata: { full_name: fullName },
       });
-    };
-
-    const generateActivationLink = async (email: string) => {
-      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "recovery",
-        email,
-        options: { redirectTo },
-      });
-
-      if (linkError) {
-        throw new Error(linkError.message);
-      }
-
-      const actionLink = linkData?.properties?.action_link;
-      if (!actionLink) {
-        throw new Error("Failed to generate activation link");
-      }
-
-      return actionLink;
     };
 
     // ── ACTIVATE (self-service, no admin check needed) ──
@@ -135,6 +125,8 @@ Deno.serve(async (req) => {
         });
       }
 
+      const tempPassword = generateTempPassword();
+
       // First check if user already exists
       const { data: existingUsers } = await adminClient.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
@@ -143,10 +135,12 @@ Deno.serve(async (req) => {
 
       if (existingUser) {
         userId = existingUser.id;
+        // Update password for existing user
+        await adminClient.auth.admin.updateUserById(userId, { password: tempPassword });
       } else {
         const { data: userData, error: createError } = await adminClient.auth.admin.createUser({
           email,
-          password: crypto.randomUUID() + crypto.randomUUID(),
+          password: tempPassword,
           email_confirm: true,
           user_metadata: { full_name },
         });
@@ -161,10 +155,9 @@ Deno.serve(async (req) => {
         userId = userData.user.id;
       }
 
-      await ensureInviteState({ userId, fullName: full_name, role });
+      await ensureInviteState({ userId, fullName: full_name, role, setActive: true });
 
-      const actionLink = await generateActivationLink(email);
-      return new Response(JSON.stringify({ success: true, user_id: userId, action_link: actionLink }), {
+      return new Response(JSON.stringify({ success: true, user_id: userId, temp_password: tempPassword }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -273,6 +266,11 @@ Deno.serve(async (req) => {
         });
       }
 
+      const tempPassword = generateTempPassword();
+
+      // Reset password
+      await adminClient.auth.admin.updateUserById(user_id, { password: tempPassword });
+
       const { data: profile } = await adminClient
         .from("profiles")
         .select("full_name")
@@ -289,11 +287,10 @@ Deno.serve(async (req) => {
         userId: user_id,
         fullName: profile?.full_name ?? userData.user.user_metadata?.full_name ?? userData.user.email ?? "Team Member",
         role: roleRow?.role ?? "team_member",
+        setActive: true,
       });
 
-      const actionLink = await generateActivationLink(userData.user.email!);
-
-      return new Response(JSON.stringify({ success: true, action_link: actionLink }), {
+      return new Response(JSON.stringify({ success: true, temp_password: tempPassword, email: userData.user.email }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
