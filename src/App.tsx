@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
+import { Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import ForAgents from "./pages/ForAgents";
 import ForTravelAgents from "./pages/ForTravelAgents";
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/security" element={<Security />} />
             <Route path="/link" element={<LinkRedirect />} />
             {/* Ops Dashboard — protected */}
+            <Route path="/ops" element={<Navigate to="/ops/dashboard" replace />} />
             <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
             <Route path="/ops/accept-invite" element={<OpsAcceptInvite />} />
