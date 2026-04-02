@@ -18,8 +18,8 @@ const Index = () => {
   return (
     <SiteLayout>
       <SEOHead
-        title="SanKash — Help Travel Agents Close More Bookings with EMI, Insurance & Payments"
-        description="SanKash helps travel agents grow with No Cost EMI at checkout, embedded insurance, quote review tools, and T+1 payment settlement. Join 10,000+ travel partners."
+        title="SanKash — Travel Fintech Platform for Payments, Protection & Financing"
+        description="SanKash is a travel fintech platform enabling payments, protection, financing, and customer servicing for travel businesses and travelers across the booking journey."
         jsonLd={[organizationSchema, websiteSchema]}
       />
       <HomepageHero />
