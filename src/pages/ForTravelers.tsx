@@ -27,16 +27,19 @@ const howItWorks = [
   { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
-// Dynamic EMI examples from the real calculator for ₹85,000
+// EMI calculator imports for interactive block
 import { calculateEmi, formatINR as fmtINR } from "@/lib/emi-calculator";
-const _emi3 = calculateEmi(85000, 3, "no_cost");
-const _emi6 = calculateEmi(85000, 6, "no_cost");
-const _emi12 = calculateEmi(85000, 12, "standard");
-const emiExamples = [
-  { tenure: "3 months", monthly: fmtINR(_emi3.monthlyEmi), total: fmtINR(_emi3.totalPayable), tag: "No Cost EMI" },
-  { tenure: "6 months", monthly: fmtINR(_emi6.monthlyEmi), total: fmtINR(_emi6.totalPayable), tag: "No Cost EMI" },
-  { tenure: "12 months", monthly: fmtINR(_emi12.monthlyEmi), total: fmtINR(_emi12.totalPayable), tag: "Most popular" },
-];
+
+function computeEmiExamples(amount: number) {
+  const e3 = calculateEmi(amount, 3, "no_cost");
+  const e6 = calculateEmi(amount, 6, "no_cost");
+  const e12 = calculateEmi(amount, 12, "standard");
+  return [
+    { tenure: "3 months", monthly: fmtINR(e3.monthlyEmi), total: fmtINR(e3.totalPayable), tag: "No Cost EMI" },
+    { tenure: "6 months", monthly: fmtINR(e6.monthlyEmi), total: fmtINR(e6.totalPayable), tag: "No Cost EMI" },
+    { tenure: "12 months", monthly: fmtINR(e12.monthlyEmi), total: fmtINR(e12.totalPayable), tag: "Most popular" },
+  ];
+}
 
 const whyReasons = [
   {
@@ -90,6 +93,14 @@ const faqs = [
 
 const ForTravelers = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
+  const [emiAmount, setEmiAmount] = React.useState(85000);
+  const emiExamples = React.useMemo(() => computeEmiExamples(emiAmount), [emiAmount]);
+
+  const handleEmiAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    const num = parseInt(raw || "0", 10);
+    if (num <= 500000) setEmiAmount(num);
+  };
 
   const scrollToUploader = () => {
     uploaderRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -224,7 +235,15 @@ const ForTravelers = () => {
               <div className="bg-card rounded-2xl border shadow-card p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
-                  Indicative EMI for a ₹85,000 trip
+                  <span>Indicative EMI for a ₹</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={emiAmount > 0 ? emiAmount.toLocaleString("en-IN") : ""}
+                    onChange={handleEmiAmountChange}
+                    className="w-[80px] bg-accent/60 border border-border rounded px-1.5 py-0.5 text-xs font-bold text-foreground text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <span>trip</span>
                 </div>
                 <div className="space-y-2.5">
                   {emiExamples.map((emi) => (
