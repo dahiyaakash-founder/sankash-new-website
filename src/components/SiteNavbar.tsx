@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import sankashLogo from "@/assets/sankash-logo-primary.svg";
+import sankashLogo from "@/assets/sankash-logo-primary.png";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
