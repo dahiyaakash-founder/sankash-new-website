@@ -8,6 +8,7 @@ import { trackAgentSignupClick, trackAgentLoginClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { label: "Home", href: "/" },
   { label: "For Travel Agents", href: "/for-travel-agents" },
   { label: "For Travelers", href: "/for-travelers" },
   { label: "Solutions", href: "/solutions" },
