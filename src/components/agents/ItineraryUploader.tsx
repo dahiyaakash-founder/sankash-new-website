@@ -135,12 +135,24 @@ const ItineraryUploader = () => {
               metadata_json: { confidence: result.confidence },
             });
 
-            // Attach file and log activity
+            // Attach file, log activity, and trigger AI analysis
             if (lead?.id) {
               const { uploadLeadAttachment } = await import("@/lib/attachments-service");
               const { logLeadCreated } = await import("@/lib/activity-service");
-              await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => {});
+              const attachment = await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => null);
               await logLeadCreated(lead.id, "for-travel-agents").catch(() => {});
+
+              // Trigger AI analysis for structured data extraction
+              if (attachment && quoteFileUrl) {
+                const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+                await triggerItineraryAnalysis({
+                  lead_id: lead.id,
+                  attachment_id: attachment.id,
+                  file_url: quoteFileUrl,
+                  file_name: file.name,
+                  audience_type: "agent",
+                }).catch((err) => console.warn("Itinerary analysis failed (non-blocking):", err));
+              }
             }
           } catch { /* silent */ }
         });
