@@ -377,6 +377,16 @@ const OpsLeads = () => {
           onImportComplete={load}
         />
       )}
+
+      {canDelete && deleteOpen && (
+        <DeleteLeadsModal
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          leads={leads.filter(l => selected.has(l.id))}
+          userId={user!.id}
+          onDeleted={() => { setSelected(new Set()); load(); }}
+        />
+      )}
     </OpsLayout>
   );
 };
