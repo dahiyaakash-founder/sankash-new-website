@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import LeadImportModal from "@/components/ops/LeadImportModal";
+import DeleteLeadsModal from "@/components/ops/DeleteLeadsModal";
 import { downloadTemplate } from "@/lib/lead-import-service";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
