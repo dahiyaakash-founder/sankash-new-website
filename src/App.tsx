@@ -21,6 +21,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Security from "./pages/Security";
 import NotFound from "./pages/NotFound";
+import LinkRedirect from "./pages/LinkRedirect";
 import OpsLogin from "./pages/ops/OpsLogin";
 import OpsSetup from "./pages/ops/OpsSetup";
 import OpsDashboard from "./pages/ops/OpsDashboard";
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/security" element={<Security />} />
+            <Route path="/link" element={<LinkRedirect />} />
             {/* Ops Dashboard — protected */}
             <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
