@@ -3,7 +3,7 @@ import OpsLayout from "@/components/ops/OpsLayout";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchLeads } from "@/lib/leads-service";
-import { Loader2, Shield, User, Inbox, UserPlus, MoreHorizontal } from "lucide-react";
+import { Loader2, Shield, User, Inbox, UserPlus, MoreHorizontal, ChevronDown, ChevronRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -29,6 +29,13 @@ const roleBadgeStyles: Record<string, string> = {
   admin: "bg-primary/10 text-primary",
   team_supervisor: "bg-amber-100 text-amber-800",
   team_member: "bg-muted text-muted-foreground",
+};
+
+const ROLE_ORDER: Record<string, number> = {
+  super_admin: 0,
+  admin: 1,
+  team_supervisor: 2,
+  team_member: 3,
 };
 
 interface TeamMemberRow {
@@ -55,6 +62,7 @@ const OpsTeamManagement = () => {
   const [inviting, setInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState({ full_name: "", email: "", role: "team_member", supervisor_id: "" });
   const [credentialsModal, setCredentialsModal] = useState<{ email: string; password: string; name: string } | null>(null);
+  const [expandedSupervisors, setExpandedSupervisors] = useState<Set<string>>(new Set());
 
   useEffect(() => { loadMembers(); }, []);
 
@@ -69,14 +77,11 @@ const OpsTeamManagement = () => {
         profileMap[p.user_id] = { full_name: p.full_name, status: p.status, supervisor_id: p.supervisor_id };
       });
 
-      // Try to get emails for all users via auth if we're super_admin
-      // Otherwise fall back to profile names
       let emailMap: Record<string, string> = {};
       if (user?.email) {
         emailMap[user.id] = user.email;
       }
 
-      // Get lead stats per member
       const allLeads = await fetchLeads({ pageSize: 1000 });
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -99,6 +104,9 @@ const OpsTeamManagement = () => {
       });
 
       setMembers(merged);
+      // Auto-expand all supervisors
+      const supIds = new Set(merged.filter(m => m.role === "team_supervisor").map(m => m.user_id));
+      setExpandedSupervisors(supIds);
     } catch {
       toast.error("Failed to load team members");
     }
@@ -118,6 +126,7 @@ const OpsTeamManagement = () => {
           email: inviteForm.email,
           full_name: inviteForm.full_name,
           role: inviteForm.role,
+          supervisor_id: inviteForm.supervisor_id || undefined,
         },
       });
       if (res.error) {
@@ -127,7 +136,6 @@ const OpsTeamManagement = () => {
         throw new Error(msg || "Invite failed");
       }
       if (res.data?.error) {
-        // Handle specific known errors
         const errMsg = res.data.error;
         if (errMsg.includes("already been registered") || errMsg.includes("duplicate")) {
           throw new Error(`${inviteForm.email} has already been invited or registered.`);
@@ -159,6 +167,19 @@ const OpsTeamManagement = () => {
       loadMembers();
     } catch (err: any) {
       toast.error(err.message || "Failed to update role");
+    }
+  };
+
+  const handleSetSupervisor = async (userId: string, supervisorId: string | null) => {
+    try {
+      const res = await supabase.functions.invoke("team-management", {
+        body: { action: "set_supervisor", user_id: userId, supervisor_id: supervisorId },
+      });
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success("Supervisor updated");
+      loadMembers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update supervisor");
     }
   };
 
@@ -204,18 +225,154 @@ const OpsTeamManagement = () => {
     }
   };
 
+  const toggleSupervisor = (supervisorId: string) => {
+    setExpandedSupervisors(prev => {
+      const next = new Set(prev);
+      if (next.has(supervisorId)) next.delete(supervisorId);
+      else next.add(supervisorId);
+      return next;
+    });
+  };
+
   if (loading) return <OpsLayout><div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={28} /></div></OpsLayout>;
 
-  const supervisors = members.filter(m => m.role === "team_supervisor" || m.role === "admin" || m.role === "super_admin");
+  // Build hierarchy
+  const admins = members.filter(m => m.role === "super_admin" || m.role === "admin").sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role]);
+  const supervisors = members.filter(m => m.role === "team_supervisor");
+  const teamMembers = members.filter(m => m.role === "team_member");
+  const supervisorOptions = supervisors.filter(s => s.status !== "disabled");
+
+  // Group team members by supervisor
+  const membersBySupervisor: Record<string, TeamMemberRow[]> = {};
+  const unassignedMembers: TeamMemberRow[] = [];
+  teamMembers.forEach(m => {
+    if (m.supervisor_id && supervisors.some(s => s.user_id === m.supervisor_id)) {
+      if (!membersBySupervisor[m.supervisor_id]) membersBySupervisor[m.supervisor_id] = [];
+      membersBySupervisor[m.supervisor_id].push(m);
+    } else {
+      unassignedMembers.push(m);
+    }
+  });
+
+  const renderMemberRow = (m: TeamMemberRow, indent: number = 0) => {
+    const isYou = m.user_id === user?.id;
+    const displayName = m.full_name || m.email || "Team member";
+    const displayEmail = isYou ? user?.email : m.email;
+    const isDisabled = m.status === "disabled";
+    const isInvited = m.status === "invited";
+    const isMemberSuperAdmin = m.role === "super_admin";
+    const supervisorName = m.supervisor_id ? members.find(s => s.user_id === m.supervisor_id)?.full_name : null;
+
+    return (
+      <tr key={m.id} className={`border-b last:border-0 ${isDisabled ? "opacity-50" : ""}`}>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2" style={{ paddingLeft: `${indent * 24}px` }}>
+            <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center shrink-0">
+              <User size={13} className="text-accent-foreground" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-medium truncate">{displayName}</span>
+                {isYou && <span className="text-[10px] text-primary font-semibold">(You)</span>}
+              </div>
+              {displayEmail && <span className="text-[11px] text-muted-foreground">{displayEmail}</span>}
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${roleBadgeStyles[m.role] ?? "bg-muted text-muted-foreground"}`}>
+            <Shield size={10} />
+            {roleLabels[m.role] ?? m.role}
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          {isDisabled ? (
+            <span className="text-xs text-destructive font-medium">Disabled</span>
+          ) : isInvited ? (
+            <span className="text-xs text-amber-600 font-medium">Invited</span>
+          ) : (
+            <span className="text-xs text-emerald-600 font-medium">Active</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-xs text-muted-foreground">
+          {supervisorName ?? (m.role === "team_member" ? <span className="italic text-muted-foreground/50">Unassigned</span> : "—")}
+        </td>
+        <td className="px-4 py-3 text-center text-sm">{m.openLeads}</td>
+        <td className="px-4 py-3 text-center">
+          {m.overdueLeads > 0 ? (
+            <span className="text-sm font-semibold text-amber-600">{m.overdueLeads}</span>
+          ) : <span className="text-sm">0</span>}
+        </td>
+        <td className="px-4 py-3 text-center">
+          {m.convertedThisMonth > 0 ? (
+            <span className="text-sm font-semibold text-emerald-600">{m.convertedThisMonth}</span>
+          ) : <span className="text-sm">0</span>}
+        </td>
+        {isAdminOrAbove && (
+          <td className="px-4 py-3 text-right">
+            {!isMemberSuperAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                    <MoreHorizontal size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!isDisabled && (
+                    <>
+                      {isInvited && (
+                        <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Re-send Invite</DropdownMenuItem>
+                      )}
+                      {!isInvited && !isYou && (
+                        <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Reset Password</DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "admin")}>Set as Admin</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_supervisor")}>Set as Supervisor</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_member")}>Set as Team Member</DropdownMenuItem>
+                      {(m.role === "team_member" || m.role === "team_supervisor") && supervisorOptions.length > 0 && (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>Assign Supervisor</DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem onClick={() => handleSetSupervisor(m.user_id, null)}>
+                              <span className="italic text-muted-foreground">None (unassign)</span>
+                            </DropdownMenuItem>
+                            {supervisorOptions.map(s => (
+                              <DropdownMenuItem
+                                key={s.user_id}
+                                onClick={() => handleSetSupervisor(m.user_id, s.user_id)}
+                                className={m.supervisor_id === s.user_id ? "bg-accent" : ""}
+                              >
+                                {s.full_name ?? s.user_id.slice(0, 8)}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      )}
+                      <DropdownMenuItem onClick={() => handleDisable(m.user_id)} className="text-destructive">Disable Access</DropdownMenuItem>
+                    </>
+                  )}
+                  {isDisabled && (
+                    <DropdownMenuItem onClick={() => handleReactivate(m.user_id)}>Reactivate</DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </td>
+        )}
+      </tr>
+    );
+  };
+
+  const colCount = isAdminOrAbove ? 8 : 7;
 
   return (
     <OpsLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6 max-w-5xl">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-heading font-bold">Team Management</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {isAdminOrAbove ? "Manage team members, roles, and assignments." : "View team members and their roles."}
+              {isAdminOrAbove ? "Manage team hierarchy, roles, and assignments." : "View your team and reporting structure."}
             </p>
           </div>
           {isAdminOrAbove && (
@@ -225,6 +382,7 @@ const OpsTeamManagement = () => {
           )}
         </div>
 
+        {/* Hierarchy Tree View */}
         <div className="border rounded-xl overflow-hidden bg-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -233,6 +391,7 @@ const OpsTeamManagement = () => {
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Member</th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Role</th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Status</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">Reports To</th>
                   <th className="text-center px-4 py-2.5 text-xs font-medium text-muted-foreground">Open</th>
                   <th className="text-center px-4 py-2.5 text-xs font-medium text-muted-foreground">Overdue</th>
                   <th className="text-center px-4 py-2.5 text-xs font-medium text-muted-foreground">Converted</th>
@@ -244,7 +403,7 @@ const OpsTeamManagement = () => {
               <tbody>
                 {members.length === 0 && (
                   <tr>
-                    <td colSpan={isAdminOrAbove ? 7 : 6} className="px-4 py-12 text-center">
+                    <td colSpan={colCount} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Inbox size={24} className="text-muted-foreground/50" />
                         <p className="text-sm text-muted-foreground">No team members found</p>
@@ -252,91 +411,112 @@ const OpsTeamManagement = () => {
                     </td>
                   </tr>
                 )}
-                {members.map((m) => {
-                  const isYou = m.user_id === user?.id;
-                  const displayName = m.full_name || m.email || `Team member`;
-                  const displayEmail = isYou ? user?.email : m.email;
-                  const isDisabled = m.status === "disabled";
-                  const isInvited = m.status === "invited";
-                  const isMemberSuperAdmin = m.role === "super_admin";
 
-                  return (
-                    <tr key={m.id} className={`border-b last:border-0 ${isDisabled ? "opacity-50" : ""}`}>
-                      <td className="px-4 py-3">
+                {/* Admins / Super Admins */}
+                {admins.length > 0 && (
+                  <tr>
+                    <td colSpan={colCount} className="px-4 py-2 bg-primary/5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Leadership</span>
+                    </td>
+                  </tr>
+                )}
+                {admins.map(m => renderMemberRow(m))}
+
+                {/* Supervisors with their team members */}
+                {supervisors.length > 0 && (
+                  <tr>
+                    <td colSpan={colCount} className="px-4 py-2 bg-amber-50">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Supervisors & Teams</span>
+                    </td>
+                  </tr>
+                )}
+                {supervisors.map(sup => {
+                  const teamUnder = membersBySupervisor[sup.user_id] ?? [];
+                  const isExpanded = expandedSupervisors.has(sup.user_id);
+                  return [
+                    <tr key={`sup-toggle-${sup.user_id}`} className="border-b">
+                      <td colSpan={1} className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center">
-                            <User size={13} className="text-accent-foreground" />
+                          {teamUnder.length > 0 && (
+                            <button onClick={() => toggleSupervisor(sup.user_id)} className="p-0.5 hover:bg-accent rounded">
+                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </button>
+                          )}
+                          {teamUnder.length === 0 && <div className="w-5" />}
+                          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                            <Users size={13} className="text-amber-700" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-medium">{displayName}</span>
-                              {isYou && <span className="text-[10px] text-primary font-semibold">(You)</span>}
+                              <span className="text-sm font-medium truncate">{sup.full_name || "Supervisor"}</span>
+                              {sup.user_id === user?.id && <span className="text-[10px] text-primary font-semibold">(You)</span>}
+                              {teamUnder.length > 0 && (
+                                <span className="text-[10px] text-muted-foreground">· {teamUnder.length} member{teamUnder.length > 1 ? "s" : ""}</span>
+                              )}
                             </div>
-                            {displayEmail && <span className="text-[11px] text-muted-foreground">{displayEmail}</span>}
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${roleBadgeStyles[m.role] ?? "bg-muted text-muted-foreground"}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${roleBadgeStyles.team_supervisor}`}>
                           <Shield size={10} />
-                          {roleLabels[m.role] ?? m.role}
+                          Team Supervisor
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        {isDisabled ? (
+                        {sup.status === "disabled" ? (
                           <span className="text-xs text-destructive font-medium">Disabled</span>
-                        ) : isInvited ? (
+                        ) : sup.status === "invited" ? (
                           <span className="text-xs text-amber-600 font-medium">Invited</span>
                         ) : (
                           <span className="text-xs text-emerald-600 font-medium">Active</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm">{m.openLeads}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">Admin</td>
+                      <td className="px-4 py-3 text-center text-sm">{sup.openLeads}</td>
                       <td className="px-4 py-3 text-center">
-                        {m.overdueLeads > 0 ? (
-                          <span className="text-sm font-semibold text-amber-600">{m.overdueLeads}</span>
-                        ) : <span className="text-sm">0</span>}
+                        {sup.overdueLeads > 0 ? <span className="text-sm font-semibold text-amber-600">{sup.overdueLeads}</span> : <span className="text-sm">0</span>}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {m.convertedThisMonth > 0 ? (
-                          <span className="text-sm font-semibold text-emerald-600">{m.convertedThisMonth}</span>
-                        ) : <span className="text-sm">0</span>}
+                        {sup.convertedThisMonth > 0 ? <span className="text-sm font-semibold text-emerald-600">{sup.convertedThisMonth}</span> : <span className="text-sm">0</span>}
                       </td>
                       {isAdminOrAbove && (
                         <td className="px-4 py-3 text-right">
-                          {!isMemberSuperAdmin && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                  <MoreHorizontal size={14} />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {!isDisabled && (
-                                  <>
-                                    {isInvited && (
-                                      <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Re-send Invite</DropdownMenuItem>
-                                    )}
-                                    {!isInvited && !isYou && (
-                                      <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Reset Password</DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "admin")}>Set as Admin</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_supervisor")}>Set as Supervisor</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_member")}>Set as Team Member</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDisable(m.user_id)} className="text-destructive">Disable Access</DropdownMenuItem>
-                                  </>
-                                )}
-                                {isDisabled && (
-                                  <DropdownMenuItem onClick={() => handleReactivate(m.user_id)}>Reactivate</DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                <MoreHorizontal size={14} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {sup.status !== "disabled" && (
+                                <>
+                                  {sup.status === "invited" && <DropdownMenuItem onClick={() => handleReinvite(sup.user_id)}>Re-send Invite</DropdownMenuItem>}
+                                  {sup.status !== "invited" && sup.user_id !== user?.id && <DropdownMenuItem onClick={() => handleReinvite(sup.user_id)}>Reset Password</DropdownMenuItem>}
+                                  <DropdownMenuItem onClick={() => handleRoleChange(sup.user_id, "admin")}>Set as Admin</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRoleChange(sup.user_id, "team_member")}>Set as Team Member</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDisable(sup.user_id)} className="text-destructive">Disable Access</DropdownMenuItem>
+                                </>
+                              )}
+                              {sup.status === "disabled" && <DropdownMenuItem onClick={() => handleReactivate(sup.user_id)}>Reactivate</DropdownMenuItem>}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       )}
-                    </tr>
-                  );
+                    </tr>,
+                    ...(isExpanded ? teamUnder.map(m => renderMemberRow(m, 1)) : []),
+                  ];
                 })}
+
+                {/* Unassigned team members */}
+                {unassignedMembers.length > 0 && (
+                  <tr>
+                    <td colSpan={colCount} className="px-4 py-2 bg-muted/30">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Unassigned Team Members</span>
+                    </td>
+                  </tr>
+                )}
+                {unassignedMembers.map(m => renderMemberRow(m))}
               </tbody>
             </table>
           </div>
@@ -345,7 +525,7 @@ const OpsTeamManagement = () => {
         {isAdminOrAbove && (
           <div className="p-4 rounded-xl bg-accent/50 border border-border/50">
             <p className="text-xs text-muted-foreground">
-              <strong>Invite flow:</strong> When you invite a member, a temporary password is generated. Share it with them privately. They can change it later from Forgot password.
+              <strong>Hierarchy:</strong> Assign team members to supervisors using the Actions menu → "Assign Supervisor". Supervisors report to Admin and can view only their assigned team members.
             </p>
           </div>
         )}
@@ -377,6 +557,20 @@ const OpsTeamManagement = () => {
                 </SelectContent>
               </Select>
             </div>
+            {inviteForm.role === "team_member" && supervisorOptions.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Reports To (Supervisor)</label>
+                <Select value={inviteForm.supervisor_id} onValueChange={(v) => setInviteForm((p) => ({ ...p, supervisor_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select supervisor (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {supervisorOptions.map(s => (
+                      <SelectItem key={s.user_id} value={s.user_id}>{s.full_name ?? s.user_id.slice(0, 8)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Button onClick={handleInvite} className="w-full" disabled={inviting}>
               {inviting ? <><Loader2 size={16} className="animate-spin mr-2" /> Sending invite…</> : "Send Invite"}
             </Button>
