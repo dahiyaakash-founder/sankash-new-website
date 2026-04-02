@@ -317,6 +317,9 @@ const OpsTeamManagement = () => {
                                     {isInvited && (
                                       <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Re-send Invite</DropdownMenuItem>
                                     )}
+                                    {!isInvited && !isYou && (
+                                      <DropdownMenuItem onClick={() => handleReinvite(m.user_id)}>Reset Password</DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "admin")}>Set as Admin</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_supervisor")}>Set as Supervisor</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleRoleChange(m.user_id, "team_member")}>Set as Team Member</DropdownMenuItem>
