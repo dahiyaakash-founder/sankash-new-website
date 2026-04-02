@@ -127,27 +127,37 @@ const ForTravelers = () => {
                 For Travelers
               </p>
               <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
-                Already got a holiday quote?
+                Book your dream holiday.
                 <br />
-                <span className="text-gradient-brand">Check it before you book.</span>
+                <span className="text-gradient-brand">Pay in easy monthly EMIs.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Upload your holiday quote to explore better-value options and check travel EMI plans — before you commit to booking.
+                Find out what your holiday really costs per month — upload a quote or enter an amount to see No Cost EMI options instantly.
               </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <Button size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
-                  Upload My Quote <ArrowRight size={18} />
+                  Check My Holiday Cost <ArrowRight size={18} />
                 </Button>
                 <a href="#emi-section" className="w-full sm:w-auto">
                   <Button variant="outline" size="xl" className="gap-2 w-full sm:w-auto">
-                    <Calculator size={16} /> Check EMI Options
+                    <Calculator size={16} /> See EMI Options
                   </Button>
                 </a>
-                <Link to="/emi-calculator" className="w-full sm:w-auto">
-                  <Button variant="ghost" size="xl" className="gap-2 text-primary w-full sm:w-auto">
-                    EMI Calculator <ArrowRight size={14} />
-                  </Button>
-                </Link>
+              </div>
+              {/* Trust signals */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 size={13} className="text-brand-green" />
+                  5 Million+ travelers served
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 size={13} className="text-brand-green" />
+                  15+ lending partners
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 size={13} className="text-brand-green" />
+                  No credit score impact
+                </span>
               </div>
             </motion.div>
 
