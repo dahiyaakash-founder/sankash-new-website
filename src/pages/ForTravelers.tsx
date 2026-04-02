@@ -27,16 +27,19 @@ const howItWorks = [
   { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
-// Dynamic EMI examples from the real calculator for ₹85,000
+// EMI calculator imports for interactive block
 import { calculateEmi, formatINR as fmtINR } from "@/lib/emi-calculator";
-const _emi3 = calculateEmi(85000, 3, "no_cost");
-const _emi6 = calculateEmi(85000, 6, "no_cost");
-const _emi12 = calculateEmi(85000, 12, "standard");
-const emiExamples = [
-  { tenure: "3 months", monthly: fmtINR(_emi3.monthlyEmi), total: fmtINR(_emi3.totalPayable), tag: "No Cost EMI" },
-  { tenure: "6 months", monthly: fmtINR(_emi6.monthlyEmi), total: fmtINR(_emi6.totalPayable), tag: "No Cost EMI" },
-  { tenure: "12 months", monthly: fmtINR(_emi12.monthlyEmi), total: fmtINR(_emi12.totalPayable), tag: "Most popular" },
-];
+
+function computeEmiExamples(amount: number) {
+  const e3 = calculateEmi(amount, 3, "no_cost");
+  const e6 = calculateEmi(amount, 6, "no_cost");
+  const e12 = calculateEmi(amount, 12, "standard");
+  return [
+    { tenure: "3 months", monthly: fmtINR(e3.monthlyEmi), total: fmtINR(e3.totalPayable), tag: "No Cost EMI" },
+    { tenure: "6 months", monthly: fmtINR(e6.monthlyEmi), total: fmtINR(e6.totalPayable), tag: "No Cost EMI" },
+    { tenure: "12 months", monthly: fmtINR(e12.monthlyEmi), total: fmtINR(e12.totalPayable), tag: "Most popular" },
+  ];
+}
 
 const whyReasons = [
   {
