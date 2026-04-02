@@ -31,9 +31,13 @@ const RouteTracker = () => {
     clarityLoaded.current = true;
   }, [location.pathname]);
 
+  // Scroll to top and track page view on route change
   useEffect(() => {
-    // Avoid duplicate fires for the same path
     if (prevPath.current !== location.pathname) {
+      // Reset scroll on route change (skip hash-only navigations)
+      if (!location.hash) {
+        window.scrollTo({ top: 0, left: 0 });
+      }
       trackPageView(location.pathname);
       prevPath.current = location.pathname;
     }
