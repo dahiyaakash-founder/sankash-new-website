@@ -272,6 +272,32 @@ async function analyzeWithAI(
   return JSON.parse(jsonMatch[0]);
 }
 
+// ── Currency conversion ──────────────────────────────────────────
+
+/** Conservative INR rates for common travel currencies (for EMI eligibility only) */
+const INR_RATES: Record<string, number> = {
+  INR: 1,
+  USD: 83,
+  EUR: 90,
+  GBP: 105,
+  AED: 23,
+  SGD: 62,
+  AUD: 55,
+  NZD: 50,
+  THB: 2.4,
+  MYR: 18,
+  LKR: 0.26,
+  JPY: 0.56,
+  CAD: 62,
+  CHF: 93,
+};
+
+function convertToINR(amount: number, currency: string): { inrAmount: number; rate: number } | null {
+  const rate = INR_RATES[currency.toUpperCase()];
+  if (!rate) return null;
+  return { inrAmount: Math.round(amount * rate), rate };
+}
+
 // ── Commercial flags ─────────────────────────────────────────────
 
 function computeCommercialFlags(parsed: Record<string, unknown>) {
@@ -287,11 +313,28 @@ function computeCommercialFlags(parsed: Record<string, unknown>) {
       ` [Auto-computed: ${pricePerPerson} × ${paxCount} pax = ${totalPrice}]`;
   }
 
+  const currency = ((parsed.currency as string) || "INR").toUpperCase();
   const isInternational = parsed.domestic_or_international === "international";
   const insuranceMentioned = parsed.insurance_mentioned === true;
   const visaMentioned = parsed.visa_mentioned === true;
 
-  const emi_candidate = totalPrice != null && totalPrice >= 20000 && totalPrice <= 2000000;
+  // Convert to INR for EMI eligibility check
+  let emiCheckAmount = totalPrice;
+  if (totalPrice != null && currency !== "INR") {
+    const conversion = convertToINR(totalPrice, currency);
+    if (conversion) {
+      emiCheckAmount = conversion.inrAmount;
+      parsed.price_notes = ((parsed.price_notes as string) || "") +
+        ` [Converted from ${currency} at ~${conversion.rate} INR/${currency} for EMI check: ≈₹${conversion.inrAmount}]`;
+    } else {
+      // Unknown currency — skip EMI check
+      emiCheckAmount = null;
+      parsed.price_notes = ((parsed.price_notes as string) || "") +
+        ` [Unknown currency ${currency} — EMI eligibility not evaluated]`;
+    }
+  }
+
+  const emi_candidate = emiCheckAmount != null && emiCheckAmount >= 20000 && emiCheckAmount <= 2000000;
   const insurance_candidate = isInternational || insuranceMentioned || (visaMentioned && isInternational);
   const pg_candidate = totalPrice != null && totalPrice > 0;
 
