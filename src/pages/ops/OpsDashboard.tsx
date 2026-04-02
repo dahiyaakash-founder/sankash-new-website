@@ -228,11 +228,12 @@ const OpsDashboard = () => {
               <h2 className="text-sm font-heading font-semibold">Team leaderboard</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="text-left px-3 py-2 text-xs font-medium text-muted-foreground">Member</th>
                     <th className="text-left px-3 py-2 text-xs font-medium text-muted-foreground">Role</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-muted-foreground">Reports To</th>
                     <th className="text-center px-3 py-2 text-xs font-medium text-muted-foreground">Total</th>
                     <th className="text-center px-3 py-2 text-xs font-medium text-muted-foreground">Open</th>
                     <th className="text-center px-3 py-2 text-xs font-medium text-muted-foreground">Overdue</th>
@@ -244,6 +245,9 @@ const OpsDashboard = () => {
                     <tr key={s.userId} className="border-b last:border-0">
                       <td className="px-3 py-2 font-medium">{s.name}</td>
                       <td className="px-3 py-2 text-xs capitalize text-muted-foreground">{s.role.replace(/_/g, " ")}</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        {s.supervisorName ?? (s.role === "team_member" ? <span className="italic opacity-50">Unassigned</span> : "—")}
+                      </td>
                       <td className="px-3 py-2 text-center">{s.totalLeads}</td>
                       <td className="px-3 py-2 text-center">{s.openLeads}</td>
                       <td className="px-3 py-2 text-center">
