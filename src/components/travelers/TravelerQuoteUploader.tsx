@@ -135,6 +135,43 @@ const TravelerQuoteUploader = () => {
       trackQuoteAnalysisRequested({ audience_type: "traveler" });
       setTimeout(() => {
         setStage(result.confidence === "high" ? "results-high" : "results-medium");
+        // Create partial lead immediately on upload — don't wait for form
+        import("@/lib/leads-service").then(async ({ createLeadWithDedup, uploadQuoteFile }) => {
+          try {
+            let quoteFileUrl: string | null = null;
+            const uploaded = await uploadQuoteFile(file);
+            quoteFileUrl = uploaded.url;
+
+            const { lead } = await createLeadWithDedup({
+              full_name: "Traveler (anonymous)",
+              lead_source_page: "for-travelers",
+              lead_source_type: "itinerary_upload",
+              audience_type: "traveler",
+              quote_file_name: file.name,
+              quote_file_url: quoteFileUrl,
+              metadata_json: { confidence: result.confidence, upload_only: true },
+            });
+
+            if (lead?.id) {
+              const { uploadLeadAttachment } = await import("@/lib/attachments-service");
+              const { logLeadCreated } = await import("@/lib/activity-service");
+              const attachment = await uploadLeadAttachment(file, lead.id, { sourceType: "itinerary_upload" }).catch(() => null);
+              await logLeadCreated(lead.id, "for-travelers").catch(() => {});
+
+              // Trigger AI analysis for structured data extraction
+              if (attachment && quoteFileUrl) {
+                const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+                await triggerItineraryAnalysis({
+                  lead_id: lead.id,
+                  attachment_id: attachment.id,
+                  file_url: quoteFileUrl,
+                  file_name: file.name,
+                  audience_type: "traveler",
+                }).catch((err) => console.warn("Itinerary analysis failed (non-blocking):", err));
+              }
+            }
+          } catch { /* silent — lead creation is non-blocking */ }
+        });
       }, 2400);
     }, 800);
   }, []);
