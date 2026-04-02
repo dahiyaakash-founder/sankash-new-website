@@ -55,11 +55,13 @@ Deno.serve(async (req) => {
       fullName,
       role,
       setActive,
+      supervisorId,
     }: {
       userId: string;
       fullName: string;
       role: string;
       setActive?: boolean;
+      supervisorId?: string | null;
     }) => {
       await adminClient.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
 
@@ -69,10 +71,18 @@ Deno.serve(async (req) => {
         .eq("user_id", userId)
         .maybeSingle();
 
+      const profileData: Record<string, any> = {
+        full_name: fullName,
+        status: setActive ? "active" : "invited",
+      };
+      if (supervisorId !== undefined) {
+        profileData.supervisor_id = supervisorId || null;
+      }
+
       if (!existingProfile) {
-        await adminClient.from("profiles").insert({ user_id: userId, full_name: fullName, status: setActive ? "active" : "invited" });
+        await adminClient.from("profiles").insert({ user_id: userId, ...profileData });
       } else {
-        await adminClient.from("profiles").update({ full_name: fullName, status: setActive ? "active" : "invited" }).eq("user_id", userId);
+        await adminClient.from("profiles").update(profileData).eq("user_id", userId);
       }
 
       await adminClient.auth.admin.updateUserById(userId, {
@@ -108,7 +118,7 @@ Deno.serve(async (req) => {
 
     // ── INVITE ──
     if (action === "invite") {
-      const { email, full_name, role } = body;
+      const { email, full_name, role, supervisor_id } = body;
       if (!email || !full_name || !role) {
         return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
@@ -155,7 +165,7 @@ Deno.serve(async (req) => {
         userId = userData.user.id;
       }
 
-      await ensureInviteState({ userId, fullName: full_name, role, setActive: true });
+      await ensureInviteState({ userId, fullName: full_name, role, setActive: true, supervisorId: supervisor_id });
 
       return new Response(JSON.stringify({ success: true, user_id: userId, temp_password: tempPassword }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -193,6 +203,31 @@ Deno.serve(async (req) => {
       }
 
       await adminClient.from("user_roles").update({ role: new_role }).eq("user_id", user_id);
+
+      // If promoted to supervisor/admin, clear their supervisor_id
+      if (new_role === "admin" || new_role === "team_supervisor") {
+        // Clear supervisor for promoted users (supervisors report to admin directly)
+        if (new_role === "admin") {
+          await adminClient.from("profiles").update({ supervisor_id: null }).eq("user_id", user_id);
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── SET SUPERVISOR ──
+    if (action === "set_supervisor") {
+      const { user_id, supervisor_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      await adminClient.from("profiles").update({ supervisor_id: supervisor_id || null }).eq("user_id", user_id);
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
