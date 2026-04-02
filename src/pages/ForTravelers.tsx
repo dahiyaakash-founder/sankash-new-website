@@ -235,7 +235,15 @@ const ForTravelers = () => {
               <div className="bg-card rounded-2xl border shadow-card p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <CreditCard size={14} className="text-primary" />
-                  Indicative EMI for a ₹85,000 trip
+                  <span>Indicative EMI for a ₹</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={emiAmount > 0 ? emiAmount.toLocaleString("en-IN") : ""}
+                    onChange={handleEmiAmountChange}
+                    className="w-[80px] bg-accent/60 border border-border rounded px-1.5 py-0.5 text-xs font-bold text-foreground text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <span>trip</span>
                 </div>
                 <div className="space-y-2.5">
                   {emiExamples.map((emi) => (
