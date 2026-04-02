@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
 import { fetchLeadKPIs, fetchLeads, fetchLeadsBySource, fetchLeadsByStatus, fetchTeamMembers, type LeadRow, type TeamMember } from "@/lib/leads-service";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2, TrendingUp, Users, Clock, Server, Rocket, CheckCircle2, AlertTriangle, BarChart3, UserCheck, CalendarClock } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
