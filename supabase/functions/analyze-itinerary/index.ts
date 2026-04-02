@@ -275,7 +275,18 @@ async function analyzeWithAI(
 // ── Commercial flags ─────────────────────────────────────────────
 
 function computeCommercialFlags(parsed: Record<string, unknown>) {
-  const totalPrice = parsed.total_price as number | null;
+  // Auto-compute total_price if missing but per-person and pax count are available
+  let totalPrice = typeof parsed.total_price === "number" ? parsed.total_price : null;
+  const pricePerPerson = typeof parsed.price_per_person === "number" ? parsed.price_per_person : null;
+  const paxCount = typeof parsed.traveller_count_total === "number" ? parsed.traveller_count_total : null;
+
+  if (totalPrice == null && pricePerPerson != null && paxCount != null && paxCount > 0) {
+    totalPrice = pricePerPerson * paxCount;
+    parsed.total_price = totalPrice;
+    parsed.price_notes = ((parsed.price_notes as string) || "") +
+      ` [Auto-computed: ${pricePerPerson} × ${paxCount} pax = ${totalPrice}]`;
+  }
+
   const isInternational = parsed.domestic_or_international === "international";
   const insuranceMentioned = parsed.insurance_mentioned === true;
   const visaMentioned = parsed.visa_mentioned === true;
