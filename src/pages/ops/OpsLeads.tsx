@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown } from "lucide-react";
+import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import LeadImportModal from "@/components/ops/LeadImportModal";
 import { downloadTemplate } from "@/lib/lead-import-service";
