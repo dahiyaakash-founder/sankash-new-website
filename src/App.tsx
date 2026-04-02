@@ -61,6 +61,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/security" element={<Security />} />
+            <Route path="/link" element={<LinkRedirect />} />
             {/* Ops Dashboard — protected */}
             <Route path="/ops/setup" element={<OpsSetup />} />
             <Route path="/ops/login" element={<OpsLogin />} />
