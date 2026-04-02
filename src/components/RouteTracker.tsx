@@ -14,21 +14,26 @@ const RouteTracker = () => {
   const prevPath = useRef<string | null>(null);
   const clarityLoaded = useRef(false);
 
-  // Initialize Clarity once, only on public routes
+  // Initialize Clarity once, only on public routes — deferred to reduce main-thread blocking
   useEffect(() => {
     if (clarityLoaded.current) return;
     if (location.pathname.startsWith("/ops")) return;
 
-    ((c: any, l: Document, a: string, r: string, i: string) => {
-      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
-      const t = l.createElement(r) as HTMLScriptElement;
-      t.async = true;
-      t.src = "https://www.clarity.ms/tag/" + i;
-      const y = l.getElementsByTagName(r)[0];
-      y.parentNode!.insertBefore(t, y);
-    })(window, document, "clarity", "script", CLARITY_PROJECT_ID);
+    // Delay Clarity initialization to avoid blocking first paint
+    const timer = setTimeout(() => {
+      if (clarityLoaded.current) return;
+      ((c: any, l: Document, a: string, r: string, i: string) => {
+        c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+        const t = l.createElement(r) as HTMLScriptElement;
+        t.async = true;
+        t.src = "https://www.clarity.ms/tag/" + i;
+        const y = l.getElementsByTagName(r)[0];
+        y.parentNode!.insertBefore(t, y);
+      })(window, document, "clarity", "script", CLARITY_PROJECT_ID);
+      clarityLoaded.current = true;
+    }, 2500);
 
-    clarityLoaded.current = true;
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 
   // Scroll to top and track page view on route change
