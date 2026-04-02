@@ -291,6 +291,36 @@ export type Database = {
           },
         ]
       }
+      lead_deletions: {
+        Row: {
+          deleted_at: string
+          deleted_by: string
+          deletion_reason: string
+          id: string
+          lead_id: string
+          lead_snapshot: Json
+          notes: string | null
+        }
+        Insert: {
+          deleted_at?: string
+          deleted_by: string
+          deletion_reason: string
+          id?: string
+          lead_id: string
+          lead_snapshot?: Json
+          notes?: string | null
+        }
+        Update: {
+          deleted_at?: string
+          deleted_by?: string
+          deletion_reason?: string
+          id?: string
+          lead_id?: string
+          lead_snapshot?: Json
+          notes?: string | null
+        }
+        Relationships: []
+      }
       lead_notes: {
         Row: {
           created_at: string

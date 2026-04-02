@@ -6,9 +6,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown } from "lucide-react";
+import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import LeadImportModal from "@/components/ops/LeadImportModal";
+import DeleteLeadsModal from "@/components/ops/DeleteLeadsModal";
 import { downloadTemplate } from "@/lib/lead-import-service";
 
 const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
@@ -111,7 +112,9 @@ const OpsLeads = () => {
   const [activePreset, setActivePreset] = useState("All");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importOpen, setImportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
@@ -192,6 +195,11 @@ const OpsLeads = () => {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
            <div className="flex items-center gap-2">
+            {selected.size > 0 && canDelete && (
+              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} className="gap-1.5 text-xs">
+                <Trash2 size={14} /> Delete ({selected.size})
+              </Button>
+            )}
             {selected.size > 0 && <span className="text-xs text-muted-foreground">{selected.size} selected</span>}
             {canImport && (
               <>
@@ -367,6 +375,16 @@ const OpsLeads = () => {
           userId={user!.id}
           teamMembers={teamMembers}
           onImportComplete={load}
+        />
+      )}
+
+      {canDelete && deleteOpen && (
+        <DeleteLeadsModal
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          leads={leads.filter(l => selected.has(l.id))}
+          userId={user!.id}
+          onDeleted={() => { setSelected(new Set()); load(); }}
         />
       )}
     </OpsLayout>
