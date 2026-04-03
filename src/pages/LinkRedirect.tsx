@@ -4,16 +4,16 @@ import { useLocation } from "react-router-dom";
 const OLD_APP_ORIGIN = "https://app.sankash.in";
 
 /**
- * Redirects /link?id=xxx (and any other query params) to the old SanKash app.
+ * Redirects /link, /link/*, /cce/* (and any query params) to the old SanKash app.
  * Preserves the full path and query string.
  */
 const LinkRedirect = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const destination = `${OLD_APP_ORIGIN}/link${location.search}`;
+    const destination = `${OLD_APP_ORIGIN}${location.pathname}${location.search}`;
     window.location.replace(destination);
-  }, [location.search]);
+  }, [location.pathname, location.search]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
