@@ -22,23 +22,23 @@ const HomepageCTA = () => {
           className="max-w-2xl mx-auto text-center space-y-6"
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-primary-foreground tracking-tight">
-            Ready to close more bookings?
+            Ready to get started?
           </h2>
           <p className="text-primary-foreground/50 text-base">
-            Join 10,000+ travel partners using SanKash to offer EMI, attach protection, 
-            review quotes, and collect payments — all from one platform.
+            Whether you're a traveler exploring EMI options or a travel business looking to grow — 
+            SanKash has you covered.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackGetStartedAgentClick({ cta_location: "bottom_cta" })}>
+            <Link to="/for-travelers">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-semibold">
+                Check Holiday EMI <ArrowRight size={16} />
+              </Button>
+            </Link>
+            <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackGetStartedAgentClick({ cta_location: "bottom_cta" })}>
+              <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
                 Get Started as an Agent <ArrowRight size={16} />
               </Button>
             </a>
-            <Link to="/contact?intent=demo" onClick={() => trackBookDemoClick({ cta_location: "bottom_cta" })}>
-              <Button size="lg" className="text-sm font-semibold bg-primary-foreground text-brand-deep hover:bg-primary-foreground/90 gap-2">
-                Book a Demo <ArrowRight size={16} />
-              </Button>
-            </Link>
           </div>
         </motion.div>
       </div>

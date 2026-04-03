@@ -7,29 +7,28 @@ const proofBlocks = [
   {
     eyebrow: "No Cost EMI",
     title: "3 & 6 months",
-    detail: "Let customers book in monthly instalments right at checkout.",
+    detail: "Travelers pay monthly. Agents get the full amount upfront from lenders.",
   },
   {
     eyebrow: "Commercial lift",
     title: "20% sales lift · 40% better conversion",
-    detail: "Turn bigger itineraries into bookable trips with financing-led sales support.",
+    detail: "Bigger itineraries become bookable when financing is available at checkout.",
   },
   {
     eyebrow: "Checkout protection",
     title: "Medical, cancellation, baggage",
-    detail: "Attach protection at checkout instead of chasing add-ons after the quote is sent.",
+    detail: "Embedded insurance gives travelers confidence and agents ancillary revenue.",
   },
   {
     eyebrow: "Collections",
-    title: "T+1 settlement · lower payment friction",
-    detail: "Get settled the next business day with cleaner collection and reconciliation flows.",
+    title: "T+1 settlement · lower friction",
+    detail: "Next-day payouts with cleaner collection and reconciliation flows.",
   },
 ];
 
 const AgentValueProp = () => {
   return (
     <section className="py-12 md:py-28 bg-brand-deep relative overflow-hidden">
-      {/* Subtle texture */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
       <div className="container relative">
@@ -41,21 +40,20 @@ const AgentValueProp = () => {
             transition={{ duration: 0.5 }}
             className="space-y-4 md:space-y-6"
           >
-            <p className="text-[11px] font-semibold text-primary-foreground/50 uppercase tracking-[0.1em]">For Travel Agents</p>
+            <p className="text-[11px] font-semibold text-primary-foreground/50 uppercase tracking-[0.1em]">For Travel Businesses</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-foreground leading-tight">
-              Review your itinerary<br />
-              before you send it.
+              Grow revenue with every booking.
             </h2>
             <p className="text-primary-foreground/50 leading-relaxed">
-              Upload a quote or itinerary and see how to make it more competitive — 
-              with financing options, embedded insurance, and smarter pricing signals. 
-              SanKash helps agents sell smarter, not just collect faster.
+              Offer No Cost EMI, embed travel insurance, review itineraries with AI, 
+              and collect payments faster — everything a travel business needs to convert 
+              better and earn more per trip.
             </p>
 
             <ul className="space-y-3 pt-2">
               {[
                 { icon: FileSearch, text: "Upload any itinerary — get competitive improvement suggestions" },
-                { icon: TrendingUp, text: "20% sales lift, 40% better conversion, and 200% more customer queries with travel EMI" },
+                { icon: TrendingUp, text: "20% sales lift, 40% better conversion with travel EMI" },
                 { icon: Zap, text: "Go live in days — single API or no-code dashboard" },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-3">
@@ -69,7 +67,7 @@ const AgentValueProp = () => {
 
             <Link to="/for-travel-agents">
               <Button size="lg" className="gap-2 text-sm mt-2 bg-primary-foreground text-primary-deep hover:bg-primary-foreground/90">
-                Upload a Quote <ArrowRight size={16} />
+                Explore for Agents <ArrowRight size={16} />
               </Button>
             </Link>
           </motion.div>

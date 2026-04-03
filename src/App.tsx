@@ -96,7 +96,11 @@ const App = () => (
               <Route path="/insurance.html" element={<Navigate to="/solutions/insurance" replace />} />
               <Route path="/lending.html" element={<Navigate to="/solutions/lending" replace />} />
               <Route path="/payments.html" element={<Navigate to="/solutions/payments" replace />} />
-              {/* Ops Dashboard — protected */}
+              {/* Legacy app paths — redirect to old app or homepage */}
+              <Route path="/cce/*" element={<LinkRedirect />} />
+              <Route path="/link/*" element={<LinkRedirect />} />
+              <Route path="/agent/*" element={<Navigate to="/" replace />} />
+              <Route path="/customer/*" element={<Navigate to="/for-travelers" replace />} />
               <Route path="/ops" element={<Navigate to="/ops/dashboard" replace />} />
               <Route path="/ops/setup" element={<OpsSetup />} />
               <Route path="/ops/login" element={<OpsLogin />} />

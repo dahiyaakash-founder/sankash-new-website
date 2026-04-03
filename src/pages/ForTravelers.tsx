@@ -116,36 +116,29 @@ const ForTravelers = () => {
       {/* Hero */}
       <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            {/* Left — value proposition first */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-4 lg:pt-4"
+              className="lg:col-span-7 space-y-4 lg:pt-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
                 For Travelers
               </p>
               <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
-                Book your dream holiday.
+                Don't overpay for your holiday.
                 <br />
-                <span className="text-gradient-brand">Pay in easy monthly EMIs.</span>
+                <span className="text-gradient-brand">Know what it really costs.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Find out what your holiday really costs per month — upload a quote or enter an amount to see No Cost EMI options instantly.
+                Whether you already have a travel quote or you're just exploring — check your holiday's monthly EMI, 
+                review pricing, and make sure you're getting a fair deal before you book.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <Button size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
-                  Check My Holiday Cost <ArrowRight size={18} />
-                </Button>
-                <a href="#emi-section" className="w-full sm:w-auto">
-                  <Button variant="outline" size="xl" className="gap-2 w-full sm:w-auto">
-                    <Calculator size={16} /> See EMI Options
-                  </Button>
-                </a>
-              </div>
-              {/* Trust signals */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-3 text-xs text-muted-foreground">
+
+              {/* Trust signals — above CTAs on mobile */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 size={13} className="text-brand-green" />
                   5 Million+ travelers served
@@ -159,14 +152,27 @@ const ForTravelers = () => {
                   No credit score impact
                 </span>
               </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a href="#emi-section" className="w-full sm:w-auto">
+                  <Button size="xl" className="gap-2 w-full sm:w-auto">
+                    <Calculator size={16} /> Check Holiday EMI
+                  </Button>
+                </a>
+                <Button variant="outline" size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
+                  <Upload size={16} /> Upload a Quote
+                </Button>
+              </div>
             </motion.div>
 
+            {/* Right — uploader (secondary, below fold on mobile) */}
             <motion.div
               id="quote-upload-section"
               ref={uploaderRef}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
+              className="lg:col-span-5"
             >
               <TravelerQuoteUploader />
             </motion.div>
