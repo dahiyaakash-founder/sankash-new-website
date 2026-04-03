@@ -571,6 +571,10 @@ export type Database = {
         Returns: boolean
       }
       is_ops_member: { Args: { _user_id: string }; Returns: boolean }
+      is_supervisor_of: {
+        Args: { _member_id: string; _supervisor_id: string }
+        Returns: boolean
+      }
       upsert_lead_with_dedup: {
         Args: {
           _audience_type?: Database["public"]["Enums"]["audience_type"]
