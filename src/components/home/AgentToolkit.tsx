@@ -8,29 +8,29 @@ import { trackAgentSignupClick } from "@/lib/analytics";
 const tools = [
   {
     icon: Banknote,
-    title: "Offer EMI to your customer",
-    desc: "Turn bigger itineraries into bookable trips. No Cost EMI at checkout means fewer drop-offs and 20% more bookings closed.",
-    proof: "20% sales lift · 40% better conversion",
+    title: "No Cost EMI at checkout",
+    desc: "Let customers pay for holidays in monthly instalments. Travelers get affordability; agents close 20% more bookings.",
+    proof: "20% sales lift · 40% conversion",
     accent: "bg-primary/8 border-primary/12",
   },
   {
     icon: FileSearch,
-    title: "Review a holiday quote",
-    desc: "Upload any itinerary and spot pricing gaps, bundling opportunities, and conversion signals before the customer decides.",
+    title: "Holiday quote review",
+    desc: "Upload any itinerary — whether you're a traveler checking value or an agent optimising before the pitch.",
     proof: "AI-powered analysis in seconds",
     accent: "bg-brand-green/8 border-brand-green/12",
   },
   {
     icon: ShieldCheck,
-    title: "Attach travel protection",
-    desc: "Embed insurance at checkout and earn ancillary revenue on every booking — cancellation, medical, and baggage cover included.",
+    title: "Travel protection",
+    desc: "Cancellation, medical, and baggage cover embedded at checkout — giving travelers confidence and agents ancillary revenue.",
     proof: "Ancillary revenue per booking",
     accent: "bg-brand-coral/8 border-brand-coral/12",
   },
   {
     icon: CreditCard,
-    title: "Collect customer payments",
-    desc: "Accept every payment mode and get settled the next business day. Clean reconciliation built for how travel agents actually operate.",
+    title: "Faster payments & settlement",
+    desc: "Every payment mode accepted. Next-day settlement for agents. Clean reconciliation for the entire travel chain.",
     proof: "T+1 settlement · ₹200Cr+ volume",
     accent: "bg-primary/8 border-primary/12",
   },
@@ -42,14 +42,14 @@ const AgentToolkit = () => {
       <div className="container">
         <div className="max-w-2xl mb-8 md:mb-14">
           <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.1em] mb-3">
-            What you can do with SanKash
+            What SanKash does
           </p>
           <h2 className="text-3xl md:text-4xl font-heading font-bold tracking-tight text-primary-deep">
-            A commercial toolkit for travel agents
+            Four capabilities across the booking journey
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Four capabilities that help you convert more bookings, earn more per transaction, 
-            and collect faster — purpose-built for how travel agents actually sell.
+            Whether you're a traveler exploring EMI options or a travel business growing revenue — 
+            SanKash powers the financial layer of the trip.
           </p>
         </div>
 
@@ -77,7 +77,12 @@ const AgentToolkit = () => {
           ))}
         </div>
 
-        <div className="text-center mt-8 md:mt-10">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 mt-8 md:mt-10">
+          <Link to="/for-travelers">
+            <Button variant="outline" size="lg" className="gap-2 text-sm font-semibold border-primary/25 text-primary">
+              I'm a traveler <ArrowRight size={16} />
+            </Button>
+          </Link>
           <a href={AGENT_SIGNUP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackAgentSignupClick({ cta_location: "agent_toolkit" })}>
             <Button size="lg" className="gap-2 text-sm font-semibold">
               Get Started as an Agent <ArrowRight size={16} />
