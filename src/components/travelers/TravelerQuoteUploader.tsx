@@ -48,47 +48,8 @@ const MAX_FILES = 5;
 
 type Stage = "upload" | "analyzing" | "results" | "error";
 
-function buildTravelerInsights(insurance: InsuranceInsight) {
-  return [
-    {
-      icon: TrendingDown,
-      label: "This holiday quote can be optimised",
-      detail: "We have identified potential room for savings of up to 5%",
-      hasBlurredValue: true,
-    },
-    {
-      icon: CreditCard,
-      label: "This itinerary is eligible for No Cost EMI",
-      detail: "6-month No Cost EMI available, subject to credit approval",
-      hasBlurredValue: false,
-    },
-    {
-      icon: Shield,
-      label: insurance.headline,
-      detail: insurance.detail,
-      hasBlurredValue: false,
-    },
-    {
-      icon: Wallet,
-      label: "This booking may qualify for zero online payment charges",
-      detail: "Pay digitally without extra online payment charges",
-      hasBlurredValue: false,
-    },
-  ];
-}
 
-const mediumConfidenceBullets = [
-  "Travel quote or itinerary detected",
-  "EMI options may be available",
-  "Our team can review this in more detail",
-];
 
-const gatedInsights = [
-  { label: "Exact savings amount on this quote", detail: "Up to 5% optimisation · revealed after verification" },
-  { label: "EMI breakdown with lender options", detail: "3, 6, 9, 12-month No Cost EMI plans" },
-  { label: "Recommended travel protection", detail: "Cancellation, medical & baggage cover with pricing" },
-  { label: "Pre-approval for trip financing", detail: "Check eligibility without impacting credit score" },
-];
 
 /** Simple file icon based on type */
 function FileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
