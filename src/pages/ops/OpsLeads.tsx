@@ -118,6 +118,29 @@ const OpsLeads = () => {
 
   const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
+  const canReassign = role === "super_admin" || role === "admin" || role === "team_supervisor";
+
+  // Build assignable members list based on role hierarchy
+  const assignableMembers = (() => {
+    if (role === "super_admin" || role === "admin") return teamMembers;
+    if (role === "team_supervisor") return teamMembers.filter(m => m.user_id === user?.id || m.supervisor_id === user?.id);
+    return [];
+  })();
+
+  const handleQuickReassign = async (leadId: string, oldAssignedTo: string | null, newAssignedTo: string) => {
+    const newOwner = newAssignedTo === "__unassigned__" ? null : newAssignedTo;
+    if (newOwner === oldAssignedTo) return;
+    try {
+      const oldLabel = oldAssignedTo ? (teamEmails[oldAssignedTo] ?? "Unknown") : "Unassigned";
+      const newLabel = newOwner ? (teamEmails[newOwner] ?? "Unknown") : "Unassigned";
+      await updateLead(leadId, { assigned_to: newOwner });
+      await logActivity(leadId, "owner_changed", `Owner: ${oldLabel} → ${newLabel}`, { oldValue: oldLabel, newValue: newLabel, performedBy: user?.id ?? null });
+      toast.success(`Reassigned to ${newLabel}`);
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to reassign");
+    }
+  };
   const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
     setLoading(true);
