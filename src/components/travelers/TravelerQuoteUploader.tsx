@@ -27,7 +27,7 @@ import {
   type ValidationErrorType,
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
-import { getInsuranceInsight } from "@/lib/insurance-rules";
+
 import {
   Dialog,
   DialogContent,
