@@ -410,6 +410,19 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                     <AlertTriangle size={10} /> Manual review recommended
                   </p>
                 )}
+                {extractionWarnings.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-1 mb-1">
+                      <AlertTriangle size={11} className="text-amber-500" />
+                      <span className="text-[10px] font-semibold text-amber-700">Extraction Warnings</span>
+                    </div>
+                    <div className="space-y-1">
+                      {extractionWarnings.map((w, i) => (
+                        <p key={i} className="text-[10px] text-amber-600 pl-4">• {w}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* D. Raw Extraction */}
