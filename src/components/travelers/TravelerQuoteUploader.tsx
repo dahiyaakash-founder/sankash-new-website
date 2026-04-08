@@ -166,7 +166,7 @@ const TravelerQuoteUploader = () => {
     if (files.length === 0) return;
     setStage("analyzing");
     setAnalysisProgress("Uploading files…");
-    trackTravelerQuoteUpload({ file_uploaded: true, file_count: files.length });
+    trackTravelerQuoteUpload({ file_uploaded: true });
     trackQuoteAnalysisRequested({ audience_type: "traveler" });
 
     try {
