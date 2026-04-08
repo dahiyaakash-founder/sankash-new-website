@@ -100,6 +100,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
       sandbox_request_submit: "Lead",
       production_request_submit: "Lead",
       traveler_unlock_submit: "Lead",
+      traveler_emi_enquiry: "Lead",
       integration_question_submit: "Lead",
       traveler_quote_upload: "InitiateCheckout",
       agent_quote_upload: "InitiateCheckout",
