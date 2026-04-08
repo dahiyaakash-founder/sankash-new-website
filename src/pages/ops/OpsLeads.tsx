@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
-import { fetchLeads, fetchTeamMembers, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority, type TeamMember } from "@/lib/leads-service";
+import { fetchLeads, fetchTeamMembers, updateLead, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority, type TeamMember } from "@/lib/leads-service";
+import { logActivity } from "@/lib/activity-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import LeadImportModal from "@/components/ops/LeadImportModal";
 import DeleteLeadsModal from "@/components/ops/DeleteLeadsModal";
@@ -116,6 +118,29 @@ const OpsLeads = () => {
 
   const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
+  const canReassign = role === "super_admin" || role === "admin" || role === "team_supervisor";
+
+  // Build assignable members list based on role hierarchy
+  const assignableMembers = (() => {
+    if (role === "super_admin" || role === "admin") return teamMembers;
+    if (role === "team_supervisor") return teamMembers.filter(m => m.user_id === user?.id || m.supervisor_id === user?.id);
+    return [];
+  })();
+
+  const handleQuickReassign = async (leadId: string, oldAssignedTo: string | null, newAssignedTo: string) => {
+    const newOwner = newAssignedTo === "__unassigned__" ? null : newAssignedTo;
+    if (newOwner === oldAssignedTo) return;
+    try {
+      const oldLabel = oldAssignedTo ? (teamEmails[oldAssignedTo] ?? "Unknown") : "Unassigned";
+      const newLabel = newOwner ? (teamEmails[newOwner] ?? "Unknown") : "Unassigned";
+      await updateLead(leadId, { assigned_to: newOwner });
+      await logActivity(leadId, "owner_changed", `Owner: ${oldLabel} → ${newLabel}`, { oldValue: oldLabel, newValue: newLabel, performedBy: user?.id ?? null });
+      toast.success(`Reassigned to ${newLabel}`);
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to reassign");
+    }
+  };
   const canExport = role === "super_admin" || role === "admin";
   const load = useCallback(async () => {
     setLoading(true);
@@ -329,13 +354,29 @@ const OpsLeads = () => {
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden lg:table-cell font-mono">{lead.mobile_number ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs hidden xl:table-cell">
-                      {lead.assigned_to ? (
-                        <span className="text-xs text-muted-foreground">
-                          {lead.assigned_to === user?.id ? (user?.email ?? "You") : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")}
-                        </span>
+                    <td className="px-3 py-2.5 hidden xl:table-cell" onClick={(e) => e.stopPropagation()}>
+                      {canReassign ? (
+                        <Select
+                          value={lead.assigned_to ?? "__unassigned__"}
+                          onValueChange={(v) => handleQuickReassign(lead.id, lead.assigned_to, v)}
+                        >
+                          <SelectTrigger className="h-7 text-xs w-[130px] border-dashed">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                            {assignableMembers.map((m) => (
+                              <SelectItem key={m.user_id} value={m.user_id}>
+                                {m.full_name ?? m.user_id.slice(0, 8) + "…"}
+                                {m.user_id === user?.id ? " (You)" : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       ) : (
-                        <span className="text-xs text-muted-foreground/50">Unassigned</span>
+                        <span className="text-xs text-muted-foreground">
+                          {lead.assigned_to ? (lead.assigned_to === user?.id ? "You" : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")) : "Unassigned"}
+                        </span>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
