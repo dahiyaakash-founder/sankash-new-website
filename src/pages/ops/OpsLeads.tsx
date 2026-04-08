@@ -354,13 +354,29 @@ const OpsLeads = () => {
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden lg:table-cell font-mono">{lead.mobile_number ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-xs hidden xl:table-cell">
-                      {lead.assigned_to ? (
-                        <span className="text-xs text-muted-foreground">
-                          {lead.assigned_to === user?.id ? (user?.email ?? "You") : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")}
-                        </span>
+                    <td className="px-3 py-2.5 hidden xl:table-cell" onClick={(e) => e.stopPropagation()}>
+                      {canReassign ? (
+                        <Select
+                          value={lead.assigned_to ?? "__unassigned__"}
+                          onValueChange={(v) => handleQuickReassign(lead.id, lead.assigned_to, v)}
+                        >
+                          <SelectTrigger className="h-7 text-xs w-[130px] border-dashed">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                            {assignableMembers.map((m) => (
+                              <SelectItem key={m.user_id} value={m.user_id}>
+                                {m.full_name ?? m.user_id.slice(0, 8) + "…"}
+                                {m.user_id === user?.id ? " (You)" : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       ) : (
-                        <span className="text-xs text-muted-foreground/50">Unassigned</span>
+                        <span className="text-xs text-muted-foreground">
+                          {lead.assigned_to ? (lead.assigned_to === user?.id ? "You" : (teamEmails[lead.assigned_to] ?? lead.assigned_to.slice(0, 8) + "…")) : "Unassigned"}
+                        </span>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
