@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, IndianRupee, CalendarDays, Phone, CheckCircle2, Loader2 } from "lucide-react";
 import { createLeadWithDedup } from "@/lib/leads-service";
 import { toast } from "sonner";
-import { trackConversion } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
