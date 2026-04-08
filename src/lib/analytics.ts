@@ -78,6 +78,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
       sandbox_request_submit: "AW-939281479/9o-wCPTwzJMcEMeY8b8D",
       production_request_submit: "AW-939281479/3P-YCPfwzJMcEMeY8b8D",
       traveler_unlock_submit: "AW-939281479/H-TwCPrwzJMcEMeY8b8D",
+      traveler_emi_enquiry: "AW-939281479/REPLACE_WITH_LABEL",
     };
     const sendTo = gadsConversions[eventName];
     if (sendTo) {
