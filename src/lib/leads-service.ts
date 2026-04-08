@@ -41,6 +41,7 @@ export interface TeamMember {
   email?: string;
   full_name?: string;
   status?: string;
+  supervisor_id?: string | null;
 }
 
 /**
