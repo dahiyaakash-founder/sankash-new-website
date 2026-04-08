@@ -272,9 +272,52 @@ const TravelerQuoteUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
-    setInsuranceInsight(null);
+    setAnalysisResult(null);
     setAnalysisProgress("");
+    setCurrentLeadId(null);
+    setIsReanalyzing(false);
   };
+
+  /** Add more files to existing analysis and re-trigger */
+  const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
+    if (!currentLeadId) return;
+    setIsReanalyzing(true);
+    try {
+      const { uploadLeadAttachment } = await import("@/lib/attachments-service");
+      const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+      const { supabase } = await import("@/integrations/supabase/client");
+
+      const fileInputs: { file_url: string; file_name: string }[] = [];
+
+      // Upload new files as attachments
+      for (const file of newFiles) {
+        try {
+          const attachment = await uploadLeadAttachment(file, currentLeadId, { sourceType: "itinerary_upload" });
+          const { data: urlData } = supabase.storage.from("lead-attachments").getPublicUrl(attachment.storage_path);
+          fileInputs.push({ file_url: urlData.publicUrl, file_name: file.name });
+        } catch (err) {
+          console.warn("Failed to upload additional file:", err);
+        }
+      }
+
+      if (fileInputs.length === 0) throw new Error("No files uploaded");
+
+      // Merge with original file URLs if we have them
+      // Re-trigger analysis with all files
+      const result = await triggerItineraryAnalysis({
+        lead_id: currentLeadId,
+        files: fileInputs,
+        audience_type: "traveler",
+      });
+
+      setAnalysisResult(result);
+      setFiles(prev => [...prev, ...newFiles]);
+    } catch (err) {
+      console.error("Re-analysis failed:", err);
+    } finally {
+      setIsReanalyzing(false);
+    }
+  }, [currentLeadId]);
 
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
