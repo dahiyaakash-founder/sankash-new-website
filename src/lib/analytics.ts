@@ -78,6 +78,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
       sandbox_request_submit: "AW-939281479/9o-wCPTwzJMcEMeY8b8D",
       production_request_submit: "AW-939281479/3P-YCPfwzJMcEMeY8b8D",
       traveler_unlock_submit: "AW-939281479/H-TwCPrwzJMcEMeY8b8D",
+      traveler_emi_enquiry: "AW-939281479/REPLACE_WITH_LABEL",
     };
     const sendTo = gadsConversions[eventName];
     if (sendTo) {
@@ -99,6 +100,7 @@ export function trackEvent(eventName: string, params: EventParams = {}) {
       sandbox_request_submit: "Lead",
       production_request_submit: "Lead",
       traveler_unlock_submit: "Lead",
+      traveler_emi_enquiry: "Lead",
       integration_question_submit: "Lead",
       traveler_quote_upload: "InitiateCheckout",
       agent_quote_upload: "InitiateCheckout",
@@ -228,3 +230,6 @@ export const trackQuoteAnalysisRequested = (params?: { audience_type?: string })
 
 export const trackItineraryAnalysisOpened = () =>
   trackEvent("itinerary_analysis_opened", { source_type: "ops_itinerary" });
+
+export const trackTravelerEmiEnquirySubmit = (params: { destination?: string; budget?: string }) =>
+  trackEvent("traveler_emi_enquiry", { audience_type: "traveler", source_type: "traveler_emi_enquiry", ...params });
