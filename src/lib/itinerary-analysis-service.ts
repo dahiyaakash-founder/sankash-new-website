@@ -1,5 +1,6 @@
 /**
  * Itinerary analysis service — triggers AI extraction and fetches results.
+ * Supports both single-file (legacy) and multi-file vision pipeline.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,6 +43,15 @@ export interface ItineraryAnalysis {
   missing_fields_json: string[];
   extracted_snippets_json: string[];
   extracted_fields_json: Record<string, unknown>;
+  // New multi-file fields
+  file_count: number;
+  file_names_json: string[];
+  extraction_warnings_json: string[];
+  flight_departure_time: string | null;
+  flight_arrival_time: string | null;
+  hotel_check_in: string | null;
+  hotel_check_out: string | null;
+  confidence_notes: string | null;
 }
 
 /** Fetch existing analysis for a lead */
@@ -57,12 +67,20 @@ export async function fetchItineraryAnalysis(leadId: string): Promise<ItineraryA
   return data as unknown as ItineraryAnalysis | null;
 }
 
-/** Trigger analysis via the edge function */
+export interface FileInput {
+  file_url: string;
+  file_name: string;
+}
+
+/** Trigger analysis via the edge function — supports multi-file */
 export async function triggerItineraryAnalysis(params: {
   lead_id: string;
   attachment_id?: string;
-  file_url: string;
-  file_name: string;
+  // Legacy single-file (still supported)
+  file_url?: string;
+  file_name?: string;
+  // Multi-file
+  files?: FileInput[];
   audience_type?: string;
 }): Promise<ItineraryAnalysis> {
   const { data, error } = await supabase.functions.invoke("analyze-itinerary", {

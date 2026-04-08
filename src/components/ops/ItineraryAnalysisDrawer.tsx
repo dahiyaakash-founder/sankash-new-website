@@ -166,9 +166,12 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
   const sectors = (a?.sectors_json ?? []) as string[];
   const additionalDests = (a?.additional_destinations_json ?? []) as string[];
   const extractedFields = (a?.extracted_fields_json ?? {}) as Record<string, unknown>;
-  const confidenceNotes = extractedFields.confidence_notes as string | undefined;
+  const confidenceNotes = a?.confidence_notes ?? (extractedFields.confidence_notes as string | undefined);
   const priceNotes = extractedFields.price_notes as string | undefined;
   const altPrices = (extractedFields.alternate_prices ?? []) as number[];
+  const extractionWarnings = (a?.extraction_warnings_json ?? []) as string[];
+  const fileNames = (a?.file_names_json ?? []) as string[];
+  const fileCount = a?.file_count ?? 1;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -183,8 +186,15 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
             <Sparkles size={16} className="text-primary" /> Itinerary Analysis
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
-            AI-extracted travel details for {fileName}
+            AI-extracted travel details{fileCount > 1 ? ` from ${fileCount} files` : ` for ${fileName}`}
           </SheetDescription>
+          {fileCount > 1 && fileNames.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {fileNames.map((fn, i) => (
+                <span key={i} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{fn as string}</span>
+              ))}
+            </div>
+          )}
         </SheetHeader>
 
         <div className="mt-4 space-y-4">
@@ -314,6 +324,13 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                 <InfoRow label="Uploaded by" value={a.uploaded_by_audience} icon={Users} placeholder="Unknown" />
                 <InfoRow label="Agent name" value={a.travel_agent_name} icon={Building2} placeholder="Not identified" />
                 <InfoRow label="Customer" value={a.customer_name} icon={Users} placeholder="Not identified" />
+                <InfoRow label="Flight departure" value={a.flight_departure_time} icon={Plane} placeholder="Not found" />
+                <InfoRow label="Flight arrival" value={a.flight_arrival_time} icon={Plane} placeholder="Not found" />
+                <InfoRow label="Hotel check-in" value={a.hotel_check_in} icon={Calendar} placeholder="Not found" />
+                <InfoRow label="Hotel check-out" value={a.hotel_check_out} icon={Calendar} placeholder="Not found" />
+                {fileCount > 1 && (
+                  <InfoRow label="Files analyzed" value={`${fileCount} files`} icon={FileSearch} />
+                )}
               </div>
 
               {/* B. Travel Components */}
@@ -392,6 +409,19 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                   <p className="text-[10px] text-amber-600 font-medium flex items-center gap-1 mt-1">
                     <AlertTriangle size={10} /> Manual review recommended
                   </p>
+                )}
+                {extractionWarnings.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-1 mb-1">
+                      <AlertTriangle size={11} className="text-amber-500" />
+                      <span className="text-[10px] font-semibold text-amber-700">Extraction Warnings</span>
+                    </div>
+                    <div className="space-y-1">
+                      {extractionWarnings.map((w, i) => (
+                        <p key={i} className="text-[10px] text-amber-600 pl-4">• {w}</p>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
 

@@ -72,6 +72,7 @@ export type Database = {
           airline_names_json: Json | null
           attachment_id: string | null
           children_count: number | null
+          confidence_notes: string | null
           created_at: string
           currency: string | null
           customer_name: string | null
@@ -84,6 +85,13 @@ export type Database = {
           exclusions_text: string | null
           extracted_fields_json: Json | null
           extracted_snippets_json: Json | null
+          extraction_warnings_json: Json
+          file_count: number
+          file_names_json: Json
+          flight_arrival_time: string | null
+          flight_departure_time: string | null
+          hotel_check_in: string | null
+          hotel_check_out: string | null
           hotel_names_json: Json | null
           id: string
           inclusions_text: string | null
@@ -112,6 +120,7 @@ export type Database = {
           airline_names_json?: Json | null
           attachment_id?: string | null
           children_count?: number | null
+          confidence_notes?: string | null
           created_at?: string
           currency?: string | null
           customer_name?: string | null
@@ -124,6 +133,13 @@ export type Database = {
           exclusions_text?: string | null
           extracted_fields_json?: Json | null
           extracted_snippets_json?: Json | null
+          extraction_warnings_json?: Json
+          file_count?: number
+          file_names_json?: Json
+          flight_arrival_time?: string | null
+          flight_departure_time?: string | null
+          hotel_check_in?: string | null
+          hotel_check_out?: string | null
           hotel_names_json?: Json | null
           id?: string
           inclusions_text?: string | null
@@ -152,6 +168,7 @@ export type Database = {
           airline_names_json?: Json | null
           attachment_id?: string | null
           children_count?: number | null
+          confidence_notes?: string | null
           created_at?: string
           currency?: string | null
           customer_name?: string | null
@@ -164,6 +181,13 @@ export type Database = {
           exclusions_text?: string | null
           extracted_fields_json?: Json | null
           extracted_snippets_json?: Json | null
+          extraction_warnings_json?: Json
+          file_count?: number
+          file_names_json?: Json
+          flight_arrival_time?: string | null
+          flight_departure_time?: string | null
+          hotel_check_in?: string | null
+          hotel_check_out?: string | null
           hotel_names_json?: Json | null
           id?: string
           inclusions_text?: string | null
