@@ -96,7 +96,7 @@ const getCategoryBadge = (category: string) => {
 
 const OpsLeadDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [lead, setLead] = useState<LeadRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
