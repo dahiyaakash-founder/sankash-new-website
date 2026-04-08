@@ -292,6 +292,54 @@ const ForTravelers = () => {
         </div>
       </section>
 
+      {/* EMI Enquiry — for users without a quote */}
+      <section className="py-10 md:py-20">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 lg:pt-4"
+            >
+              <p className="text-xs font-semibold text-primary uppercase tracking-widest">
+                Don't have a quote yet?
+              </p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+                See what your trip could cost — before you book
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Planning a holiday and want to know EMI options? Share your destination and budget,
+                and we'll show you indicative monthly payment options so you can plan with confidence.
+              </p>
+              <div className="space-y-3 pt-1">
+                {[
+                  "No quote needed — just tell us where and when",
+                  "Get indicative EMI options in minutes",
+                  "No credit score impact, no obligation",
+                  "Our team follows up with personalised options",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-2.5">
+                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <TravelerEmiEnquiry />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Why Use SanKash */}
       <section className="py-10 md:py-22">
         <div className="container">
