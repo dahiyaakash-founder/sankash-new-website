@@ -70,7 +70,7 @@ const activityTypeLabels: Record<string, string> = {
   resubmission: "Resubmission merged",
   status_changed: "Status changed",
   priority_changed: "Priority changed",
-  owner_changed: "Owner changed",
+  owner_changed: "Lead reassigned",
   follow_up_changed: "Follow-up changed",
   outcome_changed: "Outcome changed",
   note_added: "Note added",
@@ -96,7 +96,7 @@ const getCategoryBadge = (category: string) => {
 
 const OpsLeadDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [lead, setLead] = useState<LeadRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -564,18 +564,37 @@ const OpsLeadDetail = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Owner</label>
-                <Select value={owner} onValueChange={setOwner}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__unassigned__">Unassigned</SelectItem>
-                    {teamMembers.map((m) => (
-                      <SelectItem key={m.user_id} value={m.user_id}>
-                        {m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…"}
-                        {m.user_id === user?.id ? " (You)" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {(() => {
+                  // Filter assignable members by role hierarchy
+                  const isAdmin = role === "super_admin" || role === "admin";
+                  const isSupervisor = role === "team_supervisor";
+                  const assignable = isAdmin
+                    ? teamMembers
+                    : isSupervisor
+                      ? teamMembers.filter(
+                          (m) => m.user_id === user?.id || (m as any).supervisor_id === user?.id
+                        )
+                      : teamMembers.filter((m) => m.user_id === user?.id);
+                  const canReassign = isAdmin || isSupervisor;
+                  return canReassign ? (
+                    <Select value={owner} onValueChange={setOwner}>
+                      <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                        {assignable.map((m) => (
+                          <SelectItem key={m.user_id} value={m.user_id}>
+                            {m.full_name ?? m.email ?? m.user_id.slice(0, 8) + "…"}
+                            {m.user_id === user?.id ? " (You)" : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm font-medium py-1.5">
+                      {lead.assigned_to ? getOwnerLabel(lead.assigned_to) : "Unassigned"}
+                    </p>
+                  );
+                })()}
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">Next follow-up</label>
