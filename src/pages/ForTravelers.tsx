@@ -134,8 +134,8 @@ const ForTravelers = () => {
                 <span className="text-gradient-brand">Know what it really costs.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Whether you already have a travel quote or you're just exploring — check your holiday's monthly EMI, 
-                review pricing, and make sure you're getting a fair deal before you book.
+                Already have a travel quote? Upload it for a free review. Still exploring? 
+                Tell us your destination and budget — we'll show you what it costs per month.
               </p>
 
               {/* Trust signals — above CTAs on mobile */}
