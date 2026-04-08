@@ -186,8 +186,15 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
             <Sparkles size={16} className="text-primary" /> Itinerary Analysis
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
-            AI-extracted travel details for {fileName}
+            AI-extracted travel details{fileCount > 1 ? ` from ${fileCount} files` : ` for ${fileName}`}
           </SheetDescription>
+          {fileCount > 1 && fileNames.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {fileNames.map((fn, i) => (
+                <span key={i} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{fn as string}</span>
+              ))}
+            </div>
+          )}
         </SheetHeader>
 
         <div className="mt-4 space-y-4">
