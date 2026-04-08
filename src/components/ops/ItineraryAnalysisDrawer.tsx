@@ -324,6 +324,13 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
                 <InfoRow label="Uploaded by" value={a.uploaded_by_audience} icon={Users} placeholder="Unknown" />
                 <InfoRow label="Agent name" value={a.travel_agent_name} icon={Building2} placeholder="Not identified" />
                 <InfoRow label="Customer" value={a.customer_name} icon={Users} placeholder="Not identified" />
+                <InfoRow label="Flight departure" value={a.flight_departure_time} icon={Plane} placeholder="Not found" />
+                <InfoRow label="Flight arrival" value={a.flight_arrival_time} icon={Plane} placeholder="Not found" />
+                <InfoRow label="Hotel check-in" value={a.hotel_check_in} icon={Calendar} placeholder="Not found" />
+                <InfoRow label="Hotel check-out" value={a.hotel_check_out} icon={Calendar} placeholder="Not found" />
+                {fileCount > 1 && (
+                  <InfoRow label="Files analyzed" value={`${fileCount} files`} icon={FileSearch} />
+                )}
               </div>
 
               {/* B. Travel Components */}
