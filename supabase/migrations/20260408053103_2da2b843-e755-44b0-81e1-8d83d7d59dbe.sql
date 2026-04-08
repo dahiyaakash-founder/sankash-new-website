@@ -1,0 +1,1 @@
+ALTER TYPE public.lead_source_type ADD VALUE IF NOT EXISTS 'traveler_emi_enquiry';

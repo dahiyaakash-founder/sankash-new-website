@@ -19,6 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
+import TravelerEmiEnquiry from "@/components/travelers/TravelerEmiEnquiry";
 
 const howItWorks = [
   { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
@@ -133,8 +134,8 @@ const ForTravelers = () => {
                 <span className="text-gradient-brand">Know what it really costs.</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Whether you already have a travel quote or you're just exploring — check your holiday's monthly EMI, 
-                review pricing, and make sure you're getting a fair deal before you book.
+                Already have a travel quote? Upload it for a free review. Still exploring? 
+                Tell us your destination and budget — we'll show you what it costs per month.
               </p>
 
               {/* Trust signals — above CTAs on mobile */}
@@ -286,6 +287,54 @@ const ForTravelers = () => {
                   * Indicative amounts. Final options depend on lender approval, trip details, and agent terms. No Cost EMI is subject to eligibility and lender approval. T&C apply.
                 </p>
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* EMI Enquiry — for users without a quote */}
+      <section className="py-10 md:py-20">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 lg:pt-4"
+            >
+              <p className="text-xs font-semibold text-primary uppercase tracking-widest">
+                Don't have a quote yet?
+              </p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+                See what your trip could cost — before you book
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Planning a holiday and want to know EMI options? Share your destination and budget,
+                and we'll show you indicative monthly payment options so you can plan with confidence.
+              </p>
+              <div className="space-y-3 pt-1">
+                {[
+                  "No quote needed — just tell us where and when",
+                  "Get indicative EMI options in minutes",
+                  "No credit score impact, no obligation",
+                  "Our team follows up with personalised options",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-2.5">
+                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <TravelerEmiEnquiry />
             </motion.div>
           </div>
         </div>
