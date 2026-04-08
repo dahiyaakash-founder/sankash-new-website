@@ -166,9 +166,12 @@ export default function ItineraryAnalysisDrawer({ leadId, attachmentId, fileUrl,
   const sectors = (a?.sectors_json ?? []) as string[];
   const additionalDests = (a?.additional_destinations_json ?? []) as string[];
   const extractedFields = (a?.extracted_fields_json ?? {}) as Record<string, unknown>;
-  const confidenceNotes = extractedFields.confidence_notes as string | undefined;
+  const confidenceNotes = a?.confidence_notes ?? (extractedFields.confidence_notes as string | undefined);
   const priceNotes = extractedFields.price_notes as string | undefined;
   const altPrices = (extractedFields.alternate_prices ?? []) as number[];
+  const extractionWarnings = (a?.extraction_warnings_json ?? []) as string[];
+  const fileNames = (a?.file_names_json ?? []) as string[];
+  const fileCount = a?.file_count ?? 1;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
