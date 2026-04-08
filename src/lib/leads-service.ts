@@ -343,9 +343,9 @@ export async function fetchTeamMembers(): Promise<TeamMember[]> {
 
   // Fetch profiles for display names and status
   const { data: profiles } = await supabase.from("profiles" as any).select("*") as any;
-  const profileMap: Record<string, { full_name: string; status: string }> = {};
+  const profileMap: Record<string, { full_name: string; status: string; supervisor_id: string | null }> = {};
   (profiles ?? []).forEach((p: any) => {
-    profileMap[p.user_id] = { full_name: p.full_name, status: p.status };
+    profileMap[p.user_id] = { full_name: p.full_name, status: p.status, supervisor_id: p.supervisor_id ?? null };
   });
 
   return (roles ?? []).map((r: any) => ({
@@ -354,6 +354,7 @@ export async function fetchTeamMembers(): Promise<TeamMember[]> {
     role: r.role,
     full_name: profileMap[r.user_id]?.full_name,
     status: profileMap[r.user_id]?.status ?? "active",
+    supervisor_id: profileMap[r.user_id]?.supervisor_id ?? null,
   }));
 }
 
