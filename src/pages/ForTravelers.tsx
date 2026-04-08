@@ -19,6 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
+import TravelerEmiEnquiry from "@/components/travelers/TravelerEmiEnquiry";
 
 const howItWorks = [
   { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
