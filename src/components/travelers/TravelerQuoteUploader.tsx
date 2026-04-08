@@ -233,9 +233,9 @@ const TravelerQuoteUploader = () => {
       });
 
       // Determine confidence from analysis result or default to medium
-      const confidence = analysis?.parsing_confidence === "high" ? "high" : "medium";
-      setInsuranceInsight(getInsuranceInsight(files[0].name));
-      setStage(confidence === "high" ? "results-high" : "results-medium");
+      setAnalysisResult(analysis);
+      setCurrentLeadId(lead.id);
+      setStage("results");
     } catch (err) {
       console.error("Upload/analysis error:", err);
       setErrorTitle("Something went wrong");
