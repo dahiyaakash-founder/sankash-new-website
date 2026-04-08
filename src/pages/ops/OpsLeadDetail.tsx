@@ -70,7 +70,7 @@ const activityTypeLabels: Record<string, string> = {
   resubmission: "Resubmission merged",
   status_changed: "Status changed",
   priority_changed: "Priority changed",
-  owner_changed: "Owner changed",
+  owner_changed: "Lead reassigned",
   follow_up_changed: "Follow-up changed",
   outcome_changed: "Outcome changed",
   note_added: "Note added",
