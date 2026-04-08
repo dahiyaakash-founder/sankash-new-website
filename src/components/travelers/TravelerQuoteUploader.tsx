@@ -1,6 +1,7 @@
 /**
  * Multi-file traveler quote uploader — supports up to 5 files (PDFs, screenshots, images).
  * All files are processed together as one itinerary session via the unified vision pipeline.
+ * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,10 +41,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import type { ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
+import TravelerAnalysisResults from "./TravelerAnalysisResults";
 
 const MAX_FILES = 5;
 
-type Stage = "upload" | "analyzing" | "results-medium" | "results-high" | "error";
+type Stage = "upload" | "analyzing" | "results" | "error";
 
 function buildTravelerInsights(insurance: InsuranceInsight) {
   return [
