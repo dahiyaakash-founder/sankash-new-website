@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Plane, Briefcase } from "lucide-react";
+import { ArrowRight, Upload, Calculator, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { AGENT_LOGIN_URL } from "@/lib/constants";
@@ -26,46 +26,51 @@ const HomepageHero = () => {
             </div>
 
             <h1 className="text-[1.75rem] sm:text-[2.5rem] md:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-heading font-bold leading-[1.12] sm:leading-[1.08] tracking-[-0.02em] text-primary-deep">
-              Travel payments, financing,
+              Know what your holiday really costs
               <br />
-              <span className="text-primary">and protection — simplified.</span>
+              <span className="text-primary">before you pay.</span>
             </h1>
 
             <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              SanKash helps travelers pay for holidays in EMIs, and helps travel businesses 
-              grow revenue with lending, insurance, and faster payments — all from one platform.
+              Upload a travel quote for a free review, or check what your trip costs per month with EMI.
+              SanKash helps travelers make smarter holiday decisions — and helps travel businesses grow.
             </p>
 
-            {/* Dual audience paths */}
+            {/* Two clear traveler actions */}
             <div className="grid sm:grid-cols-2 gap-3 max-w-xl mx-auto pt-2">
-              <Link to="/for-travelers" className="group">
-                <div className="flex items-center gap-3 p-4 rounded-xl border border-border/60 bg-card/80 hover:shadow-card-hover hover:border-primary/20 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-brand-coral/10 flex items-center justify-center shrink-0">
-                    <Plane size={18} className="text-brand-coral" />
+              <Link to="/for-travelers#quote-upload-section" className="group">
+                <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-primary/20 bg-card/80 hover:shadow-card-hover hover:border-primary/40 transition-all">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Upload size={18} className="text-primary" />
                   </div>
                   <div className="text-left flex-1 min-w-0">
-                    <p className="text-sm font-heading font-bold text-primary-deep">I'm a traveler</p>
-                    <p className="text-xs text-muted-foreground">Check EMI · Upload a quote</p>
+                    <p className="text-sm font-heading font-bold text-primary-deep">Upload a Quote</p>
+                    <p className="text-xs text-muted-foreground">Free review with EMI options</p>
                   </div>
                   <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                 </div>
               </Link>
-              <Link to="/for-travel-agents" className="group">
-                <div className="flex items-center gap-3 p-4 rounded-xl border border-border/60 bg-card/80 hover:shadow-card-hover hover:border-primary/20 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Briefcase size={18} className="text-primary" />
+              <Link to="/for-travelers#emi-section" className="group">
+                <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-brand-coral/20 bg-card/80 hover:shadow-card-hover hover:border-brand-coral/40 transition-all">
+                  <div className="w-10 h-10 rounded-lg bg-brand-coral/10 flex items-center justify-center shrink-0">
+                    <Calculator size={18} className="text-brand-coral" />
                   </div>
                   <div className="text-left flex-1 min-w-0">
-                    <p className="text-sm font-heading font-bold text-primary-deep">I'm a travel agent</p>
-                    <p className="text-xs text-muted-foreground">EMI · Insurance · Payments</p>
+                    <p className="text-sm font-heading font-bold text-primary-deep">Check Holiday EMI</p>
+                    <p className="text-xs text-muted-foreground">See monthly cost, no impact on credit</p>
                   </div>
-                  <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                  <ArrowRight size={14} className="text-muted-foreground group-hover:text-brand-coral transition-colors shrink-0" />
                 </div>
               </Link>
             </div>
 
-            {/* Existing agent quick-access */}
-            <div className="flex justify-center pt-1">
+            {/* Travel business + agent login — clearly secondary */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+              <Link to="/for-travel-agents">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30">
+                  <Briefcase size={13} /> Travel business? Explore tools →
+                </Button>
+              </Link>
               <a
                 href={AGENT_LOGIN_URL}
                 target="_blank"

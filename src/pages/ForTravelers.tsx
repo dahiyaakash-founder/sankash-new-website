@@ -17,6 +17,7 @@ import {
   HelpCircle,
   BadgeCheck,
   UserCheck,
+  Star,
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 import TravelerEmiEnquiry from "@/components/travelers/TravelerEmiEnquiry";
@@ -28,7 +29,6 @@ const howItWorks = [
   { num: "04", icon: BadgeCheck, label: "Get finance-ready to book", desc: "Pre-qualify for holiday financing so you're prepared when you decide." },
 ];
 
-// EMI calculator imports for interactive block
 import { calculateEmi, formatINR as fmtINR } from "@/lib/emi-calculator";
 
 function computeEmiExamples(amount: number) {
@@ -45,12 +45,12 @@ function computeEmiExamples(amount: number) {
 const whyReasons = [
   {
     icon: Search,
-    title: "Review your holiday quote for better value",
+    title: "Spot gaps in your quote before paying",
     desc: "Get a quick read on whether your travel quote could be structured differently — better pricing, better options, or both.",
   },
   {
     icon: Banknote,
-    title: "See your travel EMI before you commit",
+    title: "Understand affordability upfront",
     desc: "Compare No Cost EMI and low-cost monthly payment plans so you know exactly what your holiday costs per month.",
   },
   {
@@ -60,7 +60,7 @@ const whyReasons = [
   },
   {
     icon: UserCheck,
-    title: "Walk into your booking finance-ready",
+    title: "Walk in finance-ready, not finance-surprised",
     desc: "Pre-qualify for trip financing before you sit down with your agent — no credit score impact, no obligation.",
   },
 ];
@@ -94,6 +94,7 @@ const faqs = [
 
 const ForTravelers = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
+  const emiSectionRef = React.useRef<HTMLDivElement>(null);
   const [emiAmount, setEmiAmount] = React.useState(85000);
   const emiExamples = React.useMemo(() => computeEmiExamples(emiAmount), [emiAmount]);
 
@@ -107,6 +108,10 @@ const ForTravelers = () => {
     uploaderRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
+  const scrollToEmi = () => {
+    emiSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <SiteLayout>
       <SEOHead
@@ -114,66 +119,143 @@ const ForTravelers = () => {
         description="Check what your holiday costs per month. Upload a quote or enter an amount to see No Cost EMI options from 15+ lenders. No credit score impact."
         jsonLd={createFAQSchema(faqs)}
       />
-      {/* Hero */}
+
+      {/* ── Hero ── */}
       <section className="bg-hero-gradient py-10 md:py-20">
         <div className="container">
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            {/* Left — value proposition first */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-3xl mx-auto text-center space-y-4"
+          >
+            <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
+              <Star size={12} className="text-brand-coral" />
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.1em]">
+                Used by 5 Million+ travelers
+              </span>
+            </div>
+
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+              Make a smarter holiday decision
+              <br />
+              <span className="text-gradient-brand">before you pay.</span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Compare your quote. Understand what it costs per month. Spot gaps before you commit.
+              SanKash helps you get clarity — not just a loan.
+            </p>
+
+            {/* Trust bar */}
+            <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 pt-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-brand-green" /> Free quote review
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-brand-green" /> No credit score impact
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-brand-green" /> 15+ lending partners
+              </span>
+            </div>
+          </motion.div>
+
+          {/* ── Dual-path journey cards ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8"
+          >
+            {/* Path 1: Have a quote */}
+            <button
+              onClick={scrollToUploader}
+              className="group text-left p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                <Upload size={20} className="text-primary" />
+              </div>
+              <h3 className="text-base font-heading font-bold text-foreground mb-1">
+                I have a travel quote
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                Upload your itinerary or quote for a free review with EMI options.
+              </p>
+              <p className="text-[11px] text-muted-foreground/70 italic">
+                → We'll review your quote and show where you can save or pay monthly.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary mt-3 group-hover:gap-2.5 transition-all">
+                Upload & Review <ArrowRight size={14} />
+              </span>
+            </button>
+
+            {/* Path 2: No quote yet */}
+            <button
+              onClick={scrollToEmi}
+              className="group text-left p-5 rounded-2xl border-2 border-brand-coral/20 bg-card hover:border-brand-coral/40 hover:shadow-card-hover transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-brand-coral/10 flex items-center justify-center mb-3">
+                <Calculator size={20} className="text-brand-coral" />
+              </div>
+              <h3 className="text-base font-heading font-bold text-foreground mb-1">
+                I'm still exploring
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                Tell us where you want to go — we'll show what it costs per month.
+              </p>
+              <p className="text-[11px] text-muted-foreground/70 italic">
+                → Share destination & budget. Get indicative EMI options, no commitment.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-coral mt-3 group-hover:gap-2.5 transition-all">
+                Check Holiday EMI <ArrowRight size={14} />
+              </span>
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Quote Upload Section ── */}
+      <section className="py-10 md:py-20" ref={uploaderRef} id="quote-upload-section">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="lg:col-span-7 space-y-4 lg:pt-4"
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 lg:pt-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
-                For Travelers
+                Have a quote?
               </p>
-              <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
-                Don't overpay for your holiday.
-                <br />
-                <span className="text-gradient-brand">Know what it really costs.</span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Already have a travel quote? Upload it for a free review. Still exploring? 
-                Tell us your destination and budget — we'll show you what it costs per month.
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+                Upload it. We'll tell you if it's a good deal.
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Share your itinerary, quote PDF, or even a screenshot. Our team reviews it for pricing, 
+                inclusions, and protection gaps — and shows you what it could cost per month with EMI.
               </p>
-
-              {/* Trust signals — above CTAs on mobile */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={13} className="text-brand-green" />
-                  5 Million+ travelers served
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={13} className="text-brand-green" />
-                  15+ lending partners
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={13} className="text-brand-green" />
-                  No credit score impact
-                </span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <a href="#emi-section" className="w-full sm:w-auto">
-                  <Button size="xl" className="gap-2 w-full sm:w-auto">
-                    <Calculator size={16} /> Check Holiday EMI
-                  </Button>
-                </a>
-                <Button variant="outline" size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToUploader}>
-                  <Upload size={16} /> Upload a Quote
-                </Button>
+              <div className="space-y-2.5 pt-1">
+                {[
+                  "Free review — no obligation to proceed",
+                  "Works with any travel agent's quote",
+                  "Get EMI options and insurance suggestions",
+                  "Your agent still finalises the booking",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-2.5">
+                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">{point}</p>
+                  </div>
+                ))}
               </div>
             </motion.div>
 
-            {/* Right — uploader (secondary, below fold on mobile) */}
             <motion.div
-              id="quote-upload-section"
-              ref={uploaderRef}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:col-span-5"
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
               <TravelerQuoteUploader />
             </motion.div>
@@ -181,43 +263,8 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* How Quote Review Works */}
-      <section className="py-10 md:py-20">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center mb-7 md:mb-10">
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
-              How It Works
-            </p>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              How holiday quote review works
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            {howItWorks.map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="text-center p-3 sm:p-4 rounded-xl"
-              >
-                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
-                  {step.num}
-                </div>
-                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2.5">
-                  <step.icon size={18} className="text-primary" />
-                </div>
-                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{step.label}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* EMI & Affordability */}
-      <section id="emi-section" className="py-10 md:py-22 bg-section-alt">
+      {/* ── EMI & Affordability ── */}
+      <section id="emi-section" ref={emiSectionRef} className="py-10 md:py-22 bg-section-alt">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
@@ -231,16 +278,15 @@ const ForTravelers = () => {
                 EMI & Affordability
               </p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Travel EMI — pay monthly, book now
+                What does your holiday actually cost per month?
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Split your holiday cost into comfortable monthly payments with No Cost EMI or low-cost travel EMI options across 15+ lending partners. Checking eligibility doesn't affect your credit score. No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
+                Enter any trip amount and instantly see monthly payment options. No Cost EMI on 3 and 6-month plans. 
+                Standard EMI for longer tenures. Checking doesn't affect your credit score.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2" onClick={scrollToUploader}>
-                  Upload a Quote <ArrowRight size={16} />
-                </Button>
-              </div>
+              <p className="text-[11px] text-muted-foreground/70">
+                No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
+              </p>
             </motion.div>
 
             <motion.div
@@ -284,7 +330,7 @@ const ForTravelers = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">
-                  * Indicative amounts. Final options depend on lender approval, trip details, and agent terms. No Cost EMI is subject to eligibility and lender approval. T&C apply.
+                  * Indicative amounts. Final options depend on lender approval, trip details, and agent terms.
                 </p>
               </div>
             </motion.div>
@@ -292,7 +338,7 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* EMI Enquiry — for users without a quote */}
+      {/* ── EMI Enquiry — no quote path ── */}
       <section className="py-10 md:py-20">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
@@ -303,19 +349,19 @@ const ForTravelers = () => {
               transition={{ duration: 0.5 }}
               className="space-y-4 lg:pt-4"
             >
-              <p className="text-xs font-semibold text-primary uppercase tracking-widest">
+              <p className="text-xs font-semibold text-brand-coral uppercase tracking-widest">
                 Don't have a quote yet?
               </p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                See what your trip could cost — before you book
+                Just tell us where you want to go
               </h2>
               <p className="text-muted-foreground leading-relaxed">
-                Planning a holiday and want to know EMI options? Share your destination and budget,
-                and we'll show you indicative monthly payment options so you can plan with confidence.
+                Share your destination and budget. We'll send you indicative monthly payment options 
+                so you can plan your holiday with confidence — before speaking to any agent.
               </p>
-              <div className="space-y-3 pt-1">
+              <div className="space-y-2.5 pt-1">
                 {[
-                  "No quote needed — just tell us where and when",
+                  "No quote needed — just destination and budget",
                   "Get indicative EMI options in minutes",
                   "No credit score impact, no obligation",
                   "Our team follows up with personalised options",
@@ -340,7 +386,7 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* Why Use SanKash */}
+      {/* ── Why SanKash ── */}
       <section className="py-10 md:py-22">
         <div className="container">
           <div className="max-w-2xl mb-6 md:mb-10">
@@ -348,7 +394,7 @@ const ForTravelers = () => {
               Why Use SanKash
             </p>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-              Why review your holiday quote with SanKash
+              Make smarter holiday decisions
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -372,8 +418,43 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* Trust & FAQ */}
-      <section className="py-10 md:py-22 bg-section-alt">
+      {/* ── How It Works ── */}
+      <section className="py-10 md:py-20 bg-section-alt">
+        <div className="container">
+          <div className="max-w-2xl mx-auto text-center mb-7 md:mb-10">
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
+              How It Works
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+              Four steps to a better holiday deal
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+            {howItWorks.map((step, i) => (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="text-center p-3 sm:p-4 rounded-xl"
+              >
+                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
+                  {step.num}
+                </div>
+                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2.5">
+                  <step.icon size={18} className="text-primary" />
+                </div>
+                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{step.label}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Trust & FAQ ── */}
+      <section className="py-10 md:py-22">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8 md:gap-10">
             <motion.div
@@ -438,7 +519,7 @@ const ForTravelers = () => {
         { label: "Check EMI options", href: "#emi-section" },
       ]} />
 
-      {/* Final CTA */}
+      {/* ── Final CTA ── */}
       <section className="py-10 md:py-20 bg-brand-deep relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -452,7 +533,7 @@ const ForTravelers = () => {
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Upload your holiday quote and explore travel EMI options, better structuring, and trip protection — all before you book.
+            Upload your holiday quote or check EMI — know exactly what you're paying before you commit.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
             <Button
@@ -462,11 +543,9 @@ const ForTravelers = () => {
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <a href="#emi-section" className="w-full sm:w-auto">
-              <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto">
-                <Calculator size={16} /> Check EMI Options
-              </Button>
-            </a>
+            <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToEmi}>
+              <Calculator size={16} /> Check EMI Options
+            </Button>
           </div>
         </div>
       </section>
