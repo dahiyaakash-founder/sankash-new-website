@@ -361,7 +361,7 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: quoteFileUrl,
-        metadata_json: { confidence: stage === "results-high" ? "high" : "medium", file_count: files.length },
+        metadata_json: { confidence: analysisResult?.parsing_confidence ?? "medium", file_count: files.length },
       });
 
       if (files.length > 0 && lead?.id) {
