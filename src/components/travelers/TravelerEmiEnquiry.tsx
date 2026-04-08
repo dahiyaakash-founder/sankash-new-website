@@ -56,8 +56,9 @@ const TravelerEmiEnquiry = () => {
         },
       });
 
-      trackConversion("traveler_emi_enquiry", {
-        source: "for-travelers",
+      trackEvent("traveler_emi_enquiry", {
+        source_type: "traveler_emi_enquiry",
+        audience_type: "traveler",
         destination: destination.trim(),
         budget,
       });
