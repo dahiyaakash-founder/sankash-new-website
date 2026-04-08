@@ -137,8 +137,10 @@ const TravelerQuoteUploader = () => {
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
-  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<ItineraryAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
+  const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((newFiles: File[]) => {
