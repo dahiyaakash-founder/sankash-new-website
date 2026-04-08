@@ -1,6 +1,7 @@
 /**
  * Multi-file traveler quote uploader — supports up to 5 files (PDFs, screenshots, images).
  * All files are processed together as one itinerary session via the unified vision pipeline.
+ * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +10,6 @@ import {
   Upload,
   FileText,
   CheckCircle2,
-  Lock,
   ArrowRight,
   Loader2,
   Phone,
@@ -17,10 +17,6 @@ import {
   HelpCircle,
   Info,
   AlertCircle,
-  Shield,
-  CreditCard,
-  Wallet,
-  TrendingDown,
   X,
   Plus,
   ImageIcon,
@@ -31,7 +27,7 @@ import {
   type ValidationErrorType,
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
-import { getInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
+
 import {
   Dialog,
   DialogContent,
@@ -40,52 +36,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import type { ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
+import TravelerAnalysisResults from "./TravelerAnalysisResults";
 
 const MAX_FILES = 5;
 
-type Stage = "upload" | "analyzing" | "results-medium" | "results-high" | "error";
+type Stage = "upload" | "analyzing" | "results" | "error";
 
-function buildTravelerInsights(insurance: InsuranceInsight) {
-  return [
-    {
-      icon: TrendingDown,
-      label: "This holiday quote can be optimised",
-      detail: "We have identified potential room for savings of up to 5%",
-      hasBlurredValue: true,
-    },
-    {
-      icon: CreditCard,
-      label: "This itinerary is eligible for No Cost EMI",
-      detail: "6-month No Cost EMI available, subject to credit approval",
-      hasBlurredValue: false,
-    },
-    {
-      icon: Shield,
-      label: insurance.headline,
-      detail: insurance.detail,
-      hasBlurredValue: false,
-    },
-    {
-      icon: Wallet,
-      label: "This booking may qualify for zero online payment charges",
-      detail: "Pay digitally without extra online payment charges",
-      hasBlurredValue: false,
-    },
-  ];
-}
 
-const mediumConfidenceBullets = [
-  "Travel quote or itinerary detected",
-  "EMI options may be available",
-  "Our team can review this in more detail",
-];
 
-const gatedInsights = [
-  { label: "Exact savings amount on this quote", detail: "Up to 5% optimisation · revealed after verification" },
-  { label: "EMI breakdown with lender options", detail: "3, 6, 9, 12-month No Cost EMI plans" },
-  { label: "Recommended travel protection", detail: "Cancellation, medical & baggage cover with pricing" },
-  { label: "Pre-approval for trip financing", detail: "Check eligibility without impacting credit score" },
-];
 
 /** Simple file icon based on type */
 function FileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
@@ -134,8 +93,10 @@ const TravelerQuoteUploader = () => {
   const [leadName, setLeadName] = useState("");
   const [leadPhone, setLeadPhone] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
-  const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<ItineraryAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
+  const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((newFiles: File[]) => {
@@ -228,9 +189,9 @@ const TravelerQuoteUploader = () => {
       });
 
       // Determine confidence from analysis result or default to medium
-      const confidence = analysis?.parsing_confidence === "high" ? "high" : "medium";
-      setInsuranceInsight(getInsuranceInsight(files[0].name));
-      setStage(confidence === "high" ? "results-high" : "results-medium");
+      setAnalysisResult(analysis);
+      setCurrentLeadId(lead.id);
+      setStage("results");
     } catch (err) {
       console.error("Upload/analysis error:", err);
       setErrorTitle("Something went wrong");
@@ -267,9 +228,52 @@ const TravelerQuoteUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
-    setInsuranceInsight(null);
+    setAnalysisResult(null);
     setAnalysisProgress("");
+    setCurrentLeadId(null);
+    setIsReanalyzing(false);
   };
+
+  /** Add more files to existing analysis and re-trigger */
+  const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
+    if (!currentLeadId) return;
+    setIsReanalyzing(true);
+    try {
+      const { uploadLeadAttachment } = await import("@/lib/attachments-service");
+      const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+      const { supabase } = await import("@/integrations/supabase/client");
+
+      const fileInputs: { file_url: string; file_name: string }[] = [];
+
+      // Upload new files as attachments
+      for (const file of newFiles) {
+        try {
+          const attachment = await uploadLeadAttachment(file, currentLeadId, { sourceType: "itinerary_upload" });
+          const { data: urlData } = supabase.storage.from("lead-attachments").getPublicUrl(attachment.storage_path);
+          fileInputs.push({ file_url: urlData.publicUrl, file_name: file.name });
+        } catch (err) {
+          console.warn("Failed to upload additional file:", err);
+        }
+      }
+
+      if (fileInputs.length === 0) throw new Error("No files uploaded");
+
+      // Merge with original file URLs if we have them
+      // Re-trigger analysis with all files
+      const result = await triggerItineraryAnalysis({
+        lead_id: currentLeadId,
+        files: fileInputs,
+        audience_type: "traveler",
+      });
+
+      setAnalysisResult(result);
+      setFiles(prev => [...prev, ...newFiles]);
+    } catch (err) {
+      console.error("Re-analysis failed:", err);
+    } finally {
+      setIsReanalyzing(false);
+    }
+  }, [currentLeadId]);
 
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
@@ -313,7 +317,7 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: quoteFileUrl,
-        metadata_json: { confidence: stage === "results-high" ? "high" : "medium", file_count: files.length },
+        metadata_json: { confidence: analysisResult?.parsing_confidence ?? "medium", file_count: files.length },
       });
 
       if (files.length > 0 && lead?.id) {
@@ -529,153 +533,18 @@ const TravelerQuoteUploader = () => {
             </motion.div>
           )}
 
-          {/* ── Medium Confidence ── */}
-          {stage === "results-medium" && (
-            <motion.div
-              key="results-medium"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <FileText size={14} className="text-primary" />
-                  Initial Review
-                </div>
-                <button onClick={reset} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline">
-                  Start over
-                </button>
-              </div>
-
-              <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
-                <FileText size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-xs text-foreground font-medium truncate">
-                  {files.length > 1 ? `${files.length} files uploaded` : files[0]?.name}
-                </span>
-                <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                  Detected
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="font-heading font-bold text-sm text-foreground mb-1">
-                    This looks like a holiday quote or itinerary
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    We found travel signals. A detailed review may need our team to verify.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  {mediumConfidenceBullets.map((bullet, i) => (
-                    <motion.div key={bullet} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.12, duration: 0.3 }} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-accent/40">
-                      <CheckCircle2 size={14} className="text-primary shrink-0" />
-                      <p className="text-sm text-foreground">{bullet}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-1">
-                <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
-                  <Phone size={14} /> Unlock full review
-                </Button>
-                <Button variant="outline" size="sm" onClick={reset}>
-                  Upload different files
-                </Button>
-              </div>
-              <p className="text-[10px] text-muted-foreground/60 px-1">
-                Verify your mobile number to see exact savings, EMI options, and next steps
-              </p>
-            </motion.div>
-          )}
-
-          {/* ── High Confidence ── */}
-          {stage === "results-high" && (
-            <motion.div
-              key="results-high"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <FileText size={14} className="text-primary" />
-                  First-Pass Review
-                </div>
-                <button onClick={reset} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline">
-                  Upload different files
-                </button>
-              </div>
-
-              <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
-                <FileText size={14} className="text-muted-foreground shrink-0" />
-                <span className="text-xs text-foreground font-medium truncate">
-                  {files.length > 1 ? `${files.length} files analyzed` : files[0]?.name}
-                </span>
-                <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                  Reviewed
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What We Found</p>
-                {buildTravelerInsights(insuranceInsight ?? { headline: "Travel protection can be added", detail: "Trip cancellation, medical and baggage cover available" }).map((insight, i) => {
-                  const Icon = insight.icon;
-                  return (
-                    <motion.div key={insight.label} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.12, duration: 0.3 }} className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40">
-                      <Icon size={15} className="text-primary shrink-0 mt-0.5" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{insight.label}</p>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">{insight.detail}</p>
-                        {insight.hasBlurredValue && (
-                          <span className="inline-block mt-1 text-sm font-bold text-primary select-none" style={{ filter: "blur(5px)" }} aria-hidden>
-                            Possible savings: ₹2,450
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-                <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                  This is a first-pass review. Verify your number to unlock exact savings and EMI breakdown.
-                </p>
-              </div>
-
-              {/* Gated section */}
-              <div className="relative">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Unlock Full Review</p>
-                  <div className="space-y-2 select-none" style={{ filter: "blur(4px)" }} aria-hidden>
-                    {gatedInsights.map((item) => (
-                      <div key={item.label} className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-lg bg-accent/40">
-                        <CheckCircle2 size={15} className="text-primary shrink-0 mt-0.5" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm font-medium text-foreground leading-snug">{item.label}</p>
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">{item.detail}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] rounded-xl px-4">
-                  <Lock size={18} className="text-primary mb-2" />
-                  <p className="font-heading font-bold text-xs sm:text-sm text-foreground mb-1 text-center">
-                    Unlock exact savings and EMI options
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[280px] leading-relaxed">
-                    Verify your mobile number to access exact savings, EMI options, and detailed trip recommendations
-                  </p>
-                  <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
-                    <Phone size={14} /> Unlock full review
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
+          {/* ── Results (partial extraction) ── */}
+          {stage === "results" && (
+            <TravelerAnalysisResults
+              key="results"
+              analysis={analysisResult}
+              files={files}
+              onUnlock={() => setShowLeadForm(true)}
+              onAddMore={handleAddMoreFiles}
+              onReanalyze={() => {}}
+              onReset={reset}
+              isReanalyzing={isReanalyzing}
+            />
           )}
         </AnimatePresence>
       </div>
