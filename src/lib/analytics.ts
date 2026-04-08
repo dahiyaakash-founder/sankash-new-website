@@ -230,3 +230,6 @@ export const trackQuoteAnalysisRequested = (params?: { audience_type?: string })
 
 export const trackItineraryAnalysisOpened = () =>
   trackEvent("itinerary_analysis_opened", { source_type: "ops_itinerary" });
+
+export const trackTravelerEmiEnquirySubmit = (params: { destination?: string; budget?: string }) =>
+  trackEvent("traveler_emi_enquiry", { audience_type: "traveler", source_type: "traveler_emi_enquiry", ...params });
