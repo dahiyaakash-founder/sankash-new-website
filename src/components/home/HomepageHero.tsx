@@ -56,7 +56,7 @@ const HomepageHero = () => {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <p className="text-sm font-heading font-bold text-primary-deep">Check Holiday EMI</p>
-                    <p className="text-xs text-muted-foreground">See monthly cost, no impact on credit</p>
+                    <p className="text-xs text-muted-foreground">See monthly cost instantly</p>
                   </div>
                   <ArrowRight size={14} className="text-muted-foreground group-hover:text-brand-coral transition-colors shrink-0" />
                 </div>

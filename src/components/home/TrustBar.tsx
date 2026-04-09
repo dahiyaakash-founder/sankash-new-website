@@ -21,12 +21,12 @@ const TrustBar = () => {
               transition={{ delay: i * 0.1, duration: 0.4 }}
               className="flex items-center gap-3"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary-foreground/10 flex items-center justify-center shrink-0">
-                <point.icon size={18} className="text-primary-foreground/60" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <point.icon size={18} className="text-primary" />
               </div>
               <div>
-                <div className="text-lg font-heading font-bold text-primary-foreground">{point.value}</div>
-                <p className="text-[11px] text-primary-foreground/40 uppercase tracking-wider">{point.label}</p>
+                <div className="text-lg font-heading font-bold text-foreground">{point.value}</div>
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{point.label}</p>
               </div>
             </motion.div>
           ))}

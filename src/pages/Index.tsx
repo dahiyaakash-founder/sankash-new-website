@@ -30,6 +30,7 @@ const Index = () => {
       <SecondaryPaths />
       <AssistantEntryPoint prompts={homepagePrompts} />
       <HomepageCTA />
+      <StickyMobileCTA />
     </SiteLayout>
   );
 };
