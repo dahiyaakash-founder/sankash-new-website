@@ -44,7 +44,7 @@ const HomepageHero = () => {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <p className="text-sm font-heading font-bold text-primary-deep">Upload a Quote</p>
-                    <p className="text-xs text-muted-foreground">Free review with EMI options</p>
+                    <p className="text-xs text-muted-foreground">Get a free review in 2 mins</p>
                   </div>
                   <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                 </div>
