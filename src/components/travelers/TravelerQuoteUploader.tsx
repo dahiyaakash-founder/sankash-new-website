@@ -3,7 +3,7 @@
  * All files are processed together as one itinerary session via the unified vision pipeline.
  * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
