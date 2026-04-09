@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { unzipSync } from "https://esm.sh/fflate@0.8.2";
+import {
+  deriveItineraryIntelligence,
+} from "../../../src/lib/itinerary-intelligence.ts";
+import { normalizeItineraryExtraction } from "../../../src/lib/itinerary-postprocess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -123,24 +127,28 @@ Return a SINGLE JSON object with ALL of these fields (use null for genuinely unk
 CRITICAL RULES:
 
 Multi-file handling:
-- Multiple images/documents all belong to the same trip.
-- Cross-reference across files. Merge into ONE unified response.
-- If conflicts exist, pick the most reliable value and note in extraction_warnings.
-
-Package mode:
-- "flights_and_hotels": Both flights and accommodation included.
-- "land_only": Only ground arrangements — no flights.
-- "flights_only": Only flight bookings.
-- "hotels_only": Only hotel bookings.
-- "custom": Mixed or unclear.
-- Infer from inclusions/exclusions.
+- You may receive multiple images/documents. They ALL belong to the same trip.
+- Cross-reference information across files. E.g., file 1 may show flights, file 2 may show hotels and price.
+- Merge data from all files into ONE unified response. Do not return per-file results.
+- If the same field appears in multiple files with different values, pick the most reliable one and note the conflict in extraction_warnings.
+- If one file looks like a revised quote, final quote, or booking confirmation, prefer that value over earlier brochure or teaser details.
 
 Domestic vs International:
 - ALL destinations within India = "domestic". ANY outside = "international".
 
+Hotels:
+- hotel_names should include the exact hotel names whenever they are visible.
+- Read accommodation tables, hotel sections, and named stay lines carefully before leaving hotel_names empty.
+- If the document says "or similar", keep the named hotel if it is visible and mention the uncertainty in extraction_warnings.
+
 Price extraction:
 - total_price = final package/total price as a plain number.
 - price_per_person = per-person cost ONLY if explicitly stated.
+
+Date extraction:
+- travel_start_date and travel_end_date should only be the actual trip dates or explicit booked departure and return dates.
+- Do NOT use offer validity windows, seasonal travel ranges, or "available from / valid till / travel period" text as actual trip dates.
+- If the document only shows a broad travel window and not a specific booked date, leave travel_start_date and travel_end_date as null.
 
 People count:
 - Only set counts you can actually see.
@@ -382,19 +390,21 @@ Deno.serve(async (req) => {
       fileInputs.map(f => fetchFileContent(f.file_url, f.file_name).then(content => ({ content, fileUrl: f.file_url })))
     );
 
-    // Step 2: Single unified AI pass (extraction + advisory in one call)
-    const parsed = await analyzeWithAI(fileContents);
-    console.log(`AI analysis complete. Confidence: ${parsed.parsing_confidence}, Completeness: ${parsed.extracted_completeness_score}`);
+    // Step 2: Single unified AI analysis
+    const rawParsed = await analyzeWithAI(fileContents);
+    console.log(`AI extraction complete. Confidence: ${rawParsed.parsing_confidence}`);
 
-    // Step 3: Commercial flags
-    const flags = computeCommercialFlags(parsed);
-
-    // Step 4: Combined raw text
+    // Step 3: Combine raw text from all files
     const combinedRawText = fileContents.map((f, i) =>
       `--- File ${i + 1}: ${f.content.fileName} ---\n${f.content.rawText}`
     ).join("\n\n");
 
-    // Step 5: Build durable record (all fields from single AI pass)
+    const parsed = normalizeItineraryExtraction(rawParsed, combinedRawText, new Date());
+
+    // Step 4: Commercial flags
+    const flags = computeCommercialFlags(parsed as Record<string, unknown>);
+
+    // Step 5: Build record
     const record = {
       lead_id,
       attachment_id: attachment_id || null,
@@ -455,13 +465,47 @@ Deno.serve(async (req) => {
       enrichment_status_json: { extraction: "complete", advisory: parsed.advisory_summary ? "complete" : "partial" },
     };
 
-    // Step 6: Upsert (durable case — same lead_id always updates the same case)
+    const intelligence = deriveItineraryIntelligence({
+      domestic_or_international: record.domestic_or_international,
+      destination_country: record.destination_country,
+      destination_city: record.destination_city,
+      additional_destinations_json: record.additional_destinations_json,
+      travel_start_date: record.travel_start_date,
+      travel_end_date: record.travel_end_date,
+      duration_nights: record.duration_nights,
+      duration_days: record.duration_days,
+      total_price: record.total_price,
+      price_per_person: record.price_per_person,
+      currency: record.currency,
+      traveller_count_total: record.traveller_count_total,
+      adults_count: record.adults_count,
+      children_count: record.children_count,
+      infants_count: record.infants_count,
+      hotel_names_json: record.hotel_names_json,
+      airline_names_json: record.airline_names_json,
+      sectors_json: record.sectors_json,
+      inclusions_text: record.inclusions_text,
+      exclusions_text: record.exclusions_text,
+      visa_mentioned: record.visa_mentioned,
+      insurance_mentioned: record.insurance_mentioned,
+      flight_departure_time: record.flight_departure_time,
+      flight_arrival_time: record.flight_arrival_time,
+      hotel_check_in: record.hotel_check_in,
+      hotel_check_out: record.hotel_check_out,
+      parsing_confidence: record.parsing_confidence,
+      missing_fields_json: record.missing_fields_json,
+      extraction_warnings_json: record.extraction_warnings_json,
+    });
+
+    Object.assign(record, intelligence);
+
+    // Step 6: Upsert
     const { data: existing } = await supabaseAdmin
       .from("itinerary_analysis")
       .select("id")
       .eq("lead_id", lead_id)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     let result;
     if (existing) {
