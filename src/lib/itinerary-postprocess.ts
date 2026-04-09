@@ -1,4 +1,5 @@
 export interface ParsedItineraryExtraction {
+  [key: string]: unknown;
   domestic_or_international?: string | null;
   destination_country?: string | null;
   destination_city?: string | null;
@@ -196,7 +197,7 @@ function extractTravelerBreakdown(rawText: string): TravelerBreakdown {
     const total =
       totalMatch ? Number(totalMatch[1]) :
       adults != null || children != null || infants != null
-        ? [adults, children, infants].reduce((sum, value) => sum + (value ?? 0), 0)
+        ? [adults, children, infants].reduce((s: number, value) => s + (value ?? 0), 0)
         : null;
 
     if (total == null) continue;
