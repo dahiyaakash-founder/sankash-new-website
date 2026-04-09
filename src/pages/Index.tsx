@@ -28,7 +28,7 @@ const Index = () => {
       <AgentToolkit />
       <AgentValueProp />
       <SecondaryPaths />
-      <AssistantEntryPoint prompts={homepagePrompts} />
+      <HomepageCTA />
       <HomepageCTA />
       <StickyMobileCTA />
     </SiteLayout>
