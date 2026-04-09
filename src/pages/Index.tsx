@@ -7,6 +7,7 @@ import AgentValueProp from "@/components/home/AgentValueProp";
 import SecondaryPaths from "@/components/home/SecondaryPaths";
 import HomepageCTA from "@/components/home/HomepageCTA";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
+import StickyMobileCTA from "@/components/home/StickyMobileCTA";
 
 const homepagePrompts = [
   { label: "Upload a holiday quote", link: "/for-travel-agents" },
