@@ -10,7 +10,7 @@ const proofPoints = [
 
 const TrustBar = () => {
   return (
-    <section className="py-6 md:py-12 border-b bg-brand-deep">
+    <section className="py-6 md:py-10 border-y border-primary/10 bg-muted/50">
       <div className="container">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
           {proofPoints.map((point, i) => (
