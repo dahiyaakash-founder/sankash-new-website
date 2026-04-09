@@ -31,9 +31,8 @@ const HomepageHero = () => {
               <span className="text-primary">before you pay.</span>
             </h1>
 
-            <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Upload a travel quote for a free review, or check what your trip costs per month with EMI.
-              SanKash helps travelers make smarter holiday decisions — and helps travel businesses grow.
+            <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Upload your travel quote for a free breakdown, or check what your trip costs per month — <span className="text-foreground font-medium">no credit impact</span>.
             </p>
 
             {/* Two clear traveler actions */}
