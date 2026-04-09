@@ -1,4 +1,4 @@
-export const ITINERARY_INTELLIGENCE_VERSION = "2026-04-09-v2";
+export const ITINERARY_INTELLIGENCE_VERSION = "2026-04-09-v3";
 
 export type PackageMode = "land_only" | "flights_and_hotels" | "hotels_only" | "custom" | "unknown";
 export type AdvisorySeverity = "high" | "medium" | "low";
@@ -278,23 +278,6 @@ function buildMissingFieldSet(input: ItineraryIntelligenceInput) {
   return new Set((input.missing_fields_json ?? []).filter(Boolean));
 }
 
-function hasFlightSignals(input: ItineraryIntelligenceInput) {
-  return Boolean(
-    (input.airline_names_json ?? []).length ||
-    (input.sectors_json ?? []).length ||
-    hasText(input.flight_departure_time) ||
-    hasText(input.flight_arrival_time),
-  );
-}
-
-function hasHotelSignals(input: ItineraryIntelligenceInput) {
-  return Boolean(
-    (input.hotel_names_json ?? []).length ||
-    hasText(input.hotel_check_in) ||
-    hasText(input.hotel_check_out),
-  );
-}
-
 function buildContextText(input: ItineraryIntelligenceInput) {
   return normalizeText([
     input.inclusions_text,
@@ -305,22 +288,77 @@ function buildContextText(input: ItineraryIntelligenceInput) {
   ].filter(Boolean).join(" "));
 }
 
+function buildInclusionsText(input: ItineraryIntelligenceInput) {
+  return normalizeText(input.inclusions_text);
+}
+
+function hasVisibleFlightSignals(input: ItineraryIntelligenceInput) {
+  return Boolean(
+    (input.airline_names_json ?? []).length ||
+    (input.sectors_json ?? []).length ||
+    hasText(input.flight_departure_time) ||
+    hasText(input.flight_arrival_time),
+  );
+}
+
+function hasExplicitFlightInclusions(input: ItineraryIntelligenceInput) {
+  const inclusions = buildInclusionsText(input);
+  return /\bflights?\b|\bairfare\b|\bair ticket\b|\breturn airfare\b|\breturn flight\b|\bflight tickets?\b|\bdomestic flight\b|\binternational flight\b/.test(inclusions);
+}
+
+function hasFlightSignals(input: ItineraryIntelligenceInput) {
+  return hasVisibleFlightSignals(input) || hasExplicitFlightInclusions(input);
+}
+
+function hasVisibleHotelSignals(input: ItineraryIntelligenceInput) {
+  return Boolean(
+    (input.hotel_names_json ?? []).length ||
+    hasText(input.hotel_check_in) ||
+    hasText(input.hotel_check_out),
+  );
+}
+
+function hasExplicitAccommodationInclusions(input: ItineraryIntelligenceInput) {
+  const inclusions = buildInclusionsText(input);
+  return /\baccommodation\b|\bhotel\b|\bstay\b|\broom\b|\bnight stay\b|\bovernight\b/.test(inclusions);
+}
+
+function hasHotelSignals(input: ItineraryIntelligenceInput) {
+  return hasVisibleHotelSignals(input) || hasExplicitAccommodationInclusions(input);
+}
+
 function hasStayLanguage(input: ItineraryIntelligenceInput) {
   const context = buildContextText(input);
   return /\bhotel\b|\baccommodation\b|\bstay\b|\broom\b|\bnight stay\b|\bovernight\b/.test(context);
 }
 
-function hasCoreGroundSignals(input: ItineraryIntelligenceInput) {
+function hasStrongGroundPackageSignals(input: ItineraryIntelligenceInput) {
   const context = buildContextText(input);
   return (
-    /\bairport transfer\b|\btransfer\b|\bpickup\b|\bdrop\b|\bsightseeing\b|\bexcursion\b|\bactivity\b|\bferry\b|\bcruise\b|\bprivate vehicle\b|\bcoach\b|\bguide(?:d)?\b|\bpermits?\b|\bentry tickets?\b/.test(context) ||
+    /\bsightseeing\b|\bexcursion\b|\bactivity\b|\bferry\b|\bcruise\b|\bprivate vehicle\b|\bcoach\b|\bguide(?:d)?\b|\bpermits?\b|\bentry tickets?\b|\bday tour\b|\btour manager\b|\bintercity\b/.test(context) ||
     Boolean((input.additional_destinations_json ?? []).length)
   );
+}
+
+function hasLocalTransferHints(input: ItineraryIntelligenceInput) {
+  const context = buildContextText(input);
+  return /\bairport transfer\b|\btransfers?\b|\bpickup\b|\bdrop\b/.test(context);
 }
 
 function hasIndependentStaySignals(input: ItineraryIntelligenceInput) {
   const context = buildContextText(input);
   return /\bindependent\b|\barrive independently\b|\bcity stay\b|\bhotel booking\b|\bstarts and ends in\b/.test(context);
+}
+
+function isSparseEvidenceCase(input: ItineraryIntelligenceInput) {
+  return (
+    (input.parsing_confidence ?? "low") === "low" &&
+    !hasText(input.travel_start_date) &&
+    !hasText(input.travel_end_date) &&
+    input.traveller_count_total == null &&
+    (input.hotel_names_json ?? []).length === 0 &&
+    !hasVisibleFlightSignals(input)
+  );
 }
 
 function isLikelyStayCase(input: ItineraryIntelligenceInput, packageMode: PackageMode) {
@@ -352,16 +390,18 @@ function shouldFlagInsuranceGap(input: ItineraryIntelligenceInput, packageMode: 
 
 function inferPackageMode(input: ItineraryIntelligenceInput): PackageMode {
   const hasFlights = hasFlightSignals(input);
-  const hasHotels = hasHotelSignals(input) || hasStayLanguage(input);
-  const hasGroundPackageSignals = hasCoreGroundSignals(input);
+  const hasAccommodationEvidence = hasHotelSignals(input) || hasStayLanguage(input);
+  const hasGroundPackageSignals = hasStrongGroundPackageSignals(input);
   const hasIndependentHotelSignals = hasIndependentStaySignals(input);
+  const localTransferOnly = hasLocalTransferHints(input) && !hasGroundPackageSignals;
+  const sparseEvidence = isSparseEvidenceCase(input);
 
-  if (hasFlights && hasHotels) return "flights_and_hotels";
-  if (hasFlights && !hasHotels) return hasGroundPackageSignals ? "custom" : "unknown";
-  if (hasHotels && hasGroundPackageSignals) return "land_only";
-  if (hasHotels && hasIndependentHotelSignals) return "hotels_only";
-  if (hasHotels) return "hotels_only";
-  if (hasGroundPackageSignals) return "land_only";
+  if (hasFlights && hasAccommodationEvidence) return "flights_and_hotels";
+  if (hasFlights && !hasAccommodationEvidence) return hasGroundPackageSignals ? "custom" : "unknown";
+  if (sparseEvidence && hasAccommodationEvidence && localTransferOnly) return "unknown";
+  if (hasAccommodationEvidence && hasGroundPackageSignals) return "land_only";
+  if (hasAccommodationEvidence && (hasIndependentHotelSignals || !hasGroundPackageSignals)) return "hotels_only";
+  if (hasGroundPackageSignals) return sparseEvidence ? "unknown" : "custom";
   return "unknown";
 }
 
@@ -405,7 +445,9 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
   const destination = firstNonEmpty([input.destination_city, input.destination_country]) ?? "this trip";
   const destinationKey = normalizeText(input.destination_city);
   const hasFlights = hasFlightSignals(input);
-  const hasHotels = hasHotelSignals(input);
+  const hasVisibleHotels = hasVisibleHotelSignals(input);
+  const hasAccommodationEvidence = hasHotelSignals(input) || hasStayLanguage(input);
+  const hasHotels = hasAccommodationEvidence;
   const likelyStayCase = isLikelyStayCase(input, packageMode);
   const hasVisiblePrice = input.total_price != null || input.price_per_person != null;
   const hasPrice = input.total_price != null;
@@ -422,9 +464,12 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
       ? `${(input.currency ?? "INR").toUpperCase()} ${Number(input.price_per_person).toLocaleString("en-IN")} per traveler`
       : null;
   const hotelNames = (input.hotel_names_json ?? []).filter(Boolean);
-  const localTransferOnly = /\btransfer\b|\bpickup\b|\bdrop\b/.test(normalizeText(input.inclusions_text));
+  const localTransferOnly = hasLocalTransferHints(input) && !hasStrongGroundPackageSignals(input);
   const explicitInsuranceExclusion = hasExplicitInsuranceExclusion(input);
-  const transportMissing = packageMode === "land_only" || packageMode === "hotels_only" || (hasHotels && !hasFlights && localTransferOnly);
+  const transportMissing =
+    packageMode === "land_only" ||
+    (packageMode === "hotels_only" && hasAccommodationEvidence) ||
+    (packageMode === "custom" && hasAccommodationEvidence && !hasFlights && !localTransferOnly);
   const priceBasisUnclear = hasVisiblePrice && (input.price_per_person == null || input.traveller_count_total == null);
   const shouldFlagInsurance = shouldFlagInsuranceGap(input, packageMode, completenessBand);
   const budgetingGaps: string[] = [];
@@ -575,18 +620,22 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
     });
   }
 
-  if (likelyStayCase && !hasHotels) {
+  if (likelyStayCase && !hasVisibleHotels) {
     uniquePush(decisionFlags, {
       code: "hotel_names_missing",
       title: "Hotel names are still missing",
-      detail: "The package looks stay-based, but the actual hotel names are not visible yet.",
+      detail: hasAccommodationEvidence
+        ? "Accommodation is included, but the exact hotel names are not visible yet."
+        : "The package looks stay-based, but the actual hotel names are not visible yet.",
       severity: "medium",
       active: true,
     });
     uniquePush(advisoryInsights, {
       code: "hotel_names_missing",
       title: "We still need the hotel names",
-      detail: "Without the exact hotels, we cannot judge location quality, room value, or whether the seller is using a placeholder stay.",
+      detail: hasAccommodationEvidence
+        ? "Accommodation is included, but without the exact hotel names we cannot judge location quality, room value, or placeholder stays."
+        : "Without the exact hotels, we cannot judge location quality, room value, or whether the seller is using a placeholder stay.",
       severity: "medium",
       category: "hotel",
     });
@@ -628,7 +677,7 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
       priority: "medium",
     });
     budgetingGaps.push("lunch and dinner costs");
-  } else if (mealPlan === "unknown" && hasHotels) {
+  } else if (mealPlan === "unknown" && hasAccommodationEvidence) {
     uniquePush(decisionFlags, {
       code: "meal_plan_unclear",
       title: "Meal plan unclear",
@@ -802,7 +851,7 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
     });
   }
 
-  if (likelyStayCase && !hasFlights) {
+  if (likelyStayCase && !hasFlights && packageMode !== "unknown") {
     uniquePush(travelerQuestions, {
       code: "flight_plan_missing",
       question: "Have you already booked your flights or train, or is that still open?",

@@ -61,6 +61,8 @@ const HOTEL_BRAND_PREFIXES = [
 
 const HOTEL_SUFFIX_PATTERN = /\b(hotel|resort|residency|inn|suite|suites|houseboat|palace|spa|villa|villas|lodge|camp|cruise)\b/i;
 const GENERIC_HOTEL_PHRASES = /\b(mentioned hotels|similar hotels|hotel stay|hotel check-?in|hotel check-?out|hotel details|overnight stay|overnight in|star hotel|hotels? included)\b/i;
+const HOTEL_SECTION_HEADING_PATTERN = /^(?:hotels?(?: name| details| options?)?|accommodation(?: details)?|stay(?: details)?|room category|proposed hotels?)\s*[:\-]?\s*(.*)$/i;
+const HOTEL_SECTION_STOP_PATTERN = /^(?:meals?|breakfast|lunch|dinner|inclusions?|exclusions?|price|cost|fare|flight|airfare|visa|insurance|transfers?|pickup|drop|sightseeing|day\s*\d+|night\s*\d+|notes?)\b/i;
 
 function uniqueStrings(values: Array<string | null | undefined>) {
   const seen = new Set<string>();
@@ -104,6 +106,7 @@ function sanitizeHotelCandidate(candidate: string) {
   const cleaned = candidate
     .replace(/^[\s\-–—:*•\d.]+/, "")
     .replace(/^(?:day\s*\d+|night\s*\d+|city|stay at|accommodation)\s*[:\-]\s*/i, "")
+    .replace(/^at\s+/i, "")
     .replace(/^[A-Za-z\s]+(?:-\s+|:\s+)(?=(?:the\s+)?[A-Z])/g, "")
     .replace(/\s{2,}/g, " ")
     .replace(/\b(Breakfast|Lunch|Dinner|Meal Plan|Twin Share|Per Person)\b.*$/i, "")
@@ -117,6 +120,47 @@ function sanitizeHotelCandidate(candidate: string) {
   return cleaned;
 }
 
+function looksLikeHotelCandidate(candidate: string, allowSectionHeuristic = false) {
+  const normalized = candidate.trim();
+  const lower = normalized.toLowerCase();
+
+  if (!normalized) return false;
+  if (HOTEL_SUFFIX_PATTERN.test(normalized)) return true;
+  if (HOTEL_BRAND_PREFIXES.some((prefix) => lower.includes(prefix))) return true;
+  if (!allowSectionHeuristic) return false;
+  if (GENERIC_HOTEL_PHRASES.test(normalized)) return false;
+  if (/\b(meals?|breakfast|lunch|dinner|price|cost|fare|flight|airfare|visa|insurance|transfers?|pickup|drop|sightseeing|activity|itinerary|quote)\b/i.test(normalized)) {
+    return false;
+  }
+  if (/\d{2,}/.test(normalized)) return false;
+  return /^[A-Z][A-Za-z0-9&.'-]+(?:\s+[A-Z][A-Za-z0-9&.'-]+){1,6}(?:\s+or similar)?$/.test(normalized);
+}
+
+function buildFallbackTextCorpus(parsed: ParsedItineraryExtraction, rawText: string) {
+  const parts = [
+    rawText,
+    parsed.inclusions_text,
+    parsed.exclusions_text,
+    parsed.price_notes,
+    parsed.confidence_notes,
+    ...(parsed.extracted_snippets ?? []),
+  ];
+
+  const seen = new Set<string>();
+  const deduped: string[] = [];
+
+  for (const part of parts) {
+    const normalized = (part ?? "").trim();
+    if (!normalized) continue;
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(normalized);
+  }
+
+  return deduped.join("\n");
+}
+
 function extractHotelNamesFromText(rawText: string) {
   const lines = rawText
     .split(/\r?\n/)
@@ -125,12 +169,28 @@ function extractHotelNamesFromText(rawText: string) {
 
   const candidates: string[] = [];
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     let candidate: string | null = null;
+    let allowSectionHeuristic = false;
 
-    const labeledMatch = line.match(/^(?:hotel(?: name)?|accommodation(?: details)?)\s*[:\-]\s*(.+)$/i);
+    const labeledMatch = line.match(HOTEL_SECTION_HEADING_PATTERN);
     if (labeledMatch) {
       candidate = labeledMatch[1];
+      allowSectionHeuristic = true;
+
+      if (!candidate) {
+        const sectionLines: string[] = [];
+        for (let offset = 1; offset <= 4 && index + offset < lines.length; offset += 1) {
+          const sectionLine = lines[index + offset];
+          if (HOTEL_SECTION_STOP_PATTERN.test(sectionLine)) break;
+          sectionLines.push(sectionLine);
+        }
+
+        if (sectionLines.length > 0) {
+          candidate = sectionLines.join(" | ");
+        }
+      }
     } else {
       const stayMatch = line.match(/\b(?:stay at|accommodation at|hotel)\s*[:\-]?\s*(.+)$/i);
       if (stayMatch) {
@@ -138,20 +198,21 @@ function extractHotelNamesFromText(rawText: string) {
       }
     }
 
-    const candidatePool = candidate ? [candidate] : [];
+    const candidatePool = candidate ? [{ value: candidate, allowSectionHeuristic }] : [];
 
-    if (!candidate && (HOTEL_SUFFIX_PATTERN.test(line) || HOTEL_BRAND_PREFIXES.some((prefix) => line.toLowerCase().includes(prefix)))) {
-      candidatePool.push(line);
+    if (!candidate && looksLikeHotelCandidate(line, false)) {
+      candidatePool.push({ value: line, allowSectionHeuristic: false });
     }
 
     for (const entry of candidatePool) {
       const splitCandidates = entry
+        .value
         .split(/\s+\|\s+|\s+\/\s+|;\s*|,(?=\s*[A-Z])/)
         .map((part) => part.trim())
         .filter(Boolean);
 
       for (const part of splitCandidates) {
-        if (!HOTEL_SUFFIX_PATTERN.test(part) && !HOTEL_BRAND_PREFIXES.some((prefix) => part.toLowerCase().includes(prefix))) {
+        if (!looksLikeHotelCandidate(part, entry.allowSectionHeuristic)) {
           continue;
         }
 
@@ -263,6 +324,8 @@ export function normalizeItineraryExtraction(
   now: Date = new Date(),
 ): ParsedItineraryExtraction {
   const parsed = structuredClone(parsedInput) as ParsedItineraryExtraction;
+  const fallbackTextCorpus = buildFallbackTextCorpus(parsed, rawText);
+  const lowerFallbackCorpus = fallbackTextCorpus.toLowerCase();
 
   parsed.hotel_names = uniqueStrings(parsed.hotel_names ?? []);
   parsed.airline_names = uniqueStrings(parsed.airline_names ?? []);
@@ -271,18 +334,19 @@ export function normalizeItineraryExtraction(
   parsed.missing_fields = uniqueStrings(parsed.missing_fields ?? []);
   parsed.extraction_warnings = uniqueStrings(parsed.extraction_warnings ?? []);
 
-  if ((parsed.hotel_names ?? []).length === 0) {
-    const fallbackHotels = extractHotelNamesFromText(rawText);
-    if (fallbackHotels.length > 0) {
-      parsed.hotel_names = fallbackHotels;
-      clearMissing(parsed, "hotel_names");
-    }
+  const fallbackHotels = extractHotelNamesFromText(fallbackTextCorpus);
+  if (fallbackHotels.length > 0) {
+    parsed.hotel_names = uniqueStrings([...(parsed.hotel_names ?? []), ...fallbackHotels]);
+    clearMissing(parsed, "hotel_names");
+  } else if ((parsed.hotel_names ?? []).length === 0 && /\baccommodation\b|\bhotel\b|\bstay\b|\broom\b/.test(lowerFallbackCorpus)) {
+    appendWarning(parsed, "Accommodation is mentioned, but the exact hotel names are still not visible in the material.");
+    markMissing(parsed, "hotel_names");
   }
 
-  if (parsed.traveller_count_total == null) {
-    const fallbackTravelerBreakdown = extractTravelerBreakdown(rawText);
+  {
+    const fallbackTravelerBreakdown = extractTravelerBreakdown(fallbackTextCorpus);
     if (fallbackTravelerBreakdown.total != null) {
-      parsed.traveller_count_total = fallbackTravelerBreakdown.total;
+      parsed.traveller_count_total = parsed.traveller_count_total ?? fallbackTravelerBreakdown.total;
       parsed.adults_count = parsed.adults_count ?? fallbackTravelerBreakdown.adults;
       parsed.children_count = parsed.children_count ?? fallbackTravelerBreakdown.children;
       parsed.infants_count = parsed.infants_count ?? fallbackTravelerBreakdown.infants;
@@ -296,7 +360,7 @@ export function normalizeItineraryExtraction(
     }
   }
 
-  normalizeTravelDates(parsed, rawText, now);
+  normalizeTravelDates(parsed, fallbackTextCorpus, now);
 
   return parsed;
 }

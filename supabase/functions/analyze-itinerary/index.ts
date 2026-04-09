@@ -84,6 +84,7 @@ Multi-file handling:
 - Merge data from all files into ONE unified response. Do not return per-file results.
 - If the same field appears in multiple files with different values, pick the most reliable one and note the conflict in extraction_warnings.
 - If one file looks like a revised quote, final quote, or booking confirmation, prefer that value over earlier brochure or teaser details.
+- Later files often add traveler count, hotel names, or clarify whether the package includes flights. Use those later explicit details to fill missing fields instead of repeating earlier generic brochure text.
 
 Domestic vs International:
 - If ALL destinations are within India, mark "domestic".
@@ -99,7 +100,9 @@ Destination handling:
 Hotels:
 - hotel_names should include the exact hotel names whenever they are visible.
 - Read accommodation tables, hotel sections, and named stay lines carefully before leaving hotel_names empty.
+- Brochure PDFs often hide hotel names inside accommodation tables, stay blocks, or "Hotel / Similar" rows. Search those sections carefully.
 - If the document says "or similar", keep the named hotel if it is visible and mention the uncertainty in extraction_warnings.
+- If accommodation is mentioned but the exact hotel names are still not visible, say that explicitly in extraction_warnings.
 
 Price extraction:
 - total_price = the final package/total price.
@@ -114,6 +117,7 @@ Date extraction:
 
 People count:
 - Only set counts you can actually see. Do NOT assume 2 adults if not stated.
+- If a later file shows the traveler count more clearly than an earlier brochure, use the later explicit count.
 
 Name separation:
 - travel_agent_name = the company/agency that created this quote.
