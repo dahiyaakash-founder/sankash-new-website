@@ -3,7 +3,7 @@
  * All files are processed together as one itinerary session via the unified vision pipeline.
  * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,6 +98,48 @@ const TravelerQuoteUploader = () => {
   const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeAttempted = useRef(false);
+
+  // ── Refresh-safe resume: persist lead ID to sessionStorage ──
+  const STORAGE_KEY = "sankash_itinerary_lead_id";
+
+  // Persist leadId whenever it changes
+  useEffect(() => {
+    if (currentLeadId) {
+      sessionStorage.setItem(STORAGE_KEY, currentLeadId);
+    }
+  }, [currentLeadId]);
+
+  // On mount, attempt to resume a previous itinerary case
+  useEffect(() => {
+    if (resumeAttempted.current) return;
+    resumeAttempted.current = true;
+
+    const savedLeadId = sessionStorage.getItem(STORAGE_KEY);
+    if (!savedLeadId) return;
+
+    // Attempt to fetch the existing analysis
+    (async () => {
+      try {
+        setStage("analyzing");
+        setAnalysisProgress("Restoring your review…");
+        const { fetchItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
+        const existing = await fetchItineraryAnalysis(savedLeadId);
+        if (existing) {
+          setAnalysisResult(existing);
+          setCurrentLeadId(savedLeadId);
+          setStage("results");
+        } else {
+          // No analysis found — clear and show upload
+          sessionStorage.removeItem(STORAGE_KEY);
+          setStage("upload");
+        }
+      } catch {
+        sessionStorage.removeItem(STORAGE_KEY);
+        setStage("upload");
+      }
+    })();
+  }, []);
 
   const addFiles = useCallback((newFiles: File[]) => {
     const validated: File[] = [];
@@ -232,6 +274,7 @@ const TravelerQuoteUploader = () => {
     setAnalysisProgress("");
     setCurrentLeadId(null);
     setIsReanalyzing(false);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
   /** Add more files to existing analysis and re-trigger */

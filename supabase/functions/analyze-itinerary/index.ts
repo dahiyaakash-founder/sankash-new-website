@@ -26,24 +26,28 @@ interface AnalysisRequest {
   audience_type?: string;
 }
 
-// ── Extraction prompt ────────────────────────────────────────────
+// ── Unified extraction + advisory prompt (single pass) ───────────
 
-const EXTRACTION_PROMPT = `You are a travel itinerary/quote parser for SanKash, an Indian travel fintech company. You receive one or more images/documents from a single trip. They may be screenshots from WhatsApp, OTA apps, travel agent PDFs, or mixed formats. Treat ALL inputs together as one itinerary session.
+const EXTRACTION_PROMPT = `You are a travel itinerary/quote parser AND travel advisor for SanKash, an Indian travel fintech company. You receive one or more images/documents from a single trip. They may be screenshots from WhatsApp, OTA apps, travel agent PDFs, or mixed formats. Treat ALL inputs together as one itinerary session.
 
-Return a JSON object with EXACTLY these fields (use null for genuinely unknown values — never invent data):
+Your job is TWO-FOLD in ONE response:
+1. Extract structured trip data from the documents.
+2. Generate advisory intelligence that helps the traveler make a smarter booking decision.
+
+Return a SINGLE JSON object with ALL of these fields (use null for genuinely unknown values — never invent data):
 
 {
   "domestic_or_international": "domestic" | "international" | null,
   "destination_country": string | null,
   "destination_city": string | null,
-  "additional_destinations": [] array of other cities/places mentioned,
+  "additional_destinations": [],
   "travel_start_date": "YYYY-MM-DD" | null,
   "travel_end_date": "YYYY-MM-DD" | null,
   "duration_nights": number | null,
   "duration_days": number | null,
   "total_price": number | null,
   "price_per_person": number | null,
-  "alternate_prices": [] array of other price candidates found (as numbers),
+  "alternate_prices": [],
   "price_notes": string | null,
   "currency": "INR" | "USD" | etc,
   "traveller_count_total": number | null,
@@ -52,10 +56,10 @@ Return a JSON object with EXACTLY these fields (use null for genuinely unknown v
   "infants_count": number | null,
   "travel_agent_name": string | null,
   "customer_name": string | null,
-  "hotel_names": [] array of hotel names,
-  "airline_names": [] array of airlines,
-  "sectors": [] array of flight sectors like "DEL-DXB",
-  "flight_departure_time": string | null (e.g. "06:30" or "06:30 AM"),
+  "hotel_names": [],
+  "airline_names": [],
+  "sectors": [],
+  "flight_departure_time": string | null,
   "flight_arrival_time": string | null,
   "hotel_check_in": "YYYY-MM-DD" | null,
   "hotel_check_out": "YYYY-MM-DD" | null,
@@ -65,114 +69,45 @@ Return a JSON object with EXACTLY these fields (use null for genuinely unknown v
   "insurance_mentioned": boolean,
   "package_mode": "flights_and_hotels" | "land_only" | "flights_only" | "hotels_only" | "custom" | null,
   "parsing_confidence": "high" | "medium" | "low",
-  "missing_fields": [] array of field names that could not be found,
-  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short),
+  "missing_fields": [],
+  "extracted_snippets": [],
   "confidence_notes": string | null,
-  "extraction_warnings": [] array of warning strings about quality issues
-}
+  "extraction_warnings": [],
 
-CRITICAL RULES:
-
-Multi-file handling:
-- You may receive multiple images/documents. They ALL belong to the same trip.
-- Cross-reference information across files. E.g., file 1 may show flights, file 2 may show hotels and price.
-- Merge data from all files into ONE unified response.
-- If the same field appears in multiple files with different values, pick the most reliable one and note the conflict in extraction_warnings.
-
-Package mode:
-- "flights_and_hotels": Both flights and accommodation are included in the package.
-- "land_only": Only ground arrangements (hotels, sightseeing, transfers) — no flights.
-- "flights_only": Only flight bookings, no accommodation.
-- "hotels_only": Only hotel bookings.
-- "custom": Mixed or unclear combination.
-- Infer from inclusions/exclusions. If flights are NOT mentioned and hotels ARE, it's likely "land_only".
-
-Domestic vs International:
-- If ALL destinations are within India, mark "domestic".
-- If ANY destination is outside India, mark "international".
-
-Destination handling:
-- destination_city = the PRIMARY destination.
-- destination_country = the country of the primary destination.
-- additional_destinations = all OTHER cities/places mentioned.
-
-Price extraction:
-- total_price = the final package/total price.
-- price_per_person = per-person cost ONLY if explicitly stated. Do NOT compute by dividing.
-- Strip currency symbols, commas, spaces. Keep as a plain number.
-
-People count:
-- Only set counts you can actually see. Do NOT assume 2 adults if not stated.
-
-Confidence:
-- "high": 4+ Ring 1 fields (destination, dates, price, traveller count) clearly found.
-- "medium": 2-3 Ring 1 fields found.
-- "low": fewer than 2 Ring 1 fields.
-
-Screenshots & partial data:
-- Screenshots are NORMAL input. Extract whatever is visible.
-- If blurry or cut off, extract what you can and add a warning.
-- NEVER fail or return empty because the input is a screenshot.
-
-Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
-
-// ── Advisory prompt ──────────────────────────────────────────────
-
-const ADVISORY_PROMPT = `You are an expert travel advisor at SanKash, an Indian travel fintech. You have just received the structured extraction of a traveler's holiday quote/itinerary. Your job is to generate advisory intelligence that helps the traveler make a smarter booking decision.
-
-Given the extraction JSON below, return a JSON object with EXACTLY these fields:
-
-{
-  "advisory_summary": string — A 2-3 sentence plain-English summary of what this package is. Be specific about what's included and what might be missing. Example: "This looks like a 5-night land-only Manali package for 2 adults. Your travel to Chandigarh (the likely start point) may not be included. The quoted price of ₹45,000 covers hotels and sightseeing but meals appear to be partial.",
-
-  "package_mode_label": string — A human-friendly label for the package type, e.g. "Land-only package", "Complete package with flights", "Hotel-only booking", "Flight booking only",
+  "advisory_summary": string — A 2-3 sentence plain-English summary of what this package is. Be specific. Example: "This looks like a 5-night land-only Manali package for 2 adults. Your travel to Chandigarh (the likely start point) may not be included in the quoted cost. The price covers hotels and sightseeing but meals appear to be partial.",
 
   "advisory_insights": [
     {
-      "title": string — short headline (5-8 words),
-      "description": string — 1-2 sentence explanation of why this matters to the traveler,
+      "title": string (5-8 words),
+      "description": string (1-2 sentences),
       "severity": "info" | "warning" | "critical",
       "category": "pricing" | "logistics" | "coverage" | "inclusions" | "timing" | "quality"
     }
-  ] — Generate 2-5 actionable insights. Focus on gaps, risks, and things that are unclear. Examples:
+  ] — 2-5 actionable insights about gaps, risks, unclear items. Examples:
     - Transport to start point may not be included
     - Meal plan looks incomplete
-    - No travel insurance mentioned for international trip
-    - Price seems high/low for this destination and duration
-    - Visa costs may not be included
-    - Airport transfers not mentioned
+    - No travel insurance for international trip
     - Per-person price unclear
-    - Check-in/check-out dates don't match travel dates
+    - Airport transfers not mentioned
 
-  "traveler_questions": [string] — 3-6 specific questions the traveler should ask the seller/agent before booking. Make them practical, not generic. Example:
+  "traveler_questions": [] — 3-6 specific questions the traveler should ask the seller before booking. Make them practical. Example:
     - "Does the ₹45,000 include travel from your city to Chandigarh?"
     - "Are all meals included or only breakfast?"
-    - "What happens if flights get delayed — is there a backup plan?"
     - "Is travel insurance included? If not, what's the cost?"
 
-  "seller_questions": [string] — 2-4 questions that reveal the seller's quality/reliability. Example:
-    - "Can you share the exact hotel names and star ratings?"
+  "seller_questions": [] — 2-4 questions that reveal seller quality. Example:
+    - "Can you share exact hotel names and star ratings?"
     - "What is the cancellation policy?"
-    - "Are there any hidden charges not shown in this quote?"
 
   "next_inputs_needed": [
-    {
-      "label": string — what to upload,
-      "reason": string — why it helps,
-      "priority": "high" | "medium" | "low"
-    }
-  ] — What additional files/info would improve the analysis. Only include if genuinely needed.
+    { "label": string, "reason": string, "priority": "high" | "medium" | "low" }
+  ] — What additional files/info would improve the analysis. Only if genuinely needed.
 
   "unlockable_modules": [
-    {
-      "module_id": string — one of: "emi_estimate", "trip_budgeting", "hotel_quality", "compare_alternatives", "insurance_check", "visa_check",
-      "label": string — human-friendly name,
-      "description": string — what the traveler gets,
-      "available": boolean — whether enough data exists to unlock this
-    }
-  ] — Future value modules. Only include relevant ones (max 4).
+    { "module_id": string, "label": string, "description": string, "available": boolean }
+  ] — Relevant future value modules. module_id must be one of: "emi_estimate", "trip_budgeting", "hotel_quality", "compare_alternatives", "insurance_check", "visa_check". Max 4, only relevant ones.
 
-  "extracted_completeness_score": number 0-100 — How complete is the extraction? 90+ = strong read, 60-89 = good but gaps, 30-59 = partial, <30 = very limited,
+  "extracted_completeness_score": number 0-100 — 90+ = strong, 60-89 = good but gaps, 30-59 = partial, <30 = very limited,
 
   "decision_flags": {
     "transport_missing": boolean,
@@ -185,13 +120,45 @@ Given the extraction JSON below, return a JSON object with EXACTLY these fields:
   }
 }
 
-RULES:
-- Be helpful, not alarming. Tone should be like a knowledgeable friend.
-- Focus on what the TRAVELER cares about, not technical details.
+CRITICAL RULES:
+
+Multi-file handling:
+- Multiple images/documents all belong to the same trip.
+- Cross-reference across files. Merge into ONE unified response.
+- If conflicts exist, pick the most reliable value and note in extraction_warnings.
+
+Package mode:
+- "flights_and_hotels": Both flights and accommodation included.
+- "land_only": Only ground arrangements — no flights.
+- "flights_only": Only flight bookings.
+- "hotels_only": Only hotel bookings.
+- "custom": Mixed or unclear.
+- Infer from inclusions/exclusions.
+
+Domestic vs International:
+- ALL destinations within India = "domestic". ANY outside = "international".
+
+Price extraction:
+- total_price = final package/total price as a plain number.
+- price_per_person = per-person cost ONLY if explicitly stated.
+
+People count:
+- Only set counts you can actually see.
+
+Confidence:
+- "high": 4+ Ring 1 fields (destination, dates, price, traveller count) clearly found.
+- "medium": 2-3 Ring 1 fields found.
+- "low": fewer than 2 Ring 1 fields.
+
+Advisory tone:
+- Be helpful, not alarming. Like a knowledgeable friend.
 - If the package looks good and complete, say so. Don't invent problems.
 - Keep language simple, no jargon.
-- Amounts should be in the original currency with ₹ symbol for INR.
-- Return ONLY valid JSON.`;
+- Amounts should use ₹ symbol for INR.
+
+Screenshots are NORMAL input. Extract whatever is visible. NEVER fail because input is a screenshot.
+
+Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
 
 // ── File content extraction ──────────────────────────────────────
 
@@ -270,7 +237,7 @@ async function fetchFileContent(fileUrl: string, fileName: string): Promise<File
   }
 }
 
-// ── AI analysis (unified multi-file vision) ──────────────────────
+// ── AI analysis (single unified pass: extraction + advisory) ─────
 
 function buildImageUrlContent(fileUrl: string, fileBytes: Uint8Array, mimeType: string): Record<string, unknown> {
   if (mimeType === "image") {
@@ -301,7 +268,7 @@ async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[])
 
   userContent.push({
     type: "text",
-    text: `You have received ${files.length} file(s) for ONE trip. Merge all data into a single unified extraction. Return ONLY valid JSON.`,
+    text: `You have received ${files.length} file(s) for ONE trip. Extract all data AND generate advisory intelligence in a single JSON response. Return ONLY valid JSON.`,
   });
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -316,8 +283,8 @@ async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[])
         { role: "system", content: EXTRACTION_PROMPT },
         { role: "user", content: userContent },
       ],
-      temperature: 0.1,
-      max_tokens: 4000,
+      temperature: 0.15,
+      max_tokens: 6000,
     }),
   });
 
@@ -331,46 +298,6 @@ async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[])
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("No JSON found in AI response");
   return JSON.parse(jsonMatch[0]);
-}
-
-// ── Advisory AI pass ─────────────────────────────────────────────
-
-async function generateAdvisory(extractionJson: Record<string, unknown>): Promise<Record<string, unknown>> {
-  try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: ADVISORY_PROMPT },
-          { role: "user", content: `Here is the extraction result:\n${JSON.stringify(extractionJson, null, 2)}\n\nGenerate advisory intelligence. Return ONLY valid JSON.` },
-        ],
-        temperature: 0.3,
-        max_tokens: 3000,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`Advisory AI error: ${response.status}`);
-      return {};
-    }
-
-    const result = await response.json();
-    const text = result.choices?.[0]?.message?.content ?? "";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error("No JSON found in advisory response");
-      return {};
-    }
-    return JSON.parse(jsonMatch[0]);
-  } catch (err) {
-    console.error("Advisory generation failed:", (err as Error).message);
-    return {};
-  }
 }
 
 // ── Currency conversion ──────────────────────────────────────────
@@ -410,12 +337,8 @@ function computeCommercialFlags(parsed: Record<string, unknown>) {
     const conversion = convertToINR(totalPrice, currency);
     if (conversion) {
       emiCheckAmount = conversion.inrAmount;
-      parsed.price_notes = ((parsed.price_notes as string) || "") +
-        ` [Converted from ${currency} at ~${conversion.rate} INR/${currency} for EMI check: ≈₹${conversion.inrAmount}]`;
     } else {
       emiCheckAmount = null;
-      parsed.price_notes = ((parsed.price_notes as string) || "") +
-        ` [Unknown currency ${currency} — EMI eligibility not evaluated]`;
     }
   }
 
@@ -459,23 +382,19 @@ Deno.serve(async (req) => {
       fileInputs.map(f => fetchFileContent(f.file_url, f.file_name).then(content => ({ content, fileUrl: f.file_url })))
     );
 
-    // Step 2: Extraction AI
+    // Step 2: Single unified AI pass (extraction + advisory in one call)
     const parsed = await analyzeWithAI(fileContents);
-    console.log(`AI extraction complete. Confidence: ${parsed.parsing_confidence}`);
+    console.log(`AI analysis complete. Confidence: ${parsed.parsing_confidence}, Completeness: ${parsed.extracted_completeness_score}`);
 
-    // Step 3: Advisory AI (runs in parallel concept but sequential for reliability)
-    const advisory = await generateAdvisory(parsed);
-    console.log(`Advisory generation complete. Completeness: ${advisory.extracted_completeness_score}`);
-
-    // Step 4: Commercial flags
+    // Step 3: Commercial flags
     const flags = computeCommercialFlags(parsed);
 
-    // Step 5: Combined raw text
+    // Step 4: Combined raw text
     const combinedRawText = fileContents.map((f, i) =>
       `--- File ${i + 1}: ${f.content.fileName} ---\n${f.content.rawText}`
     ).join("\n\n");
 
-    // Step 6: Build record
+    // Step 5: Build durable record (all fields from single AI pass)
     const record = {
       lead_id,
       attachment_id: attachment_id || null,
@@ -483,6 +402,7 @@ Deno.serve(async (req) => {
       raw_text: combinedRawText.length > 50000 ? combinedRawText.slice(0, 50000) : combinedRawText,
       file_count: fileInputs.length,
       file_names_json: fileInputs.map(f => f.file_name),
+      // Extraction fields
       parsing_confidence: (parsed.parsing_confidence as string) || "low",
       domestic_or_international: (parsed.domestic_or_international as string) || null,
       destination_country: (parsed.destination_country as string) || null,
@@ -514,26 +434,28 @@ Deno.serve(async (req) => {
       hotel_check_out: (parsed.hotel_check_out as string) || null,
       confidence_notes: (parsed.confidence_notes as string) || null,
       package_mode: (parsed.package_mode as string) || null,
+      // Commercial flags
       emi_candidate: flags.emi_candidate,
       insurance_candidate: flags.insurance_candidate,
       pg_candidate: flags.pg_candidate,
+      // Raw extraction archive
       missing_fields_json: parsed.missing_fields || [],
       extracted_snippets_json: parsed.extracted_snippets || [],
       extraction_warnings_json: parsed.extraction_warnings || [],
       extracted_fields_json: { ...parsed },
-      // Advisory fields
-      advisory_summary: (advisory.advisory_summary as string) || null,
-      advisory_insights_json: advisory.advisory_insights || [],
-      traveler_questions_json: advisory.traveler_questions || [],
-      seller_questions_json: advisory.seller_questions || [],
-      next_inputs_needed_json: advisory.next_inputs_needed || [],
-      unlockable_modules_json: advisory.unlockable_modules || [],
-      extracted_completeness_score: typeof advisory.extracted_completeness_score === "number" ? advisory.extracted_completeness_score : 0,
-      decision_flags_json: advisory.decision_flags || {},
-      enrichment_status_json: { extraction: "complete", advisory: Object.keys(advisory).length > 0 ? "complete" : "failed" },
+      // Advisory intelligence (from same single AI pass — stored durably)
+      advisory_summary: (parsed.advisory_summary as string) || null,
+      advisory_insights_json: parsed.advisory_insights || [],
+      traveler_questions_json: parsed.traveler_questions || [],
+      seller_questions_json: parsed.seller_questions || [],
+      next_inputs_needed_json: parsed.next_inputs_needed || [],
+      unlockable_modules_json: parsed.unlockable_modules || [],
+      extracted_completeness_score: typeof parsed.extracted_completeness_score === "number" ? parsed.extracted_completeness_score : 0,
+      decision_flags_json: parsed.decision_flags || {},
+      enrichment_status_json: { extraction: "complete", advisory: parsed.advisory_summary ? "complete" : "partial" },
     };
 
-    // Step 7: Upsert
+    // Step 6: Upsert (durable case — same lead_id always updates the same case)
     const { data: existing } = await supabaseAdmin
       .from("itinerary_analysis")
       .select("id")
@@ -561,7 +483,7 @@ Deno.serve(async (req) => {
       result = data;
     }
 
-    // Step 8: Update lead
+    // Step 7: Update lead with extracted commercial flags
     const leadUpdate: Record<string, unknown> = {
       emi_flag: flags.emi_candidate,
       insurance_flag: flags.insurance_candidate,
@@ -575,7 +497,7 @@ Deno.serve(async (req) => {
     }
     await supabaseAdmin.from("leads").update(leadUpdate).eq("id", lead_id);
 
-    // Step 9: Log activity
+    // Step 8: Log activity
     const destLabel = parsed.destination_city || parsed.destination_country || "Unknown destination";
     const confLabel = parsed.parsing_confidence || "low";
     const fileCount = fileInputs.length;
