@@ -20,10 +20,8 @@ interface FileInput {
 interface AnalysisRequest {
   lead_id: string;
   attachment_id?: string;
-  // Legacy single-file
   file_url?: string;
   file_name?: string;
-  // New multi-file
   files?: FileInput[];
   audience_type?: string;
 }
@@ -65,11 +63,12 @@ Return a JSON object with EXACTLY these fields (use null for genuinely unknown v
   "exclusions_text": string summary | null,
   "visa_mentioned": boolean,
   "insurance_mentioned": boolean,
+  "package_mode": "flights_and_hotels" | "land_only" | "flights_only" | "hotels_only" | "custom" | null,
   "parsing_confidence": "high" | "medium" | "low",
   "missing_fields": [] array of field names that could not be found,
   "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short),
   "confidence_notes": string | null,
-  "extraction_warnings": [] array of warning strings about quality issues (e.g. "Image 2 was blurry", "Price could not be confirmed", "Only partial itinerary visible")
+  "extraction_warnings": [] array of warning strings about quality issues
 }
 
 CRITICAL RULES:
@@ -77,45 +76,122 @@ CRITICAL RULES:
 Multi-file handling:
 - You may receive multiple images/documents. They ALL belong to the same trip.
 - Cross-reference information across files. E.g., file 1 may show flights, file 2 may show hotels and price.
-- Merge data from all files into ONE unified response. Do not return per-file results.
+- Merge data from all files into ONE unified response.
 - If the same field appears in multiple files with different values, pick the most reliable one and note the conflict in extraction_warnings.
+
+Package mode:
+- "flights_and_hotels": Both flights and accommodation are included in the package.
+- "land_only": Only ground arrangements (hotels, sightseeing, transfers) — no flights.
+- "flights_only": Only flight bookings, no accommodation.
+- "hotels_only": Only hotel bookings.
+- "custom": Mixed or unclear combination.
+- Infer from inclusions/exclusions. If flights are NOT mentioned and hotels ARE, it's likely "land_only".
 
 Domestic vs International:
 - If ALL destinations are within India, mark "domestic".
 - If ANY destination is outside India, mark "international".
-- Do NOT guess from weak clues like currency alone.
 
 Destination handling:
 - destination_city = the PRIMARY destination.
 - destination_country = the country of the primary destination.
 - additional_destinations = all OTHER cities/places mentioned.
-- Do NOT put the departure city as the primary destination unless the trip is TO that city.
 
 Price extraction:
 - total_price = the final package/total price.
 - price_per_person = per-person cost ONLY if explicitly stated. Do NOT compute by dividing.
-- If multiple prices exist, pick the overall package total. Put others in alternate_prices.
 - Strip currency symbols, commas, spaces. Keep as a plain number.
 
 People count:
 - Only set counts you can actually see. Do NOT assume 2 adults if not stated.
 
-Name separation:
-- travel_agent_name = the company/agency that created this quote.
-- customer_name = the person the quote is addressed TO.
-
 Confidence:
-- "high": 4+ Ring 1 fields (destination, dates, price, traveller count) are clearly found.
+- "high": 4+ Ring 1 fields (destination, dates, price, traveller count) clearly found.
 - "medium": 2-3 Ring 1 fields found.
 - "low": fewer than 2 Ring 1 fields.
-- Always fill confidence_notes and extraction_warnings.
 
 Screenshots & partial data:
-- Screenshots are NORMAL input. Do your best to extract whatever is visible.
-- If an image is blurry or partially cut off, extract what you can and add a warning.
-- NEVER fail or return empty just because the input is a screenshot.
+- Screenshots are NORMAL input. Extract whatever is visible.
+- If blurry or cut off, extract what you can and add a warning.
+- NEVER fail or return empty because the input is a screenshot.
 
 Return ONLY valid JSON, no markdown fences, no explanation outside the JSON.`;
+
+// ── Advisory prompt ──────────────────────────────────────────────
+
+const ADVISORY_PROMPT = `You are an expert travel advisor at SanKash, an Indian travel fintech. You have just received the structured extraction of a traveler's holiday quote/itinerary. Your job is to generate advisory intelligence that helps the traveler make a smarter booking decision.
+
+Given the extraction JSON below, return a JSON object with EXACTLY these fields:
+
+{
+  "advisory_summary": string — A 2-3 sentence plain-English summary of what this package is. Be specific about what's included and what might be missing. Example: "This looks like a 5-night land-only Manali package for 2 adults. Your travel to Chandigarh (the likely start point) may not be included. The quoted price of ₹45,000 covers hotels and sightseeing but meals appear to be partial.",
+
+  "package_mode_label": string — A human-friendly label for the package type, e.g. "Land-only package", "Complete package with flights", "Hotel-only booking", "Flight booking only",
+
+  "advisory_insights": [
+    {
+      "title": string — short headline (5-8 words),
+      "description": string — 1-2 sentence explanation of why this matters to the traveler,
+      "severity": "info" | "warning" | "critical",
+      "category": "pricing" | "logistics" | "coverage" | "inclusions" | "timing" | "quality"
+    }
+  ] — Generate 2-5 actionable insights. Focus on gaps, risks, and things that are unclear. Examples:
+    - Transport to start point may not be included
+    - Meal plan looks incomplete
+    - No travel insurance mentioned for international trip
+    - Price seems high/low for this destination and duration
+    - Visa costs may not be included
+    - Airport transfers not mentioned
+    - Per-person price unclear
+    - Check-in/check-out dates don't match travel dates
+
+  "traveler_questions": [string] — 3-6 specific questions the traveler should ask the seller/agent before booking. Make them practical, not generic. Example:
+    - "Does the ₹45,000 include travel from your city to Chandigarh?"
+    - "Are all meals included or only breakfast?"
+    - "What happens if flights get delayed — is there a backup plan?"
+    - "Is travel insurance included? If not, what's the cost?"
+
+  "seller_questions": [string] — 2-4 questions that reveal the seller's quality/reliability. Example:
+    - "Can you share the exact hotel names and star ratings?"
+    - "What is the cancellation policy?"
+    - "Are there any hidden charges not shown in this quote?"
+
+  "next_inputs_needed": [
+    {
+      "label": string — what to upload,
+      "reason": string — why it helps,
+      "priority": "high" | "medium" | "low"
+    }
+  ] — What additional files/info would improve the analysis. Only include if genuinely needed.
+
+  "unlockable_modules": [
+    {
+      "module_id": string — one of: "emi_estimate", "trip_budgeting", "hotel_quality", "compare_alternatives", "insurance_check", "visa_check",
+      "label": string — human-friendly name,
+      "description": string — what the traveler gets,
+      "available": boolean — whether enough data exists to unlock this
+    }
+  ] — Future value modules. Only include relevant ones (max 4).
+
+  "extracted_completeness_score": number 0-100 — How complete is the extraction? 90+ = strong read, 60-89 = good but gaps, 30-59 = partial, <30 = very limited,
+
+  "decision_flags": {
+    "transport_missing": boolean,
+    "meals_incomplete": boolean,
+    "insurance_missing": boolean,
+    "visa_unclear": boolean,
+    "per_person_unclear": boolean,
+    "dates_incomplete": boolean,
+    "price_unclear": boolean
+  }
+}
+
+RULES:
+- Be helpful, not alarming. Tone should be like a knowledgeable friend.
+- Focus on what the TRAVELER cares about, not technical details.
+- If the package looks good and complete, say so. Don't invent problems.
+- Keep language simple, no jargon.
+- Amounts should be in the original currency with ₹ symbol for INR.
+- Return ONLY valid JSON.`;
 
 // ── File content extraction ──────────────────────────────────────
 
@@ -200,19 +276,16 @@ function buildImageUrlContent(fileUrl: string, fileBytes: Uint8Array, mimeType: 
   if (mimeType === "image") {
     return { type: "image_url", image_url: { url: fileUrl } };
   }
-  // PDF — send as native base64
   const base64 = uint8ToBase64(fileBytes);
   return { type: "image_url", image_url: { url: `data:application/pdf;base64,${base64}` } };
 }
 
 async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[]): Promise<Record<string, unknown>> {
   const userContent: Array<Record<string, unknown>> = [];
-  const fileLabels: string[] = [];
 
   for (let i = 0; i < files.length; i++) {
     const { content, fileUrl } = files[i];
     const label = `File ${i + 1}: ${content.fileName}`;
-    fileLabels.push(content.fileName);
 
     if (content.mimeType === "image" && content.fileBytes) {
       userContent.push(buildImageUrlContent(fileUrl, content.fileBytes, "image"));
@@ -221,13 +294,11 @@ async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[])
       userContent.push(buildImageUrlContent(fileUrl, content.fileBytes, "application/pdf"));
       userContent.push({ type: "text", text: `${label} — PDF travel document. Extract all structured travel data including tables, pricing, and flight details.` });
     } else {
-      // Text content (DOCX extracted, plain text)
       const preview = content.rawText.length > 30000 ? content.rawText.slice(0, 30000) + "\n[...truncated]" : content.rawText;
       userContent.push({ type: "text", text: `${label}:\n--- CONTENT START ---\n${preview}\n--- CONTENT END ---` });
     }
   }
 
-  // Add final instruction
   userContent.push({
     type: "text",
     text: `You have received ${files.length} file(s) for ONE trip. Merge all data into a single unified extraction. Return ONLY valid JSON.`,
@@ -260,6 +331,46 @@ async function analyzeWithAI(files: { content: FileContent; fileUrl: string }[])
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("No JSON found in AI response");
   return JSON.parse(jsonMatch[0]);
+}
+
+// ── Advisory AI pass ─────────────────────────────────────────────
+
+async function generateAdvisory(extractionJson: Record<string, unknown>): Promise<Record<string, unknown>> {
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: ADVISORY_PROMPT },
+          { role: "user", content: `Here is the extraction result:\n${JSON.stringify(extractionJson, null, 2)}\n\nGenerate advisory intelligence. Return ONLY valid JSON.` },
+        ],
+        temperature: 0.3,
+        max_tokens: 3000,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Advisory AI error: ${response.status}`);
+      return {};
+    }
+
+    const result = await response.json();
+    const text = result.choices?.[0]?.message?.content ?? "";
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("No JSON found in advisory response");
+      return {};
+    }
+    return JSON.parse(jsonMatch[0]);
+  } catch (err) {
+    console.error("Advisory generation failed:", (err as Error).message);
+    return {};
+  }
 }
 
 // ── Currency conversion ──────────────────────────────────────────
@@ -326,10 +437,9 @@ Deno.serve(async (req) => {
     const body: AnalysisRequest = await req.json();
     const { lead_id, attachment_id, audience_type } = body;
 
-    // Normalize to files array (backward compatible)
     let fileInputs: FileInput[] = [];
     if (body.files && body.files.length > 0) {
-      fileInputs = body.files.slice(0, 5); // cap at 5
+      fileInputs = body.files.slice(0, 5);
     } else if (body.file_url && body.file_name) {
       fileInputs = [{ file_url: body.file_url, file_name: body.file_name }];
     }
@@ -343,26 +453,29 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Step 1: Fetch all files in parallel
+    // Step 1: Fetch all files
     console.log(`Processing ${fileInputs.length} file(s) for lead: ${lead_id}`);
     const fileContents = await Promise.all(
       fileInputs.map(f => fetchFileContent(f.file_url, f.file_name).then(content => ({ content, fileUrl: f.file_url })))
     );
-    console.log(`All ${fileContents.length} file(s) fetched`);
 
-    // Step 2: Single unified AI analysis
+    // Step 2: Extraction AI
     const parsed = await analyzeWithAI(fileContents);
     console.log(`AI extraction complete. Confidence: ${parsed.parsing_confidence}`);
 
-    // Step 3: Commercial flags
+    // Step 3: Advisory AI (runs in parallel concept but sequential for reliability)
+    const advisory = await generateAdvisory(parsed);
+    console.log(`Advisory generation complete. Completeness: ${advisory.extracted_completeness_score}`);
+
+    // Step 4: Commercial flags
     const flags = computeCommercialFlags(parsed);
 
-    // Step 4: Combine raw text from all files
+    // Step 5: Combined raw text
     const combinedRawText = fileContents.map((f, i) =>
       `--- File ${i + 1}: ${f.content.fileName} ---\n${f.content.rawText}`
     ).join("\n\n");
 
-    // Step 5: Build record
+    // Step 6: Build record
     const record = {
       lead_id,
       attachment_id: attachment_id || null,
@@ -400,6 +513,7 @@ Deno.serve(async (req) => {
       hotel_check_in: (parsed.hotel_check_in as string) || null,
       hotel_check_out: (parsed.hotel_check_out as string) || null,
       confidence_notes: (parsed.confidence_notes as string) || null,
+      package_mode: (parsed.package_mode as string) || null,
       emi_candidate: flags.emi_candidate,
       insurance_candidate: flags.insurance_candidate,
       pg_candidate: flags.pg_candidate,
@@ -407,9 +521,19 @@ Deno.serve(async (req) => {
       extracted_snippets_json: parsed.extracted_snippets || [],
       extraction_warnings_json: parsed.extraction_warnings || [],
       extracted_fields_json: { ...parsed },
+      // Advisory fields
+      advisory_summary: (advisory.advisory_summary as string) || null,
+      advisory_insights_json: advisory.advisory_insights || [],
+      traveler_questions_json: advisory.traveler_questions || [],
+      seller_questions_json: advisory.seller_questions || [],
+      next_inputs_needed_json: advisory.next_inputs_needed || [],
+      unlockable_modules_json: advisory.unlockable_modules || [],
+      extracted_completeness_score: typeof advisory.extracted_completeness_score === "number" ? advisory.extracted_completeness_score : 0,
+      decision_flags_json: advisory.decision_flags || {},
+      enrichment_status_json: { extraction: "complete", advisory: Object.keys(advisory).length > 0 ? "complete" : "failed" },
     };
 
-    // Step 6: Upsert
+    // Step 7: Upsert
     const { data: existing } = await supabaseAdmin
       .from("itinerary_analysis")
       .select("id")
@@ -437,7 +561,7 @@ Deno.serve(async (req) => {
       result = data;
     }
 
-    // Step 7: Update lead with extracted commercial flags
+    // Step 8: Update lead
     const leadUpdate: Record<string, unknown> = {
       emi_flag: flags.emi_candidate,
       insurance_flag: flags.insurance_candidate,
@@ -451,14 +575,14 @@ Deno.serve(async (req) => {
     }
     await supabaseAdmin.from("leads").update(leadUpdate).eq("id", lead_id);
 
-    // Step 8: Log activity
+    // Step 9: Log activity
     const destLabel = parsed.destination_city || parsed.destination_country || "Unknown destination";
     const confLabel = parsed.parsing_confidence || "low";
     const fileCount = fileInputs.length;
     await supabaseAdmin.from("lead_activity").insert({
       lead_id,
       activity_type: "itinerary_analyzed",
-      description: `Itinerary analyzed (${fileCount} file${fileCount > 1 ? "s" : ""}): ${destLabel}, confidence: ${confLabel}`,
+      description: `Itinerary analyzed (${fileCount} file${fileCount > 1 ? "s" : ""}): ${destLabel}, confidence: ${confLabel}, completeness: ${record.extracted_completeness_score}%`,
     });
 
     return new Response(JSON.stringify({ success: true, analysis: result }), {

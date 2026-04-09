@@ -69,6 +69,8 @@ export type Database = {
         Row: {
           additional_destinations_json: Json | null
           adults_count: number | null
+          advisory_insights_json: Json | null
+          advisory_summary: string | null
           airline_names_json: Json | null
           attachment_id: string | null
           children_count: number | null
@@ -76,13 +78,16 @@ export type Database = {
           created_at: string
           currency: string | null
           customer_name: string | null
+          decision_flags_json: Json | null
           destination_city: string | null
           destination_country: string | null
           domestic_or_international: string | null
           duration_days: number | null
           duration_nights: number | null
           emi_candidate: boolean | null
+          enrichment_status_json: Json | null
           exclusions_text: string | null
+          extracted_completeness_score: number | null
           extracted_fields_json: Json | null
           extracted_snippets_json: Json | null
           extraction_warnings_json: Json
@@ -100,16 +105,21 @@ export type Database = {
           insurance_mentioned: boolean | null
           lead_id: string
           missing_fields_json: Json | null
+          next_inputs_needed_json: Json | null
+          package_mode: string | null
           parsing_confidence: string | null
           pg_candidate: boolean | null
           price_per_person: number | null
           raw_text: string | null
           sectors_json: Json | null
+          seller_questions_json: Json | null
           total_price: number | null
           travel_agent_name: string | null
           travel_end_date: string | null
           travel_start_date: string | null
+          traveler_questions_json: Json | null
           traveller_count_total: number | null
+          unlockable_modules_json: Json | null
           updated_at: string
           uploaded_by_audience: string | null
           visa_mentioned: boolean | null
@@ -117,6 +127,8 @@ export type Database = {
         Insert: {
           additional_destinations_json?: Json | null
           adults_count?: number | null
+          advisory_insights_json?: Json | null
+          advisory_summary?: string | null
           airline_names_json?: Json | null
           attachment_id?: string | null
           children_count?: number | null
@@ -124,13 +136,16 @@ export type Database = {
           created_at?: string
           currency?: string | null
           customer_name?: string | null
+          decision_flags_json?: Json | null
           destination_city?: string | null
           destination_country?: string | null
           domestic_or_international?: string | null
           duration_days?: number | null
           duration_nights?: number | null
           emi_candidate?: boolean | null
+          enrichment_status_json?: Json | null
           exclusions_text?: string | null
+          extracted_completeness_score?: number | null
           extracted_fields_json?: Json | null
           extracted_snippets_json?: Json | null
           extraction_warnings_json?: Json
@@ -148,16 +163,21 @@ export type Database = {
           insurance_mentioned?: boolean | null
           lead_id: string
           missing_fields_json?: Json | null
+          next_inputs_needed_json?: Json | null
+          package_mode?: string | null
           parsing_confidence?: string | null
           pg_candidate?: boolean | null
           price_per_person?: number | null
           raw_text?: string | null
           sectors_json?: Json | null
+          seller_questions_json?: Json | null
           total_price?: number | null
           travel_agent_name?: string | null
           travel_end_date?: string | null
           travel_start_date?: string | null
+          traveler_questions_json?: Json | null
           traveller_count_total?: number | null
+          unlockable_modules_json?: Json | null
           updated_at?: string
           uploaded_by_audience?: string | null
           visa_mentioned?: boolean | null
@@ -165,6 +185,8 @@ export type Database = {
         Update: {
           additional_destinations_json?: Json | null
           adults_count?: number | null
+          advisory_insights_json?: Json | null
+          advisory_summary?: string | null
           airline_names_json?: Json | null
           attachment_id?: string | null
           children_count?: number | null
@@ -172,13 +194,16 @@ export type Database = {
           created_at?: string
           currency?: string | null
           customer_name?: string | null
+          decision_flags_json?: Json | null
           destination_city?: string | null
           destination_country?: string | null
           domestic_or_international?: string | null
           duration_days?: number | null
           duration_nights?: number | null
           emi_candidate?: boolean | null
+          enrichment_status_json?: Json | null
           exclusions_text?: string | null
+          extracted_completeness_score?: number | null
           extracted_fields_json?: Json | null
           extracted_snippets_json?: Json | null
           extraction_warnings_json?: Json
@@ -196,16 +221,21 @@ export type Database = {
           insurance_mentioned?: boolean | null
           lead_id?: string
           missing_fields_json?: Json | null
+          next_inputs_needed_json?: Json | null
+          package_mode?: string | null
           parsing_confidence?: string | null
           pg_candidate?: boolean | null
           price_per_person?: number | null
           raw_text?: string | null
           sectors_json?: Json | null
+          seller_questions_json?: Json | null
           total_price?: number | null
           travel_agent_name?: string | null
           travel_end_date?: string | null
           travel_start_date?: string | null
+          traveler_questions_json?: Json | null
           traveller_count_total?: number | null
+          unlockable_modules_json?: Json | null
           updated_at?: string
           uploaded_by_audience?: string | null
           visa_mentioned?: boolean | null
