@@ -1,8 +1,37 @@
 /**
- * Itinerary analysis service — triggers AI extraction and fetches results.
- * Supports both single-file (legacy) and multi-file vision pipeline.
+ * Itinerary analysis service — triggers AI extraction + advisory and fetches results.
  */
 import { supabase } from "@/integrations/supabase/client";
+
+export interface AdvisoryInsight {
+  title: string;
+  description: string;
+  severity: "info" | "warning" | "critical";
+  category: "pricing" | "logistics" | "coverage" | "inclusions" | "timing" | "quality";
+}
+
+export interface NextInput {
+  label: string;
+  reason: string;
+  priority: "high" | "medium" | "low";
+}
+
+export interface UnlockableModule {
+  module_id: string;
+  label: string;
+  description: string;
+  available: boolean;
+}
+
+export interface DecisionFlags {
+  transport_missing?: boolean;
+  meals_incomplete?: boolean;
+  insurance_missing?: boolean;
+  visa_unclear?: boolean;
+  per_person_unclear?: boolean;
+  dates_incomplete?: boolean;
+  price_unclear?: boolean;
+}
 
 export interface ItineraryAnalysis {
   id: string;
@@ -43,7 +72,7 @@ export interface ItineraryAnalysis {
   missing_fields_json: string[];
   extracted_snippets_json: string[];
   extracted_fields_json: Record<string, unknown>;
-  // New multi-file fields
+  // Multi-file fields
   file_count: number;
   file_names_json: string[];
   extraction_warnings_json: string[];
@@ -52,6 +81,17 @@ export interface ItineraryAnalysis {
   hotel_check_in: string | null;
   hotel_check_out: string | null;
   confidence_notes: string | null;
+  // Advisory intelligence fields
+  package_mode: string | null;
+  extracted_completeness_score: number;
+  advisory_summary: string | null;
+  advisory_insights_json: AdvisoryInsight[];
+  traveler_questions_json: string[];
+  seller_questions_json: string[];
+  next_inputs_needed_json: NextInput[];
+  unlockable_modules_json: UnlockableModule[];
+  enrichment_status_json: Record<string, string>;
+  decision_flags_json: DecisionFlags;
 }
 
 /** Fetch existing analysis for a lead */
@@ -76,10 +116,8 @@ export interface FileInput {
 export async function triggerItineraryAnalysis(params: {
   lead_id: string;
   attachment_id?: string;
-  // Legacy single-file (still supported)
   file_url?: string;
   file_name?: string;
-  // Multi-file
   files?: FileInput[];
   audience_type?: string;
 }): Promise<ItineraryAnalysis> {
