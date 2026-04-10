@@ -349,9 +349,9 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
         .eq("lead_id", leadId),
     ]);
 
-    await supabaseAdmin.rpc("rebuild_trip_destination_benchmarks").catch(() => {});
-    await supabaseAdmin.rpc("rebuild_trip_hotel_frequency").catch(() => {});
-    await supabaseAdmin.rpc("rebuild_trip_similar_cases").catch(() => {});
+    await supabaseAdmin.rpc("rebuild_trip_destination_benchmarks").then(() => {}, () => {});
+    await supabaseAdmin.rpc("rebuild_trip_hotel_frequency").then(() => {}, () => {});
+    await supabaseAdmin.rpc("rebuild_trip_similar_cases").then(() => {}, () => {});
 
     return {
       lead_id: leadId,
