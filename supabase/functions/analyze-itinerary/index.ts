@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { unzipSync } from "https://esm.sh/fflate@0.8.2";
+import {
+  deriveItineraryIntelligence,
+} from "../_shared/itinerary-intelligence.ts";
+import { normalizeItineraryExtraction } from "../_shared/itinerary-postprocess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -615,8 +619,8 @@ Return a SINGLE JSON object with ALL of these fields (use null for genuinely unk
   "insurance_mentioned": boolean,
   "package_mode": "flights_and_hotels" | "land_only" | "flights_only" | "hotels_only" | "custom" | null,
   "parsing_confidence": "high" | "medium" | "low",
-  "missing_fields": [],
-  "extracted_snippets": [],
+  "missing_fields": [] array of field names that could not be found,
+  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short, include hotel-name or traveler-count lines when they are visible),
   "confidence_notes": string | null,
   "extraction_warnings": [],
 
@@ -674,6 +678,7 @@ Multi-file handling:
 - Merge data from all files into ONE unified response. Do not return per-file results.
 - If the same field appears in multiple files with different values, pick the most reliable one and note the conflict in extraction_warnings.
 - If one file looks like a revised quote, final quote, or booking confirmation, prefer that value over earlier brochure or teaser details.
+- Later files often add traveler count, hotel names, or clarify whether the package includes flights. Use those later explicit details to fill missing fields instead of repeating earlier generic brochure text.
 
 Domestic vs International:
 - ALL destinations within India = "domestic". ANY outside = "international".
@@ -681,7 +686,10 @@ Domestic vs International:
 Hotels:
 - hotel_names should include the exact hotel names whenever they are visible.
 - Read accommodation tables, hotel sections, and named stay lines carefully before leaving hotel_names empty.
+- Brochure PDFs often hide hotel names inside accommodation tables, stay blocks, or "Hotel / Similar" rows. Search those sections carefully.
 - If the document says "or similar", keep the named hotel if it is visible and mention the uncertainty in extraction_warnings.
+- If accommodation is mentioned but the exact hotel names are still not visible, say that explicitly in extraction_warnings.
+- If exact hotel names are visible, include one short supporting line in extracted_snippets.
 
 Price extraction:
 - total_price = final package/total price as a plain number.
@@ -693,7 +701,13 @@ Date extraction:
 - If the document only shows a broad travel window and not a specific booked date, leave travel_start_date and travel_end_date as null.
 
 People count:
-- Only set counts you can actually see.
+- Only set counts you can actually see. Do NOT assume 2 adults if not stated.
+- If a later file shows the traveler count more clearly than an earlier brochure, use the later explicit count.
+- If traveler count is visible anywhere, include one short supporting line in extracted_snippets.
+
+Name separation:
+- travel_agent_name = the company/agency that created this quote.
+- customer_name = the person the quote is addressed TO.
 
 Confidence:
 - "high": 4+ Ring 1 fields (destination, dates, price, traveller count) clearly found.

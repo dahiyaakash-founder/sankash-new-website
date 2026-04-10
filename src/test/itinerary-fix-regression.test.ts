@@ -198,6 +198,35 @@ describe("itinerary review fix regressions", () => {
     expect(normalized.missing_fields).not.toContain("hotel_names");
   });
 
+  it("recovers brochure hotel names from extracted snippets when raw PDF text is unavailable", () => {
+    const parsed: ParsedItineraryExtraction = {
+      domestic_or_international: "international",
+      destination_city: "Hanoi",
+      destination_country: "Vietnam",
+      duration_nights: 7,
+      duration_days: 8,
+      total_price: 130000,
+      price_per_person: 130000,
+      currency: "INR",
+      hotel_names: [],
+      inclusions_text: "Accommodation with daily breakfast, all airport transfers, airfare ex Bangalore, and visa.",
+      exclusions_text: "Travel insurance if not mentioned in the itinerary.",
+      extracted_snippets: [
+        "Accommodation: Sen Grand Hotel or similar",
+        "Airfare ex Bangalore included",
+      ],
+      missing_fields: ["hotel_names"],
+      parsing_confidence: "medium",
+    };
+
+    const normalized = normalizeItineraryExtraction(parsed, "[PDF: vietnam.pdf, 482910 bytes]", NOW);
+
+    expect(normalized.hotel_names).toEqual(["Sen Grand Hotel or similar"]);
+    expect(normalized.extraction_warnings).not.toEqual(
+      expect.arrayContaining(["Accommodation is mentioned, but the exact hotel names are still not visible in the material."]),
+    );
+  });
+
   it("lets a later file enrich missing fields and records traveler-count conflicts", () => {
     const parsed: ParsedItineraryExtraction = {
       domestic_or_international: "international",
@@ -223,12 +252,12 @@ describe("itinerary review fix regressions", () => {
 
     const rawText = `
     --- File 1: brochure.pdf ---
-    2 Adults
+    Adults: 2
     Paris summer special
 
     --- File 2: revised-quote.png ---
-    3 Adults + 1 Child
-    Stay at Mercure Paris Centre or similar
+    Adults: 3 Children: 1
+    Final stay plan includes Mercure Paris Centre or similar with breakfast
     `;
 
     const normalized = normalizeItineraryExtraction(parsed, rawText, NOW);
@@ -240,6 +269,70 @@ describe("itinerary review fix regressions", () => {
     expect(normalized.hotel_names).toEqual(["Mercure Paris Centre or similar"]);
     expect(normalized.extraction_warnings?.some((warning) => /Multiple traveler-count values were found/i.test(warning))).toBe(true);
     expect(intelligence.next_inputs_needed_json.map((item) => item.code)).not.toContain("traveler_count");
+  });
+
+  it("uses inclusion text to keep multi-file package clarity strong even when hotel names are still missing", () => {
+    const parsed: ParsedItineraryExtraction = {
+      domestic_or_international: "international",
+      destination_city: "Hanoi",
+      destination_country: "Vietnam",
+      travel_start_date: "2025-10-26",
+      duration_nights: 7,
+      duration_days: 8,
+      total_price: 130000,
+      price_per_person: 130000,
+      currency: "INR",
+      hotel_names: [],
+      airline_names: [],
+      sectors: [],
+      inclusions_text: "Accommodation with daily breakfast, early check-in, all airport transfers, airfare ex Bangalore, and visa.",
+      exclusions_text: "Travel insurance if not mentioned in the itinerary.",
+      extracted_snippets: [
+        "File 1: 7N Vietnam package",
+        "File 2: accommodation and airfare ex Bangalore included",
+      ],
+      missing_fields: ["traveller_count_total", "hotel_names", "hotel_check_in", "hotel_check_out"],
+      parsing_confidence: "medium",
+    };
+
+    const normalized = normalizeItineraryExtraction(
+      parsed,
+      "--- File 1: vietnam-page.txt ---\nAccommodation with daily breakfast\n--- File 2: vietnam.pdf ---\n[PDF placeholder]",
+      NOW,
+    );
+    const intelligence = deriveItineraryIntelligence(toIntelligenceInput(normalized));
+
+    expect(intelligence.package_mode).toBe("flights_and_hotels");
+    expect(intelligence.next_inputs_needed_json.map((item) => item.code)).toEqual(
+      expect.arrayContaining(["traveler_count", "hotel_details"]),
+    );
+    expect(intelligence.advisory_insights_json.map((item) => item.code)).not.toContain("transport_missing_from_total");
+  });
+
+  it("stays cautious on sparse domestic quotes instead of forcing land_only", () => {
+    const weakGoaQuote: ItineraryIntelligenceInput = {
+      domestic_or_international: "domestic",
+      destination_city: "Goa",
+      destination_country: "India",
+      duration_nights: 3,
+      total_price: null,
+      price_per_person: 12000,
+      currency: "INR",
+      inclusions_text: "3N stay, breakfast, pickup",
+      exclusions_text: null,
+      parsing_confidence: "low",
+      missing_fields_json: ["travel_start_date", "travel_end_date", "traveller_count_total", "hotel_names"],
+      extraction_warnings_json: ["Only partial seller message was visible"],
+    };
+
+    const intelligence = deriveItineraryIntelligence(weakGoaQuote);
+    const advisoryCodes = intelligence.advisory_insights_json.map((item) => item.code);
+    const hotelPrompt = intelligence.next_inputs_needed_json.find((item) => item.code === "hotel_details");
+
+    expect(intelligence.package_mode).toBe("unknown");
+    expect(advisoryCodes).not.toContain("land_only_likely");
+    expect(advisoryCodes).not.toContain("transport_missing_from_total");
+    expect(hotelPrompt?.label).toBe("Upload the page or message that names the hotel");
   });
 
   it("keeps a strong synthetic control clean and actionable", () => {
