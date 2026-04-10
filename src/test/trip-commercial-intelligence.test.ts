@@ -66,6 +66,12 @@ function deriveCommercialCase(lead: any, analyses: any[], attachments: any[] = [
     product_fit_summary_json: { emi_candidate_cases: 4 },
   } as any);
   const productFit = buildProductFitFlags(lead, merged, intelligence, classification, benchmarkSummary);
+  const sourceLikelihood = deriveSourceLikelihoodAssessment({
+    lead,
+    analyses,
+    merged,
+    similarSummary: { match_count: 3, top_matches: [] },
+  });
   const intent = deriveIntentAssessment({
     lead,
     merged,
@@ -73,6 +79,7 @@ function deriveCommercialCase(lead: any, analyses: any[], attachments: any[] = [
     classification,
     signals: intentSignals,
     multi,
+    sourceLikelihood,
   });
   const recommendations = buildRecommendationEngine({
     merged,
@@ -92,12 +99,6 @@ function deriveCommercialCase(lead: any, analyses: any[], attachments: any[] = [
         avg_total_price: 99000,
       },
     ],
-  });
-  const sourceLikelihood = deriveSourceLikelihoodAssessment({
-    lead,
-    analyses,
-    merged,
-    similarSummary: { match_count: 3, top_matches: [] },
   });
   const learning = buildLearningSignals({
     classification,
@@ -278,6 +279,7 @@ describe("trip commercial intelligence", () => {
     expect(result.classification).toBe("research_lead");
     expect(result.learning.learning_signal_class).not.toBe("sales_signal");
     expect(["public_brochure_or_ota", "benchmark_or_test_upload", "unclear"]).toContain(result.sourceLikelihood.likely_source_profile);
+    expect(["low", "medium"]).toContain(result.intent.conversion_probability_band);
   });
 
   it("scores a strong high-intent lead with a close-ready pitch", () => {
@@ -333,5 +335,76 @@ describe("trip commercial intelligence", () => {
     expect(result.intent.conversion_probability_band).toBe("high");
     expect(["booking_ready", "financing_evaluation"]).toContain(result.intent.decision_stage);
     expect(result.learning.learning_signal_class).toBe("sales_signal");
+  });
+
+  it("uses source-likelihood as an explicit intent signal", () => {
+    const anonymousLead = {
+      id: "lead-brochure",
+      full_name: "Traveler (anonymous)",
+      lead_source_page: "for-travelers",
+      audience_type: "traveler",
+      metadata_json: {},
+    };
+
+    const brochureAnalyses = [{
+      id: "analysis-brochure",
+      created_at: "2026-04-10T10:00:00.000Z",
+      parsing_confidence: "medium",
+      extracted_completeness_score: 52,
+      destination_city: "Goa",
+      destination_country: "India",
+      domestic_or_international: "domestic",
+      duration_days: 4,
+      duration_nights: 3,
+      price_per_person: 7999,
+      inclusions_text: "Holiday package, breakfast included, itinerary highlights, package cost includes transfers",
+      exclusions_text: "Flights, lunch, dinner, GST and insurance not included. Terms and conditions apply.",
+    }];
+
+    const salesLead = {
+      id: "lead-seller-quote",
+      full_name: "Rohan Sharma",
+      mobile_number: "9999999999",
+      email: "rohan@example.com",
+      lead_source_page: "for-travelers",
+      audience_type: "traveler",
+      metadata_json: {
+        traveler_intent_session: {
+          session_count: 2,
+          return_visit_count: 1,
+          returned_multiple_times: true,
+          viewed_emi_page: true,
+          time_spent_before_upload_seconds: 160,
+        },
+      },
+    };
+
+    const sellerAnalyses = [{
+      id: "analysis-seller-quote",
+      created_at: "2026-04-10T11:00:00.000Z",
+      parsing_confidence: "high",
+      extracted_completeness_score: 88,
+      destination_city: "Hanoi",
+      destination_country: "Vietnam",
+      domestic_or_international: "international",
+      travel_start_date: "2026-05-20",
+      travel_end_date: "2026-05-27",
+      duration_days: 8,
+      duration_nights: 7,
+      total_price: 129000,
+      traveller_count_total: 2,
+      travel_agent_name: "Seller B Holidays",
+      customer_name: "Rohan Sharma",
+      inclusions_text: "Final quote for 2 passengers with return airfare, hotel, breakfast and airport transfers",
+      exclusions_text: "Insurance excluded",
+    }];
+
+    const brochureCase = deriveCommercialCase(anonymousLead, brochureAnalyses);
+    const sellerCase = deriveCommercialCase(salesLead, sellerAnalyses);
+
+    expect(["public_brochure_or_ota", "benchmark_or_test_upload"]).toContain(brochureCase.sourceLikelihood.likely_source_profile);
+    expect(sellerCase.sourceLikelihood.likely_source_profile).toBe("personalized_seller_quote");
+    expect(sellerCase.intent.intent_score).toBeGreaterThan(brochureCase.intent.intent_score);
+    expect(sellerCase.intent.recommended_pitch_angle).not.toBe("stay_light_until_real_signal");
   });
 });

@@ -249,6 +249,7 @@ export interface SourceLikelihoodAssessment {
   confidence: IntentConfidenceBand;
   probabilities: Record<string, number>;
   explanation: string;
+  drivers?: string[];
 }
 
 function asText(value: unknown): string | null {
@@ -563,8 +564,9 @@ export function deriveIntentAssessment(params: {
   classification: LeadClassification;
   signals: IntentSignals;
   multi: MultiItineraryInsight;
+  sourceLikelihood?: SourceLikelihoodAssessment | null;
 }): IntentAssessment {
-  const { lead, merged, intelligence, classification, signals, multi } = params;
+  const { lead, merged, intelligence, classification, signals, multi, sourceLikelihood } = params;
   let score = classification === "sales_lead" ? 50 : classification === "research_lead" ? 28 : 10;
 
   if (merged.contact_present) score += 18;
@@ -577,6 +579,10 @@ export function deriveIntentAssessment(params: {
   if ((signals.days_to_trip_start ?? 999) <= 30) score += 12;
   if (multi.multi_itinerary_type === "same_trip_multi_seller" || multi.multi_itinerary_type === "same_destination_price_comparison") score += 8;
   if (multi.multi_itinerary_type === "multi_destination_indecision") score -= 6;
+  if (sourceLikelihood?.likely_source_profile === "personalized_seller_quote") score += 8;
+  if (sourceLikelihood?.likely_source_profile === "genuine_custom_planning_upload") score += 6;
+  if (sourceLikelihood?.likely_source_profile === "public_brochure_or_ota" && !merged.contact_present) score -= 8;
+  if (sourceLikelihood?.likely_source_profile === "benchmark_or_test_upload" && !merged.contact_present) score -= 14;
   if (classification === "noise") score -= 10;
 
   score = Math.max(0, Math.min(100, Math.round(score)));
@@ -589,6 +595,7 @@ export function deriveIntentAssessment(params: {
     merged.traveller_count_total != null,
     merged.total_price != null || merged.price_per_person != null,
     multi.multi_itinerary_type !== "single_itinerary",
+    sourceLikelihood?.confidence === "high" || sourceLikelihood?.confidence === "medium",
   ].filter(Boolean).length;
 
   const conversionBand: ConversionProbabilityBand = score >= 72 ? "high" : score >= 42 ? "medium" : "low";
@@ -598,6 +605,8 @@ export function deriveIntentAssessment(params: {
     decisionStage = merged.contact_present ? "negotiation_ready" : "option_comparison";
   } else if (signals.viewed_emi_page || signals.viewed_emi_section) {
     decisionStage = "financing_evaluation";
+  } else if (sourceLikelihood?.likely_source_profile === "benchmark_or_test_upload" && !merged.contact_present) {
+    decisionStage = "early_exploration";
   } else if (merged.contact_present && merged.travel_start_date && merged.traveller_count_total != null && (merged.total_price != null || merged.price_per_person != null)) {
     decisionStage = "booking_ready";
   } else if (multi.multi_itinerary_type === "multi_destination_indecision" || multi.multi_itinerary_type === "travel_window_exploration") {
@@ -610,6 +619,8 @@ export function deriveIntentAssessment(params: {
   if (signals.viewed_emi_page || signals.viewed_emi_section) motive = "affordability_check";
   if (multi.multi_itinerary_type === "multi_destination_indecision") motive = "destination_decision";
   if (multi.multi_itinerary_type === "same_trip_multi_seller" || multi.multi_itinerary_type === "same_destination_price_comparison") motive = "get_best_quote";
+  if (sourceLikelihood?.likely_source_profile === "benchmark_or_test_upload" && !merged.contact_present) motive = "market_browsing";
+  if (sourceLikelihood?.likely_source_profile === "public_brochure_or_ota" && !merged.contact_present && motive === "quote_validation") motive = "package_research";
   if (decisionStage === "booking_ready") motive = "finalize_booking";
 
   let pitchAngle = "clarify_quote_and_close";
@@ -617,6 +628,8 @@ export function deriveIntentAssessment(params: {
   else if (multi.multi_itinerary_type === "multi_destination_indecision") pitchAngle = "guide_to_best_fit_destination";
   else if (multi.multi_itinerary_type === "same_trip_multi_seller" || multi.multi_itinerary_type === "same_destination_price_comparison") pitchAngle = "compare_and_rebuild_through_sankash";
   else if (decisionStage === "booking_ready" && merged.contact_present) pitchAngle = "close_with_no_cost_emi_and_protection";
+  else if (sourceLikelihood?.likely_source_profile === "public_brochure_or_ota" && !merged.contact_present) pitchAngle = "guide_with_quote_clarity";
+  else if (sourceLikelihood?.likely_source_profile === "benchmark_or_test_upload" && !merged.contact_present) pitchAngle = "stay_light_until_real_signal";
   else if (intelligence.decision_flags_json.some((flag) => flag.code === "transport_missing_from_total")) pitchAngle = "rebuild_for_total_trip_clarity";
 
   const explanation = [
@@ -625,6 +638,7 @@ export function deriveIntentAssessment(params: {
     signals.viewed_emi_page || signals.viewed_emi_section ? "they showed financing interest" : null,
     merged.travel_start_date ? "travel dates are visible" : "dates are still unclear",
     multi.multi_itinerary_type !== "single_itinerary" ? `uploads suggest ${multi.buying_state_inference.replace(/_/g, " ")}` : null,
+    sourceLikelihood?.likely_source_profile ? `source read leans ${sourceLikelihood.likely_source_profile.replace(/_/g, " ")}` : null,
   ].filter(Boolean).join(", ");
 
   return {
@@ -847,6 +861,7 @@ export function deriveSourceLikelihoodAssessment(params: {
   similarSummary: SimilarSummaryLike;
 }): SourceLikelihoodAssessment {
   const { lead, analyses, merged, similarSummary } = params;
+  const session = normalizePublicSessionSnapshot(lead.metadata_json);
   const combinedText = [
     merged.inclusions_text,
     merged.exclusions_text,
@@ -860,30 +875,93 @@ export function deriveSourceLikelihoodAssessment(params: {
     asText(lead.email) ||
     (normalizedCustomerName && normalizedCustomerName !== "traveler (anonymous)")
   );
-  const brochureSignals = [
+  const sellerNames = new Set(
+    analyses.map((row) => asText(row.travel_agent_name)).filter((value): value is string => Boolean(value)),
+  );
+  const pricePoints = analyses
+    .map((row) => row.total_price ?? row.price_per_person)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  const priceSpread = pricePoints.length >= 2
+    ? (Math.max(...pricePoints) - Math.min(...pricePoints)) / Math.max(1, Math.min(...pricePoints))
+    : 0;
+
+  const brochureDrivers = [
     /\bday 0?\d\b/.test(combinedText),
     /\binclusions\b/.test(combinedText) && /\bexclusions\b/.test(combinedText),
     /\bor similar\b/.test(combinedText),
     /\bstarting from\b|\bper person\b/.test(combinedText),
-  ].filter(Boolean).length;
-  const customSignals = [
+    /\bon twin sharing\b|\bholiday package\b|\btour package\b|\bitinerary highlights\b|\btour cost includes\b|\bpackage cost includes\b/.test(combinedText),
+    /\bterms and conditions\b|\bbook now\b|\bvalidity\b/.test(combinedText),
+  ].filter(Boolean);
+  const customDrivers = [
     hasPersonalization,
     merged.conflicting_fields_json.length > 0,
     analyses.length > 1,
     /\bfinal quote\b|\brevised quote\b|\bpassenger\b/.test(combinedText),
-  ].filter(Boolean).length;
-  const comparisonSignals = [
+    sellerNames.size > 0,
+    merged.traveller_count_total != null,
+    merged.travel_start_date != null,
+    session.returned_multiple_times,
+    session.viewed_emi_page || session.viewed_emi_section,
+  ].filter(Boolean);
+  const comparisonDrivers = [
     analyses.length > 1,
     similarSummary.match_count != null && similarSummary.match_count > 0 && analyses.length > 1,
     merged.conflicting_fields_json.length > 0,
-  ].filter(Boolean).length;
+    sellerNames.size > 1,
+    priceSpread >= 0.12,
+    session.returned_multiple_times,
+  ].filter(Boolean);
+  const researchLikeDrivers = [
+    !hasPersonalization,
+    !session.viewed_emi_page && !session.viewed_emi_section,
+    (session.time_spent_before_upload_seconds ?? 0) > 0 && (session.time_spent_before_upload_seconds ?? 0) < 45,
+    (similarSummary.match_count ?? 0) >= 5,
+    brochureDrivers.length >= 2,
+    analyses.length === 1,
+  ].filter(Boolean);
+
+  const brochureSignals = brochureDrivers.length;
+  const customSignals = customDrivers.length;
+  const comparisonSignals = comparisonDrivers.length;
+  const benchmarkSignals = researchLikeDrivers.length;
 
   const probabilities = {
-    public_brochure_or_ota: brochureSignals >= 3 ? 0.7 : brochureSignals === 2 ? 0.45 : brochureSignals === 1 ? 0.28 : 0.18,
-    personalized_seller_quote: hasPersonalization ? 0.7 : customSignals >= 2 ? 0.5 : customSignals === 1 ? 0.28 : 0.12,
-    comparison_shopping_upload: comparisonSignals >= 2 ? 0.65 : comparisonSignals === 1 ? 0.3 : 0.12,
-    benchmark_or_test_upload: !hasPersonalization && analyses.length === 1 && merged.analysis_count === 1 && brochureSignals >= 3 ? 0.35 : !hasPersonalization && brochureSignals >= 1 ? 0.16 : 0.08,
-    genuine_custom_planning_upload: customSignals >= 3 ? 0.6 : customSignals === 2 ? 0.34 : 0.12,
+    public_brochure_or_ota: Math.min(0.92, Number((
+      0.1 +
+      brochureSignals * 0.12 +
+      (!hasPersonalization ? 0.08 : 0) +
+      (sellerNames.size === 0 ? 0.04 : 0) +
+      ((similarSummary.match_count ?? 0) >= 3 ? 0.05 : 0)
+    ).toFixed(2))),
+    personalized_seller_quote: Math.min(0.92, Number((
+      0.05 +
+      (hasPersonalization ? 0.38 : 0) +
+      (merged.traveller_count_total != null ? 0.08 : 0) +
+      (merged.travel_start_date ? 0.08 : 0) +
+      (sellerNames.size > 0 ? 0.08 : 0) +
+      (session.returned_multiple_times ? 0.05 : 0) +
+      ((session.viewed_emi_page || session.viewed_emi_section) ? 0.04 : 0) +
+      (/\bfinal quote\b|\brevised quote\b|\bpassenger\b/.test(combinedText) ? 0.1 : 0)
+    ).toFixed(2))),
+    comparison_shopping_upload: Math.min(0.92, Number((
+      0.04 +
+      comparisonSignals * 0.14 +
+      (session.returned_multiple_times ? 0.06 : 0) +
+      (sellerNames.size > 1 ? 0.08 : 0)
+    ).toFixed(2))),
+    benchmark_or_test_upload: Math.min(0.92, Number((
+      0.03 +
+      benchmarkSignals * 0.12 +
+      (!hasPersonalization && analyses.length === 1 ? 0.06 : 0)
+    ).toFixed(2))),
+    genuine_custom_planning_upload: Math.min(0.92, Number((
+      0.04 +
+      (customSignals >= 3 ? 0.28 : customSignals * 0.08) +
+      (merged.additional_destinations_json.length > 1 ? 0.05 : 0) +
+      (merged.conflicting_fields_json.length > 0 ? 0.05 : 0) +
+      (session.returned_multiple_times ? 0.05 : 0)
+    ).toFixed(2))),
   };
 
   let bestProfile: SourceLikelihoodAssessment["likely_source_profile"] = "unclear";
@@ -895,6 +973,16 @@ export function deriveSourceLikelihoodAssessment(params: {
     }
   }
 
+  const drivers: string[] = [];
+  if (brochureSignals >= 2) drivers.push("brochure-style structure is visible");
+  if (sellerNames.size > 0) drivers.push("seller-specific naming is visible");
+  if (hasPersonalization) drivers.push("customer-specific context is present");
+  if (session.returned_multiple_times) drivers.push("the user came back more than once");
+  if (comparisonSignals >= 2) drivers.push("multiple uploads look like active comparison shopping");
+  if ((similarSummary.match_count ?? 0) >= 5) drivers.push("the case resembles many prior uploads");
+  if (!hasPersonalization && brochureSignals >= 2 && analyses.length === 1) drivers.push("the upload looks more like public package content than a bespoke quote");
+  if (drivers.length === 0) drivers.push("the visible signals are mixed and not strongly personalized");
+
   const explanation = bestProfile === "public_brochure_or_ota"
     ? "The upload reads like a brochure-style package with template structure and low personalization."
     : bestProfile === "personalized_seller_quote"
@@ -903,14 +991,15 @@ export function deriveSourceLikelihoodAssessment(params: {
         ? "The uploads look like comparison shopping rather than one clean itinerary document."
         : bestProfile === "benchmark_or_test_upload"
           ? "This looks closer to a generic benchmark/test upload than a live booking conversation."
-          : bestProfile === "genuine_custom_planning_upload"
-            ? "The case looks like custom trip planning with evolving or negotiated details."
-            : "The source profile is mixed, so the ops team should treat it cautiously.";
+      : bestProfile === "genuine_custom_planning_upload"
+        ? "The case looks like custom trip planning with evolving or negotiated details."
+        : "The source profile is mixed, so the ops team should treat it cautiously.";
 
   return {
     likely_source_profile: bestProfile,
     confidence: bestScore >= 0.7 ? "high" : bestScore >= 0.45 ? "medium" : "low",
     probabilities,
     explanation,
+    drivers,
   };
 }

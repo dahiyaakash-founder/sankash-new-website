@@ -1393,6 +1393,7 @@ export async function refreshLeadTripIntelligence(params: {
       classification,
       signals: intentSignals,
       multi: multiItinerary,
+      sourceLikelihood,
     });
     const finalProductFit = buildProductFitFlags(
       lead as LeadRecord,

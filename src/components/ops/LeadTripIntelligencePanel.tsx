@@ -247,6 +247,14 @@ export default function LeadTripIntelligencePanel({ leadId }: { leadId: string }
                 Source read: {String(sourceLikelihood.explanation)}
               </p>
             )}
+            {Array.isArray(sourceLikelihood.drivers) && sourceLikelihood.drivers.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Why the system thinks this</p>
+                {(sourceLikelihood.drivers as string[]).slice(0, 4).map((driver) => (
+                  <p key={driver} className="text-xs text-muted-foreground">• {driver}</p>
+                ))}
+              </div>
+            )}
             {Array.isArray(multi.common_patterns) && multi.common_patterns.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {(multi.common_patterns as string[]).slice(0, 5).map((pattern) => (

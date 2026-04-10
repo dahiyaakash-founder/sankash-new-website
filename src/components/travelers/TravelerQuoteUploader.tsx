@@ -84,6 +84,20 @@ function buildAnalysisMessages(files: File[]) {
   return messages;
 }
 
+function buildAnalysisContextBadges(files: File[]) {
+  const badges: string[] = [];
+  const hasPdf = files.some((file) => /\.pdf$/i.test(file.name));
+  const imageCount = files.filter((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name)).length;
+  const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
+
+  if (files.length > 1) badges.push(`${files.length} files`);
+  if (hasPdf) badges.push("PDF");
+  if (imageCount > 0) badges.push(imageCount > 1 ? "Screenshots" : "Screenshot");
+  if (brochureLike) badges.push("Brochure-style");
+
+  return badges.slice(0, 4);
+}
+
 
 
 
@@ -141,6 +155,7 @@ const TravelerQuoteUploader = () => {
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analysisMessages = useMemo(() => buildAnalysisMessages(files), [files]);
+  const analysisContextBadges = useMemo(() => buildAnalysisContextBadges(files), [files]);
 
   useEffect(() => {
     if (stage !== "analyzing") {
@@ -434,8 +449,8 @@ const TravelerQuoteUploader = () => {
     }
   };
 
-  const fileNames = files.map(f => f.name).join(", ");
   const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
+  const analysisStepLabel = `${Math.min(analysisStepIndex + 1, analysisMessages.length)} of ${analysisMessages.length}`;
 
   return (
     <>
@@ -542,6 +557,11 @@ const TravelerQuoteUploader = () => {
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <Loader2 size={32} className="text-primary animate-spin" />
                 <div className="text-center space-y-2 max-w-sm">
+                  <div className="inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
+                    <span>Step {analysisStepLabel}</span>
+                    {analysisContextBadges.length > 0 && <span className="text-muted-foreground/50">•</span>}
+                    <span>{files.length > 1 ? "Merging trip clues" : "Building your trip read"}</span>
+                  </div>
                   <div>
                     <p className="font-heading font-bold text-foreground">
                       {activeAnalysisMessage?.title || analysisProgress || "Processing…"}
@@ -558,6 +578,18 @@ const TravelerQuoteUploader = () => {
                     <p className="text-[11px] text-primary font-medium">{analysisProgress}</p>
                   )}
                 </div>
+                {analysisContextBadges.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 max-w-md">
+                    {analysisContextBadges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="rounded-full border bg-muted/30 px-2.5 py-1 text-[11px] text-muted-foreground"
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-1.5 mt-2">
                   {analysisMessages.map((_, i) => (
                     <motion.div
