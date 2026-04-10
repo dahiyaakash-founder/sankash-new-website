@@ -202,6 +202,7 @@ interface MergedTripBrain {
   missing_fields_json: string[];
   extraction_warnings_json: string[];
   conflicting_fields_json: FieldConflict[];
+  package_mode: string;
   benchmark_key: string;
   itinerary_archetype: string;
 }
@@ -866,7 +867,7 @@ export function buildOpsCopilot(
     wrongItems.push({
       code: "benchmark_high_quote",
       title: "Quote looks high versus similar visible cases",
-      detail: benchmarkSummary.note,
+      detail: String(benchmarkSummary.note ?? ""),
       severity: "high",
     });
   }
@@ -1455,7 +1456,7 @@ export async function refreshLeadTripIntelligence(params: {
       intentAssessment,
       multiItinerary,
       recommendationEngine,
-      sourceLikelihood,
+      { ...sourceLikelihood } as Record<string, unknown>,
       outcomeLearningSummary,
     );
 
