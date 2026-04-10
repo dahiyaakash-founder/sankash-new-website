@@ -31,9 +31,8 @@ const HomepageHero = () => {
               <span className="text-primary">before you pay.</span>
             </h1>
 
-            <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Upload a travel quote for a free review, or check what your trip costs per month with EMI.
-              SanKash helps travelers make smarter holiday decisions — and helps travel businesses grow.
+            <p className="text-base lg:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Upload your travel quote for a free breakdown, or check what your trip costs per month — <span className="text-foreground font-medium">no credit impact</span>.
             </p>
 
             {/* Two clear traveler actions */}
@@ -45,7 +44,7 @@ const HomepageHero = () => {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <p className="text-sm font-heading font-bold text-primary-deep">Upload a Quote</p>
-                    <p className="text-xs text-muted-foreground">Free review with EMI options</p>
+                    <p className="text-xs text-muted-foreground">Get a free review in 2 mins</p>
                   </div>
                   <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                 </div>
@@ -57,7 +56,7 @@ const HomepageHero = () => {
                   </div>
                   <div className="text-left flex-1 min-w-0">
                     <p className="text-sm font-heading font-bold text-primary-deep">Check Holiday EMI</p>
-                    <p className="text-xs text-muted-foreground">See monthly cost, no impact on credit</p>
+                    <p className="text-xs text-muted-foreground">See monthly cost instantly</p>
                   </div>
                   <ArrowRight size={14} className="text-muted-foreground group-hover:text-brand-coral transition-colors shrink-0" />
                 </div>
