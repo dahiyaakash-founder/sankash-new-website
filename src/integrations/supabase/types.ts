@@ -407,6 +407,129 @@ export type Database = {
           },
         ]
       }
+      lead_ops_copilot: {
+        Row: {
+          benchmark_price_position: string
+          benchmark_summary_json: Json
+          best_pitch_angle: string | null
+          call_talking_points_json: Json
+          conversion_probability_band: string
+          decision_stage: string | null
+          id: string
+          intent_confidence: string | null
+          intent_explanation: string | null
+          intent_score: number
+          intent_summary_json: Json
+          lead_classification: string
+          lead_id: string
+          lead_quality_score: number
+          likely_customer_motive: string | null
+          multi_itinerary_read_json: Json
+          next_best_action_json: Json
+          ops_copilot_version: string
+          ops_summary: string | null
+          outcome_learning_summary_json: Json
+          outcome_learning_version: string | null
+          pitch_sequence_json: Json
+          product_fit_flags_json: Json
+          recommendation_summary: string | null
+          recommended_pitch_angle: string | null
+          recommended_products_json: Json
+          refreshed_at: string
+          sankash_opportunity_json: Json
+          similar_trip_summary_json: Json
+          source_likelihood_json: Json
+          suggested_alternative_destinations_json: Json
+          suggested_pitch_sequence_json: Json
+          top_recommendations_json: Json
+          traveler_trust_score: number
+          unified_case_id: string
+          urgency_score: number
+          what_looks_wrong_json: Json
+          whatsapp_follow_up: string | null
+        }
+        Insert: {
+          benchmark_price_position?: string
+          benchmark_summary_json?: Json
+          best_pitch_angle?: string | null
+          call_talking_points_json?: Json
+          conversion_probability_band?: string
+          decision_stage?: string | null
+          id?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          intent_summary_json?: Json
+          lead_classification?: string
+          lead_id: string
+          lead_quality_score?: number
+          likely_customer_motive?: string | null
+          multi_itinerary_read_json?: Json
+          next_best_action_json?: Json
+          ops_copilot_version?: string
+          ops_summary?: string | null
+          outcome_learning_summary_json?: Json
+          outcome_learning_version?: string | null
+          pitch_sequence_json?: Json
+          product_fit_flags_json?: Json
+          recommendation_summary?: string | null
+          recommended_pitch_angle?: string | null
+          recommended_products_json?: Json
+          refreshed_at?: string
+          sankash_opportunity_json?: Json
+          similar_trip_summary_json?: Json
+          source_likelihood_json?: Json
+          suggested_alternative_destinations_json?: Json
+          suggested_pitch_sequence_json?: Json
+          top_recommendations_json?: Json
+          traveler_trust_score?: number
+          unified_case_id: string
+          urgency_score?: number
+          what_looks_wrong_json?: Json
+          whatsapp_follow_up?: string | null
+        }
+        Update: {
+          benchmark_price_position?: string
+          benchmark_summary_json?: Json
+          best_pitch_angle?: string | null
+          call_talking_points_json?: Json
+          conversion_probability_band?: string
+          decision_stage?: string | null
+          id?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          intent_summary_json?: Json
+          lead_classification?: string
+          lead_id?: string
+          lead_quality_score?: number
+          likely_customer_motive?: string | null
+          multi_itinerary_read_json?: Json
+          next_best_action_json?: Json
+          ops_copilot_version?: string
+          ops_summary?: string | null
+          outcome_learning_summary_json?: Json
+          outcome_learning_version?: string | null
+          pitch_sequence_json?: Json
+          product_fit_flags_json?: Json
+          recommendation_summary?: string | null
+          recommended_pitch_angle?: string | null
+          recommended_products_json?: Json
+          refreshed_at?: string
+          sankash_opportunity_json?: Json
+          similar_trip_summary_json?: Json
+          source_likelihood_json?: Json
+          suggested_alternative_destinations_json?: Json
+          suggested_pitch_sequence_json?: Json
+          top_recommendations_json?: Json
+          traveler_trust_score?: number
+          unified_case_id?: string
+          urgency_score?: number
+          what_looks_wrong_json?: Json
+          whatsapp_follow_up?: string | null
+        }
+        Relationships: []
+      }
       lead_status_history: {
         Row: {
           changed_at: string
@@ -441,6 +564,483 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_trip_brains: {
+        Row: {
+          additional_destinations_json: Json
+          adults_count: number | null
+          airline_names_json: Json
+          analysis_count: number
+          attachment_count: number
+          audience_type: string | null
+          benchmark_engine_version: string
+          benchmark_key: string | null
+          benchmark_price_position: string
+          benchmark_summary_json: Json
+          children_count: number | null
+          conflicting_fields_json: Json
+          contact_present: boolean
+          conversion_probability_band: string
+          currency: string | null
+          customer_name: string | null
+          decision_flags_json: Json
+          decision_stage: string | null
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          duration_days: number | null
+          duration_nights: number | null
+          exclusions_text: string | null
+          extracted_completeness_score: number | null
+          extraction_warnings_json: Json
+          hotel_names_json: Json
+          id: string
+          inclusions_text: string | null
+          infants_count: number | null
+          intelligence_refreshed_at: string
+          intent_confidence: string | null
+          intent_explanation: string | null
+          intent_score: number
+          intent_signals_json: Json
+          latest_analysis_id: string | null
+          latest_conversion_status: string | null
+          lead_classification: string
+          lead_id: string
+          likely_customer_motive: string | null
+          missing_fields_json: Json
+          multi_itinerary_summary_json: Json
+          multi_itinerary_type: string
+          ops_copilot_version: string
+          outcome_learning_summary_json: Json
+          outcome_learning_version: string | null
+          package_mode: string
+          parsing_confidence: string | null
+          price_per_person: number | null
+          product_fit_flags_json: Json
+          recommendation_engine_json: Json
+          recommended_pitch_angle: string | null
+          recommended_products_json: Json
+          sectors_json: Json
+          seller_questions_json: Json
+          similar_case_summary_json: Json
+          source_likelihood_json: Json
+          source_page: string | null
+          source_profile_confidence: string | null
+          source_profile_label: string | null
+          suggested_alternative_destinations_json: Json
+          suggested_pitch_sequence_json: Json
+          top_recommendations_json: Json
+          total_price: number | null
+          travel_agent_name: string | null
+          travel_end_date: string | null
+          travel_start_date: string | null
+          traveler_intelligence_version: string
+          traveler_output_json: Json
+          traveler_questions_json: Json
+          traveller_count_total: number | null
+          unified_summary: string | null
+          unlockable_modules_json: Json
+        }
+        Insert: {
+          additional_destinations_json?: Json
+          adults_count?: number | null
+          airline_names_json?: Json
+          analysis_count?: number
+          attachment_count?: number
+          audience_type?: string | null
+          benchmark_engine_version?: string
+          benchmark_key?: string | null
+          benchmark_price_position?: string
+          benchmark_summary_json?: Json
+          children_count?: number | null
+          conflicting_fields_json?: Json
+          contact_present?: boolean
+          conversion_probability_band?: string
+          currency?: string | null
+          customer_name?: string | null
+          decision_flags_json?: Json
+          decision_stage?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          exclusions_text?: string | null
+          extracted_completeness_score?: number | null
+          extraction_warnings_json?: Json
+          hotel_names_json?: Json
+          id?: string
+          inclusions_text?: string | null
+          infants_count?: number | null
+          intelligence_refreshed_at?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          intent_signals_json?: Json
+          latest_analysis_id?: string | null
+          latest_conversion_status?: string | null
+          lead_classification?: string
+          lead_id: string
+          likely_customer_motive?: string | null
+          missing_fields_json?: Json
+          multi_itinerary_summary_json?: Json
+          multi_itinerary_type?: string
+          ops_copilot_version?: string
+          outcome_learning_summary_json?: Json
+          outcome_learning_version?: string | null
+          package_mode?: string
+          parsing_confidence?: string | null
+          price_per_person?: number | null
+          product_fit_flags_json?: Json
+          recommendation_engine_json?: Json
+          recommended_pitch_angle?: string | null
+          recommended_products_json?: Json
+          sectors_json?: Json
+          seller_questions_json?: Json
+          similar_case_summary_json?: Json
+          source_likelihood_json?: Json
+          source_page?: string | null
+          source_profile_confidence?: string | null
+          source_profile_label?: string | null
+          suggested_alternative_destinations_json?: Json
+          suggested_pitch_sequence_json?: Json
+          top_recommendations_json?: Json
+          total_price?: number | null
+          travel_agent_name?: string | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveler_intelligence_version?: string
+          traveler_output_json?: Json
+          traveler_questions_json?: Json
+          traveller_count_total?: number | null
+          unified_summary?: string | null
+          unlockable_modules_json?: Json
+        }
+        Update: {
+          additional_destinations_json?: Json
+          adults_count?: number | null
+          airline_names_json?: Json
+          analysis_count?: number
+          attachment_count?: number
+          audience_type?: string | null
+          benchmark_engine_version?: string
+          benchmark_key?: string | null
+          benchmark_price_position?: string
+          benchmark_summary_json?: Json
+          children_count?: number | null
+          conflicting_fields_json?: Json
+          contact_present?: boolean
+          conversion_probability_band?: string
+          currency?: string | null
+          customer_name?: string | null
+          decision_flags_json?: Json
+          decision_stage?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          exclusions_text?: string | null
+          extracted_completeness_score?: number | null
+          extraction_warnings_json?: Json
+          hotel_names_json?: Json
+          id?: string
+          inclusions_text?: string | null
+          infants_count?: number | null
+          intelligence_refreshed_at?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          intent_signals_json?: Json
+          latest_analysis_id?: string | null
+          latest_conversion_status?: string | null
+          lead_classification?: string
+          lead_id?: string
+          likely_customer_motive?: string | null
+          missing_fields_json?: Json
+          multi_itinerary_summary_json?: Json
+          multi_itinerary_type?: string
+          ops_copilot_version?: string
+          outcome_learning_summary_json?: Json
+          outcome_learning_version?: string | null
+          package_mode?: string
+          parsing_confidence?: string | null
+          price_per_person?: number | null
+          product_fit_flags_json?: Json
+          recommendation_engine_json?: Json
+          recommended_pitch_angle?: string | null
+          recommended_products_json?: Json
+          sectors_json?: Json
+          seller_questions_json?: Json
+          similar_case_summary_json?: Json
+          source_likelihood_json?: Json
+          source_page?: string | null
+          source_profile_confidence?: string | null
+          source_profile_label?: string | null
+          suggested_alternative_destinations_json?: Json
+          suggested_pitch_sequence_json?: Json
+          top_recommendations_json?: Json
+          total_price?: number | null
+          travel_agent_name?: string | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveler_intelligence_version?: string
+          traveler_output_json?: Json
+          traveler_questions_json?: Json
+          traveller_count_total?: number | null
+          unified_summary?: string | null
+          unlockable_modules_json?: Json
+        }
+        Relationships: []
+      }
+      lead_trip_intent_signals: {
+        Row: {
+          audience_type: string | null
+          browser_name: string | null
+          contact_captured_at: string | null
+          contact_present: boolean
+          conversion_probability_band: string
+          days_to_trip_start: number | null
+          decision_stage: string | null
+          device_type: string | null
+          distinct_destination_count: number
+          first_upload_at: string | null
+          id: string
+          intent_confidence: string | null
+          intent_explanation: string | null
+          intent_score: number
+          latest_upload_at: string | null
+          lead_id: string
+          likely_customer_motive: string | null
+          os_name: string | null
+          page_types_json: Json
+          pages_visited_json: Json
+          quote_size_band: string
+          raw_signal_snapshot_json: Json
+          recommended_pitch_angle: string | null
+          referrer: string | null
+          refreshed_at: string
+          return_visit_count: number
+          same_destination_repeat: boolean
+          session_count: number
+          source_page: string | null
+          time_spent_before_upload_seconds: number | null
+          total_public_page_views: number
+          trip_size_band: string
+          unified_case_id: string | null
+          uploaded_multiple_itineraries: boolean
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          viewed_emi_page: boolean
+          viewed_emi_section: boolean
+          viewed_traveler_page: boolean
+        }
+        Insert: {
+          audience_type?: string | null
+          browser_name?: string | null
+          contact_captured_at?: string | null
+          contact_present?: boolean
+          conversion_probability_band?: string
+          days_to_trip_start?: number | null
+          decision_stage?: string | null
+          device_type?: string | null
+          distinct_destination_count?: number
+          first_upload_at?: string | null
+          id?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          latest_upload_at?: string | null
+          lead_id: string
+          likely_customer_motive?: string | null
+          os_name?: string | null
+          page_types_json?: Json
+          pages_visited_json?: Json
+          quote_size_band?: string
+          raw_signal_snapshot_json?: Json
+          recommended_pitch_angle?: string | null
+          referrer?: string | null
+          refreshed_at?: string
+          return_visit_count?: number
+          same_destination_repeat?: boolean
+          session_count?: number
+          source_page?: string | null
+          time_spent_before_upload_seconds?: number | null
+          total_public_page_views?: number
+          trip_size_band?: string
+          unified_case_id?: string | null
+          uploaded_multiple_itineraries?: boolean
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_emi_page?: boolean
+          viewed_emi_section?: boolean
+          viewed_traveler_page?: boolean
+        }
+        Update: {
+          audience_type?: string | null
+          browser_name?: string | null
+          contact_captured_at?: string | null
+          contact_present?: boolean
+          conversion_probability_band?: string
+          days_to_trip_start?: number | null
+          decision_stage?: string | null
+          device_type?: string | null
+          distinct_destination_count?: number
+          first_upload_at?: string | null
+          id?: string
+          intent_confidence?: string | null
+          intent_explanation?: string | null
+          intent_score?: number
+          latest_upload_at?: string | null
+          lead_id?: string
+          likely_customer_motive?: string | null
+          os_name?: string | null
+          page_types_json?: Json
+          pages_visited_json?: Json
+          quote_size_band?: string
+          raw_signal_snapshot_json?: Json
+          recommended_pitch_angle?: string | null
+          referrer?: string | null
+          refreshed_at?: string
+          return_visit_count?: number
+          same_destination_repeat?: boolean
+          session_count?: number
+          source_page?: string | null
+          time_spent_before_upload_seconds?: number | null
+          total_public_page_views?: number
+          trip_size_band?: string
+          unified_case_id?: string | null
+          uploaded_multiple_itineraries?: boolean
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_emi_page?: boolean
+          viewed_emi_section?: boolean
+          viewed_traveler_page?: boolean
+        }
+        Relationships: []
+      }
+      lead_trip_outcomes: {
+        Row: {
+          active_for_learning: boolean
+          benchmark_confidence_weight: number
+          booked_amount: number | null
+          contact_captured_at: string | null
+          conversion_date: string | null
+          conversion_probability_band_at_outcome: string | null
+          conversion_status: string
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          explanation: string | null
+          first_upload_at: string | null
+          id: string
+          intent_score_at_outcome: number
+          itinerary_count: number
+          last_synced_at: string
+          lead_classification_at_outcome: string | null
+          lead_id: string
+          learning_weight: number
+          loan_amount: number | null
+          multi_itinerary_type: string | null
+          originally_anonymous: boolean
+          outcome_learning_version: string | null
+          owner_user_id: string | null
+          pitch_angle_that_worked: string | null
+          product_converted_json: Json
+          product_fit_snapshot_json: Json
+          quote_amount_at_outcome: number | null
+          recommendation_outputs_json: Json
+          source_page: string | null
+          source_profile_label: string | null
+          source_type: string | null
+          time_from_contact_capture_to_conversion_hours: number | null
+          time_from_first_upload_to_conversion_hours: number | null
+          traveler_profile_json: Json
+          unified_case_id: string | null
+          upload_count: number
+        }
+        Insert: {
+          active_for_learning?: boolean
+          benchmark_confidence_weight?: number
+          booked_amount?: number | null
+          contact_captured_at?: string | null
+          conversion_date?: string | null
+          conversion_probability_band_at_outcome?: string | null
+          conversion_status?: string
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          explanation?: string | null
+          first_upload_at?: string | null
+          id?: string
+          intent_score_at_outcome?: number
+          itinerary_count?: number
+          last_synced_at?: string
+          lead_classification_at_outcome?: string | null
+          lead_id: string
+          learning_weight?: number
+          loan_amount?: number | null
+          multi_itinerary_type?: string | null
+          originally_anonymous?: boolean
+          outcome_learning_version?: string | null
+          owner_user_id?: string | null
+          pitch_angle_that_worked?: string | null
+          product_converted_json?: Json
+          product_fit_snapshot_json?: Json
+          quote_amount_at_outcome?: number | null
+          recommendation_outputs_json?: Json
+          source_page?: string | null
+          source_profile_label?: string | null
+          source_type?: string | null
+          time_from_contact_capture_to_conversion_hours?: number | null
+          time_from_first_upload_to_conversion_hours?: number | null
+          traveler_profile_json?: Json
+          unified_case_id?: string | null
+          upload_count?: number
+        }
+        Update: {
+          active_for_learning?: boolean
+          benchmark_confidence_weight?: number
+          booked_amount?: number | null
+          contact_captured_at?: string | null
+          conversion_date?: string | null
+          conversion_probability_band_at_outcome?: string | null
+          conversion_status?: string
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          explanation?: string | null
+          first_upload_at?: string | null
+          id?: string
+          intent_score_at_outcome?: number
+          itinerary_count?: number
+          last_synced_at?: string
+          lead_classification_at_outcome?: string | null
+          lead_id?: string
+          learning_weight?: number
+          loan_amount?: number | null
+          multi_itinerary_type?: string | null
+          originally_anonymous?: boolean
+          outcome_learning_version?: string | null
+          owner_user_id?: string | null
+          pitch_angle_that_worked?: string | null
+          product_converted_json?: Json
+          product_fit_snapshot_json?: Json
+          quote_amount_at_outcome?: number | null
+          recommendation_outputs_json?: Json
+          source_page?: string | null
+          source_profile_label?: string | null
+          source_type?: string | null
+          time_from_contact_capture_to_conversion_hours?: number | null
+          time_from_first_upload_to_conversion_hours?: number | null
+          traveler_profile_json?: Json
+          unified_case_id?: string | null
+          upload_count?: number
+        }
+        Relationships: []
       }
       leads: {
         Row: {
@@ -592,6 +1192,573 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_destination_benchmarks: {
+        Row: {
+          avg_total_price: number | null
+          benchmark_key: string
+          common_exclusions_json: Json
+          common_hotels_json: Json
+          common_inclusions_json: Json
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          duration_bucket: string | null
+          id: string
+          max_total_price: number | null
+          median_total_price: number | null
+          min_total_price: number | null
+          package_mode: string | null
+          product_fit_summary_json: Json
+          rebuilt_at: string
+          sample_count: number
+          traveler_bucket: string | null
+          weighted_sample_score: number | null
+        }
+        Insert: {
+          avg_total_price?: number | null
+          benchmark_key: string
+          common_exclusions_json?: Json
+          common_hotels_json?: Json
+          common_inclusions_json?: Json
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_bucket?: string | null
+          id?: string
+          max_total_price?: number | null
+          median_total_price?: number | null
+          min_total_price?: number | null
+          package_mode?: string | null
+          product_fit_summary_json?: Json
+          rebuilt_at?: string
+          sample_count?: number
+          traveler_bucket?: string | null
+          weighted_sample_score?: number | null
+        }
+        Update: {
+          avg_total_price?: number | null
+          benchmark_key?: string
+          common_exclusions_json?: Json
+          common_hotels_json?: Json
+          common_inclusions_json?: Json
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_bucket?: string | null
+          id?: string
+          max_total_price?: number | null
+          median_total_price?: number | null
+          min_total_price?: number | null
+          package_mode?: string | null
+          product_fit_summary_json?: Json
+          rebuilt_at?: string
+          sample_count?: number
+          traveler_bucket?: string | null
+          weighted_sample_score?: number | null
+        }
+        Relationships: []
+      }
+      trip_destination_outcome_benchmarks: {
+        Row: {
+          anonymous_origin_win_rate: number | null
+          benchmark_confidence_score: number | null
+          benchmark_key: string
+          common_converted_products_json: Json
+          common_winning_pitch_angles_json: Json
+          conversion_rate_weighted: number | null
+          guidance_summary: string | null
+          id: string
+          lost_case_count: number
+          partial_case_count: number
+          pending_case_count: number
+          rebuilt_at: string
+          sample_count: number
+          won_case_count: number
+        }
+        Insert: {
+          anonymous_origin_win_rate?: number | null
+          benchmark_confidence_score?: number | null
+          benchmark_key: string
+          common_converted_products_json?: Json
+          common_winning_pitch_angles_json?: Json
+          conversion_rate_weighted?: number | null
+          guidance_summary?: string | null
+          id?: string
+          lost_case_count?: number
+          partial_case_count?: number
+          pending_case_count?: number
+          rebuilt_at?: string
+          sample_count?: number
+          won_case_count?: number
+        }
+        Update: {
+          anonymous_origin_win_rate?: number | null
+          benchmark_confidence_score?: number | null
+          benchmark_key?: string
+          common_converted_products_json?: Json
+          common_winning_pitch_angles_json?: Json
+          conversion_rate_weighted?: number | null
+          guidance_summary?: string | null
+          id?: string
+          lost_case_count?: number
+          partial_case_count?: number
+          pending_case_count?: number
+          rebuilt_at?: string
+          sample_count?: number
+          won_case_count?: number
+        }
+        Relationships: []
+      }
+      trip_hotel_frequency: {
+        Row: {
+          avg_total_price: number | null
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          frequency_count: number
+          hotel_name: string
+          id: string
+          rebuilt_at: string
+        }
+        Insert: {
+          avg_total_price?: number | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          frequency_count?: number
+          hotel_name: string
+          id?: string
+          rebuilt_at?: string
+        }
+        Update: {
+          avg_total_price?: number | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          frequency_count?: number
+          hotel_name?: string
+          id?: string
+          rebuilt_at?: string
+        }
+        Relationships: []
+      }
+      trip_intelligence_refresh_queue: {
+        Row: {
+          attempts: number
+          due_at: string
+          id: string
+          last_error: string | null
+          lead_id: string
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          due_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          due_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      trip_market_memory: {
+        Row: {
+          active_for_benchmark: boolean
+          adults_count: number | null
+          airline_names_json: Json
+          audience_type: string | null
+          benchmark_engine_version: string | null
+          benchmark_key: string | null
+          benchmark_price_position: string
+          benchmark_signal_weight: number
+          children_count: number | null
+          contact_present: boolean
+          conversion_probability_band: string
+          currency: string | null
+          decision_stage: string | null
+          destination_city: string | null
+          destination_country: string | null
+          domestic_or_international: string | null
+          duration_days: number | null
+          duration_nights: number | null
+          exclusions_tags_json: Json
+          extracted_completeness_score: number | null
+          hotel_names_json: Json
+          id: string
+          inclusions_tags_json: Json
+          infants_count: number | null
+          itinerary_archetype: string | null
+          last_seen_at: string
+          latest_conversion_status: string | null
+          lead_classification: string
+          lead_id: string
+          learning_signal_class: string | null
+          learning_weight: number
+          likely_customer_motive: string | null
+          missing_fields_json: Json
+          multi_itinerary_type: string
+          outcome: string
+          outcome_feedback_json: Json
+          outcome_learning_version: string | null
+          package_mode: string
+          parsing_confidence: string | null
+          price_per_person: number | null
+          product_fit_flags_json: Json
+          recommendation_engine_json: Json
+          recommendation_summary: string | null
+          recommended_pitch_angle: string | null
+          sectors_json: Json
+          source_likelihood_json: Json
+          source_page: string | null
+          source_profile_confidence: string | null
+          source_profile_label: string | null
+          total_price: number | null
+          travel_end_date: string | null
+          travel_start_date: string | null
+          traveler_count_total: number | null
+          traveller_count_total: number | null
+          unified_case_id: string
+        }
+        Insert: {
+          active_for_benchmark?: boolean
+          adults_count?: number | null
+          airline_names_json?: Json
+          audience_type?: string | null
+          benchmark_engine_version?: string | null
+          benchmark_key?: string | null
+          benchmark_price_position?: string
+          benchmark_signal_weight?: number
+          children_count?: number | null
+          contact_present?: boolean
+          conversion_probability_band?: string
+          currency?: string | null
+          decision_stage?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          exclusions_tags_json?: Json
+          extracted_completeness_score?: number | null
+          hotel_names_json?: Json
+          id?: string
+          inclusions_tags_json?: Json
+          infants_count?: number | null
+          itinerary_archetype?: string | null
+          last_seen_at?: string
+          latest_conversion_status?: string | null
+          lead_classification?: string
+          lead_id: string
+          learning_signal_class?: string | null
+          learning_weight?: number
+          likely_customer_motive?: string | null
+          missing_fields_json?: Json
+          multi_itinerary_type?: string
+          outcome?: string
+          outcome_feedback_json?: Json
+          outcome_learning_version?: string | null
+          package_mode?: string
+          parsing_confidence?: string | null
+          price_per_person?: number | null
+          product_fit_flags_json?: Json
+          recommendation_engine_json?: Json
+          recommendation_summary?: string | null
+          recommended_pitch_angle?: string | null
+          sectors_json?: Json
+          source_likelihood_json?: Json
+          source_page?: string | null
+          source_profile_confidence?: string | null
+          source_profile_label?: string | null
+          total_price?: number | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveler_count_total?: number | null
+          traveller_count_total?: number | null
+          unified_case_id: string
+        }
+        Update: {
+          active_for_benchmark?: boolean
+          adults_count?: number | null
+          airline_names_json?: Json
+          audience_type?: string | null
+          benchmark_engine_version?: string | null
+          benchmark_key?: string | null
+          benchmark_price_position?: string
+          benchmark_signal_weight?: number
+          children_count?: number | null
+          contact_present?: boolean
+          conversion_probability_band?: string
+          currency?: string | null
+          decision_stage?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          domestic_or_international?: string | null
+          duration_days?: number | null
+          duration_nights?: number | null
+          exclusions_tags_json?: Json
+          extracted_completeness_score?: number | null
+          hotel_names_json?: Json
+          id?: string
+          inclusions_tags_json?: Json
+          infants_count?: number | null
+          itinerary_archetype?: string | null
+          last_seen_at?: string
+          latest_conversion_status?: string | null
+          lead_classification?: string
+          lead_id?: string
+          learning_signal_class?: string | null
+          learning_weight?: number
+          likely_customer_motive?: string | null
+          missing_fields_json?: Json
+          multi_itinerary_type?: string
+          outcome?: string
+          outcome_feedback_json?: Json
+          outcome_learning_version?: string | null
+          package_mode?: string
+          parsing_confidence?: string | null
+          price_per_person?: number | null
+          product_fit_flags_json?: Json
+          recommendation_engine_json?: Json
+          recommendation_summary?: string | null
+          recommended_pitch_angle?: string | null
+          sectors_json?: Json
+          source_likelihood_json?: Json
+          source_page?: string | null
+          source_profile_confidence?: string | null
+          source_profile_label?: string | null
+          total_price?: number | null
+          travel_end_date?: string | null
+          travel_start_date?: string | null
+          traveler_count_total?: number | null
+          traveller_count_total?: number | null
+          unified_case_id?: string
+        }
+        Relationships: []
+      }
+      trip_outcome_learning_queue: {
+        Row: {
+          attempts: number
+          due_at: string
+          id: string
+          last_error: string | null
+          lead_id: string
+          payload_json: Json
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          status: string
+          unified_case_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          due_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id: string
+          payload_json?: Json
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          unified_case_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          due_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id?: string
+          payload_json?: Json
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          unified_case_id?: string | null
+        }
+        Relationships: []
+      }
+      trip_pitch_outcome_memory: {
+        Row: {
+          anonymous_origin_win_rate: number | null
+          common_products_json: Json
+          domestic_or_international: string
+          id: string
+          lost_count: number
+          multi_itinerary_type: string
+          partial_case_count: number
+          pitch_angle: string
+          rebuilt_at: string
+          sample_count: number
+          win_rate: number | null
+          won_count: number
+        }
+        Insert: {
+          anonymous_origin_win_rate?: number | null
+          common_products_json?: Json
+          domestic_or_international?: string
+          id?: string
+          lost_count?: number
+          multi_itinerary_type?: string
+          partial_case_count?: number
+          pitch_angle: string
+          rebuilt_at?: string
+          sample_count?: number
+          win_rate?: number | null
+          won_count?: number
+        }
+        Update: {
+          anonymous_origin_win_rate?: number | null
+          common_products_json?: Json
+          domestic_or_international?: string
+          id?: string
+          lost_count?: number
+          multi_itinerary_type?: string
+          partial_case_count?: number
+          pitch_angle?: string
+          rebuilt_at?: string
+          sample_count?: number
+          win_rate?: number | null
+          won_count?: number
+        }
+        Relationships: []
+      }
+      trip_post_analysis_enrichment_queue: {
+        Row: {
+          attempts: number
+          due_at: string
+          enrichment_type: string | null
+          id: string
+          last_error: string | null
+          lead_id: string
+          payload_json: Json
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          status: string
+          unified_case_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          due_at?: string
+          enrichment_type?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id: string
+          payload_json?: Json
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          unified_case_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          due_at?: string
+          enrichment_type?: string | null
+          id?: string
+          last_error?: string | null
+          lead_id?: string
+          payload_json?: Json
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          unified_case_id?: string | null
+        }
+        Relationships: []
+      }
+      trip_product_outcome_memory: {
+        Row: {
+          avg_booked_amount: number | null
+          avg_loan_amount: number | null
+          common_pitch_angles_json: Json
+          domestic_or_international: string
+          id: string
+          lost_count: number
+          package_mode: string
+          partial_case_count: number
+          product_code: string
+          rebuilt_at: string
+          sample_count: number
+          win_rate: number | null
+          won_count: number
+        }
+        Insert: {
+          avg_booked_amount?: number | null
+          avg_loan_amount?: number | null
+          common_pitch_angles_json?: Json
+          domestic_or_international?: string
+          id?: string
+          lost_count?: number
+          package_mode?: string
+          partial_case_count?: number
+          product_code: string
+          rebuilt_at?: string
+          sample_count?: number
+          win_rate?: number | null
+          won_count?: number
+        }
+        Update: {
+          avg_booked_amount?: number | null
+          avg_loan_amount?: number | null
+          common_pitch_angles_json?: Json
+          domestic_or_international?: string
+          id?: string
+          lost_count?: number
+          package_mode?: string
+          partial_case_count?: number
+          product_code?: string
+          rebuilt_at?: string
+          sample_count?: number
+          win_rate?: number | null
+          won_count?: number
+        }
+        Relationships: []
+      }
+      trip_similar_cases: {
+        Row: {
+          id: string
+          rebuilt_at: string
+          similar_case_id: string
+          similarity_reasons_json: Json
+          similarity_score: number
+          unified_case_id: string
+        }
+        Insert: {
+          id?: string
+          rebuilt_at?: string
+          similar_case_id: string
+          similarity_reasons_json?: Json
+          similarity_score?: number
+          unified_case_id: string
+        }
+        Update: {
+          id?: string
+          rebuilt_at?: string
+          similar_case_id?: string
+          similarity_reasons_json?: Json
+          similarity_score?: number
+          unified_case_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -633,6 +1800,15 @@ export type Database = {
         Args: { _member_id: string; _supervisor_id: string }
         Returns: boolean
       }
+      rebuild_trip_destination_benchmarks: { Args: never; Returns: undefined }
+      rebuild_trip_destination_outcome_benchmarks: {
+        Args: never
+        Returns: undefined
+      }
+      rebuild_trip_hotel_frequency: { Args: never; Returns: undefined }
+      rebuild_trip_pitch_outcome_memory: { Args: never; Returns: undefined }
+      rebuild_trip_product_outcome_memory: { Args: never; Returns: undefined }
+      rebuild_trip_similar_cases: { Args: never; Returns: undefined }
       upsert_lead_with_dedup: {
         Args: {
           _audience_type?: Database["public"]["Enums"]["audience_type"]
