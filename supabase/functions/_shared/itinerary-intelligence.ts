@@ -179,11 +179,12 @@ function addMissingFieldDrivenNextInputs(
     likelyStayCase: boolean;
     hasFlights: boolean;
     timingRelevant: boolean;
+    sparseEvidence: boolean;
   },
 ) {
   const fieldGroups: Array<{
     fields: string[];
-    input: NextInputNeeded;
+    input: NextInputNeeded | ((context: { sparseEvidence: boolean }) => NextInputNeeded);
     enabled?: boolean;
   }> = [
     {
@@ -208,13 +209,17 @@ function addMissingFieldDrivenNextInputs(
     },
     {
       fields: ["hotel_names", "hotel_check_in", "hotel_check_out"],
-      input: {
+      input: ({ sparseEvidence }) => ({
         code: "hotel_details",
-        label: "Upload the hotel page or full package PDF",
-        reason: "The hotel names or stay details are still incomplete.",
+        label: sparseEvidence ? "Upload the page or message that names the hotel" : "Upload the hotel page or full package PDF",
+        reason: sparseEvidence
+          ? "We can see there is a stay involved, but the exact hotel name is still missing."
+          : "The hotel names or stay details are still incomplete.",
         priority: "high",
-        suggested_upload: "Accommodation table, hotel confirmation page, or full quote PDF",
-      },
+        suggested_upload: sparseEvidence
+          ? "Seller message, booking page, or screenshot that clearly names the hotel"
+          : "Accommodation table, hotel confirmation page, or full quote PDF",
+      }),
       enabled: context.likelyStayCase,
     },
     {
@@ -254,7 +259,8 @@ function addMissingFieldDrivenNextInputs(
   for (const group of fieldGroups) {
     if (group.enabled === false) continue;
     if (!group.fields.some((field) => missingFields.has(field))) continue;
-    uniquePush(nextInputsNeeded, group.input);
+    const nextInput = typeof group.input === "function" ? group.input({ sparseEvidence: context.sparseEvidence }) : group.input;
+    uniquePush(nextInputsNeeded, nextInput);
   }
 }
 
@@ -466,6 +472,7 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
   const hotelNames = (input.hotel_names_json ?? []).filter(Boolean);
   const localTransferOnly = hasLocalTransferHints(input) && !hasStrongGroundPackageSignals(input);
   const explicitInsuranceExclusion = hasExplicitInsuranceExclusion(input);
+  const sparseEvidence = isSparseEvidenceCase(input);
   const transportMissing =
     packageMode === "land_only" ||
     (packageMode === "hotels_only" && hasAccommodationEvidence) ||
@@ -641,10 +648,14 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
     });
     uniquePush(nextInputsNeeded, {
       code: "hotel_details",
-      label: "Upload the hotel page or full package PDF",
-      reason: "The current material does not clearly show the hotel names or room category.",
+      label: sparseEvidence ? "Upload the page or message that names the hotel" : "Upload the hotel page or full package PDF",
+      reason: sparseEvidence
+        ? "We can see there is a stay involved, but the exact hotel name is still missing."
+        : "The current material does not clearly show the hotel names or room category.",
       priority: "high",
-      suggested_upload: "Accommodation table, hotel confirmation page, or full quote PDF",
+      suggested_upload: sparseEvidence
+        ? "Seller message, booking page, or screenshot that clearly names the hotel"
+        : "Accommodation table, hotel confirmation page, or full quote PDF",
     });
     uniquePush(sellerQuestions, {
       code: "seller_hotel_names",
@@ -898,6 +909,7 @@ export function deriveItineraryIntelligence(input: ItineraryIntelligenceInput): 
     likelyStayCase,
     hasFlights,
     timingRelevant,
+    sparseEvidence,
   });
 
   const materiallyIncomplete =

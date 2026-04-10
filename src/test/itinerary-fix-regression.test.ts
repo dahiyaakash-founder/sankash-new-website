@@ -252,12 +252,12 @@ describe("itinerary review fix regressions", () => {
 
     const rawText = `
     --- File 1: brochure.pdf ---
-    2 Adults
+    Adults: 2
     Paris summer special
 
     --- File 2: revised-quote.png ---
-    3 Adults + 1 Child
-    Stay at Mercure Paris Centre or similar
+    Adults: 3 Children: 1
+    Final stay plan includes Mercure Paris Centre or similar with breakfast
     `;
 
     const normalized = normalizeItineraryExtraction(parsed, rawText, NOW);
@@ -327,10 +327,12 @@ describe("itinerary review fix regressions", () => {
 
     const intelligence = deriveItineraryIntelligence(weakGoaQuote);
     const advisoryCodes = intelligence.advisory_insights_json.map((item) => item.code);
+    const hotelPrompt = intelligence.next_inputs_needed_json.find((item) => item.code === "hotel_details");
 
     expect(intelligence.package_mode).toBe("unknown");
     expect(advisoryCodes).not.toContain("land_only_likely");
     expect(advisoryCodes).not.toContain("transport_missing_from_total");
+    expect(hotelPrompt?.label).toBe("Upload the page or message that names the hotel");
   });
 
   it("keeps a strong synthetic control clean and actionable", () => {

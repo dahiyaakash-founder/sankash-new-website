@@ -71,7 +71,7 @@ Return a JSON object with EXACTLY these fields (use null for genuinely unknown v
   "insurance_mentioned": boolean,
   "parsing_confidence": "high" | "medium" | "low",
   "missing_fields": [] array of field names that could not be found,
-  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short),
+  "extracted_snippets": [] array of key text snippets that informed the extraction (max 5, keep short, include hotel-name or traveler-count lines when they are visible),
   "confidence_notes": string | null,
   "extraction_warnings": [] array of warning strings about quality issues (e.g. "Image 2 was blurry", "Price could not be confirmed", "Only partial itinerary visible")
 }
@@ -103,6 +103,7 @@ Hotels:
 - Brochure PDFs often hide hotel names inside accommodation tables, stay blocks, or "Hotel / Similar" rows. Search those sections carefully.
 - If the document says "or similar", keep the named hotel if it is visible and mention the uncertainty in extraction_warnings.
 - If accommodation is mentioned but the exact hotel names are still not visible, say that explicitly in extraction_warnings.
+- If exact hotel names are visible, include one short supporting line in extracted_snippets.
 
 Price extraction:
 - total_price = the final package/total price.
@@ -118,6 +119,7 @@ Date extraction:
 People count:
 - Only set counts you can actually see. Do NOT assume 2 adults if not stated.
 - If a later file shows the traveler count more clearly than an earlier brochure, use the later explicit count.
+- If traveler count is visible anywhere, include one short supporting line in extracted_snippets.
 
 Name separation:
 - travel_agent_name = the company/agency that created this quote.

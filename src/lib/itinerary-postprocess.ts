@@ -63,6 +63,14 @@ const HOTEL_SUFFIX_PATTERN = /\b(hotel|resort|residency|inn|suite|suites|housebo
 const GENERIC_HOTEL_PHRASES = /\b(mentioned hotels|similar hotels|hotel stay|hotel check-?in|hotel check-?out|hotel details|overnight stay|overnight in|star hotel|hotels? included)\b/i;
 const HOTEL_SECTION_HEADING_PATTERN = /^(?:hotels?(?: name| details| options?)?|accommodation(?: details)?|stay(?: details)?|room category|proposed hotels?)\s*[:\-]?\s*(.*)$/i;
 const HOTEL_SECTION_STOP_PATTERN = /^(?:meals?|breakfast|lunch|dinner|inclusions?|exclusions?|price|cost|fare|flight|airfare|visa|insurance|transfers?|pickup|drop|sightseeing|day\s*\d+|night\s*\d+|notes?)\b/i;
+const HOTEL_INLINE_SEQUENCE_PATTERN = /\b(?:The\s+)?[A-Z][A-Za-z0-9&.'-]+(?:\s+[A-Z][A-Za-z0-9&.'-]+){0,6}\s+(?:Hotel|Resort|Residency|Inn|Suite|Suites|Houseboat|Palace|Spa|Villa|Villas|Lodge|Camp|Cruise)\b(?:\s+or similar)?/g;
+const HOTEL_STAR_RATING_PATTERN = /\(?\b[3-5]\s*(?:\*+|star)\b\)?/gi;
+const HOTEL_BRAND_SEQUENCE_PATTERN = new RegExp(
+  `\\b(?:${HOTEL_BRAND_PREFIXES.filter((prefix) => prefix !== "hotel" && prefix !== "park")
+    .map((prefix) => prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+"))
+    .join("|")})\\b(?:\\s+[A-Z][A-Za-z0-9&.'-]+){0,6}(?:\\s+or similar)?`,
+  "gi",
+);
 
 function uniqueStrings(values: Array<string | null | undefined>) {
   const seen = new Set<string>();
@@ -107,9 +115,11 @@ function sanitizeHotelCandidate(candidate: string) {
     .replace(/^[\s\-–—:*•\d.]+/, "")
     .replace(/^(?:day\s*\d+|night\s*\d+|city|stay at|accommodation)\s*[:\-]\s*/i, "")
     .replace(/^at\s+/i, "")
+    .replace(HOTEL_STAR_RATING_PATTERN, "")
     .replace(/^[A-Za-z\s]+(?:-\s+|:\s+)(?=(?:the\s+)?[A-Z])/g, "")
     .replace(/\s{2,}/g, " ")
     .replace(/\b(Breakfast|Lunch|Dinner|Meal Plan|Twin Share|Per Person)\b.*$/i, "")
+    .replace(/\s+with(?:\s+(?:breakfast|lunch|dinner|meals?|airport|transfer|visa|insurance|tour|sightseeing))?\s*$/i, "")
     .replace(/\b(or similar)\b/i, "or similar")
     .replace(/[|•]+/g, " ")
     .trim();
@@ -122,18 +132,46 @@ function sanitizeHotelCandidate(candidate: string) {
 
 function looksLikeHotelCandidate(candidate: string, allowSectionHeuristic = false) {
   const normalized = candidate.trim();
+  const strippedForHeuristic = normalized.replace(HOTEL_STAR_RATING_PATTERN, "").trim();
   const lower = normalized.toLowerCase();
 
   if (!normalized) return false;
   if (HOTEL_SUFFIX_PATTERN.test(normalized)) return true;
   if (HOTEL_BRAND_PREFIXES.some((prefix) => lower.includes(prefix))) return true;
   if (!allowSectionHeuristic) return false;
-  if (GENERIC_HOTEL_PHRASES.test(normalized)) return false;
-  if (/\b(meals?|breakfast|lunch|dinner|price|cost|fare|flight|airfare|visa|insurance|transfers?|pickup|drop|sightseeing|activity|itinerary|quote)\b/i.test(normalized)) {
+  if (GENERIC_HOTEL_PHRASES.test(strippedForHeuristic)) return false;
+  if (/\b(meals?|breakfast|lunch|dinner|price|cost|fare|flight|airfare|visa|insurance|transfers?|pickup|drop|sightseeing|activity|itinerary|quote)\b/i.test(strippedForHeuristic)) {
     return false;
   }
-  if (/\d{2,}/.test(normalized)) return false;
-  return /^[A-Z][A-Za-z0-9&.'-]+(?:\s+[A-Z][A-Za-z0-9&.'-]+){1,6}(?:\s+or similar)?$/.test(normalized);
+  if (/\d{2,}/.test(strippedForHeuristic)) return false;
+  return /^[A-Z][A-Za-z0-9&.'-]+(?:\s+[A-Z][A-Za-z0-9&.'-]+){1,6}(?:\s+or similar)?$/.test(strippedForHeuristic);
+}
+
+function extractInlineHotelSequences(line: string) {
+  const candidates: string[] = [];
+
+  for (const match of line.matchAll(HOTEL_INLINE_SEQUENCE_PATTERN)) {
+    const candidate = sanitizeHotelCandidate(match[0]);
+    if (candidate) candidates.push(candidate);
+  }
+
+  for (const match of line.matchAll(HOTEL_BRAND_SEQUENCE_PATTERN)) {
+    const candidate = sanitizeHotelCandidate(match[0]);
+    if (candidate) candidates.push(candidate);
+  }
+
+  return uniqueStrings(candidates);
+}
+
+function extractLabelCount(line: string, labels: string[]) {
+  const joinedLabels = labels.join("|");
+  const afterLabel = line.match(new RegExp(`\\b(?:${joinedLabels})\\b\\s*[:\\-]?\\s*(\\d+)\\b`, "i"));
+  if (afterLabel?.[1]) return Number(afterLabel[1]);
+
+  const beforeLabel = line.match(new RegExp(`\\b(\\d+)\\s*(?:${joinedLabels})\\b`, "i"));
+  if (beforeLabel?.[1]) return Number(beforeLabel[1]);
+
+  return null;
 }
 
 function buildFallbackTextCorpus(parsed: ParsedItineraryExtraction, rawText: string) {
@@ -198,10 +236,15 @@ function extractHotelNamesFromText(rawText: string) {
       }
     }
 
+    const inlineCandidates = extractInlineHotelSequences(line);
     const candidatePool = candidate ? [{ value: candidate, allowSectionHeuristic }] : [];
 
-    if (!candidate && looksLikeHotelCandidate(line, false)) {
+    if (!candidate && inlineCandidates.length === 0 && looksLikeHotelCandidate(line, false)) {
       candidatePool.push({ value: line, allowSectionHeuristic: false });
+    }
+
+    for (const inlineCandidate of inlineCandidates) {
+      candidates.push(inlineCandidate);
     }
 
     for (const entry of candidatePool) {
@@ -243,19 +286,15 @@ function extractTravelerBreakdown(rawText: string): TravelerBreakdown {
 
   for (const line of lines) {
     const lower = line.toLowerCase();
-    if (!/(travellers?|travelers?|guests?|adults?|children?|child|infants?)/.test(lower)) continue;
+    if (!/(travellers?|travelers?|guests?|pax|persons?|adults?|children?|child|infants?)/.test(lower)) continue;
     if (/child with bed|child without bed|single occupancy|infant \(below/i.test(lower)) continue;
 
-    const totalMatch = line.match(/(\d+)\s*(?:travellers?|travelers?|guests?)/i);
-    const adultsMatch = line.match(/(\d+)\s*adults?/i);
-    const childrenMatch = line.match(/(\d+)\s*(?:children?|child)\b/i);
-    const infantsMatch = line.match(/(\d+)\s*infants?/i);
-
-    const adults = adultsMatch ? Number(adultsMatch[1]) : null;
-    const children = childrenMatch ? Number(childrenMatch[1]) : null;
-    const infants = infantsMatch ? Number(infantsMatch[1]) : null;
+    const totalCount = extractLabelCount(line, ["travellers?", "travelers?", "guests?", "pax", "persons?"]);
+    const adults = extractLabelCount(line, ["adults?"]);
+    const children = extractLabelCount(line, ["children?", "child"]);
+    const infants = extractLabelCount(line, ["infants?"]);
     const total =
-      totalMatch ? Number(totalMatch[1]) :
+      totalCount != null ? totalCount :
       adults != null || children != null || infants != null
         ? [adults, children, infants].reduce((sum, value) => sum + (value ?? 0), 0)
         : null;
