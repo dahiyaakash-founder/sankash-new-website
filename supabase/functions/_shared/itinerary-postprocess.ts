@@ -296,7 +296,7 @@ function extractTravelerBreakdown(rawText: string): TravelerBreakdown {
     const total =
       totalCount != null ? totalCount :
       adults != null || children != null || infants != null
-        ? [adults, children, infants].reduce((sum, value) => sum + (value ?? 0), 0)
+        ? [adults, children, infants].reduce((s: number, value) => s + (value ?? 0), 0)
         : null;
 
     if (total == null) continue;
