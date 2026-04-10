@@ -1,10 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { unzipSync } from "https://esm.sh/fflate@0.8.2";
 import {
-  deriveItineraryIntelligence,
-} from "../_shared/itinerary-intelligence.ts";
-import { normalizeItineraryExtraction } from "../_shared/itinerary-postprocess.ts";
-import {
   refreshLeadTripIntelligence,
 } from "../_shared/lead-trip-intelligence.ts";
 

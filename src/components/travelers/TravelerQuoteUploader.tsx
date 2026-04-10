@@ -311,7 +311,7 @@ const TravelerQuoteUploader = () => {
     setAnalysisProgress("");
     setCurrentLeadId(null);
     setIsReanalyzing(false);
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem("traveler_quote_session");
   };
 
   /** Add more files to existing analysis and re-trigger */
