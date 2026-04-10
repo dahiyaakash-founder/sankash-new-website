@@ -1457,7 +1457,7 @@ export async function refreshLeadTripIntelligence(params: {
       multiItinerary,
       recommendationEngine,
       { ...sourceLikelihood } as Record<string, unknown>,
-      outcomeLearningSummary,
+      { ...outcomeLearningSummary } as Record<string, unknown>,
     );
 
     const { error: brainUpdateError } = await supabaseAdmin
