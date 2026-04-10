@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 import TravelerEmiEnquiry from "@/components/travelers/TravelerEmiEnquiry";
+import { markTravelerIntentSignal } from "@/lib/traveler-intent-session";
 
 const howItWorks = [
   { num: "01", icon: Upload, label: "Upload your holiday quote", desc: "Share a quote, itinerary, or screenshot from any travel agent." },
@@ -105,12 +106,34 @@ const ForTravelers = () => {
   };
 
   const scrollToUploader = () => {
+    markTravelerIntentSignal("opened_upload_section");
     uploaderRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   const scrollToEmi = () => {
     emiSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  React.useEffect(() => {
+    const target = emiSectionRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+
+    let hasMarked = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !hasMarked) {
+            hasMarked = true;
+            markTravelerIntentSignal("viewed_emi_section");
+          }
+        }
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <SiteLayout>

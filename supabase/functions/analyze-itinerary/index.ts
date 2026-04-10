@@ -4,6 +4,9 @@ import {
   deriveItineraryIntelligence,
 } from "../_shared/itinerary-intelligence.ts";
 import { normalizeItineraryExtraction } from "../_shared/itinerary-postprocess.ts";
+import {
+  refreshLeadTripIntelligence,
+} from "../_shared/lead-trip-intelligence.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +16,44 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+
+function triggerPostAnalysisEnrichment(leadId: string) {
+  const url = `${SUPABASE_URL}/functions/v1/process-trip-post-analysis`;
+  const request = fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+    body: JSON.stringify({ lead_id: leadId }),
+  }).catch((error) => {
+    console.warn("process-trip-post-analysis trigger failed:", error);
+  });
+
+  const edgeRuntime = (globalThis as unknown as { EdgeRuntime?: { waitUntil?: (promise: Promise<unknown>) => void } }).EdgeRuntime;
+  if (edgeRuntime?.waitUntil) {
+    edgeRuntime.waitUntil(request);
+  }
+}
+
+function triggerOutcomeLearning(leadId: string) {
+  const url = `${SUPABASE_URL}/functions/v1/process-trip-outcome-learning`;
+  const request = fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+    body: JSON.stringify({ lead_id: leadId }),
+  }).catch((error) => {
+    console.warn("process-trip-outcome-learning trigger failed:", error);
+  });
+
+  const edgeRuntime = (globalThis as unknown as { EdgeRuntime?: { waitUntil?: (promise: Promise<unknown>) => void } }).EdgeRuntime;
+  if (edgeRuntime?.waitUntil) {
+    edgeRuntime.waitUntil(request);
+  }
+}
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -465,34 +506,19 @@ Deno.serve(async (req) => {
     });
 
     Object.assign(record, intelligence);
+    record.advisory_summary = intelligence.advisory_insights_json
+      .slice(0, 2)
+      .map((item) => item.title)
+      .join(" · ") || null;
 
-    // Step 6: Upsert
-    const { data: existing } = await supabaseAdmin
+    // Step 6: Insert a fresh analysis row so the lead-level trip brain can merge
+    // across historical uploads instead of losing earlier evidence.
+    const { data: result, error: insertError } = await supabaseAdmin
       .from("itinerary_analysis")
-      .select("id")
-      .eq("lead_id", lead_id)
-      .limit(1)
-      .maybeSingle();
-
-    let result;
-    if (existing) {
-      const { data, error } = await supabaseAdmin
-        .from("itinerary_analysis")
-        .update(record)
-        .eq("id", existing.id)
-        .select()
-        .single();
-      if (error) throw error;
-      result = data;
-    } else {
-      const { data, error } = await supabaseAdmin
-        .from("itinerary_analysis")
-        .insert(record)
-        .select()
-        .single();
-      if (error) throw error;
-      result = data;
-    }
+      .insert(record)
+      .select()
+      .single();
+    if (insertError) throw insertError;
 
     // Step 7: Update lead with extracted commercial flags
     const leadUpdate: Record<string, unknown> = {
@@ -517,6 +543,16 @@ Deno.serve(async (req) => {
       activity_type: "itinerary_analyzed",
       description: `Itinerary analyzed (${fileCount} file${fileCount > 1 ? "s" : ""}): ${destLabel}, confidence: ${confLabel}`,
     });
+
+    // Step 9: Refresh the unified lead-level trip brain, ops copilot, and memory tables.
+    await refreshLeadTripIntelligence({
+      supabaseAdmin,
+      leadId: lead_id,
+      reason: "analysis_completed",
+    });
+
+    triggerPostAnalysisEnrichment(lead_id);
+    triggerOutcomeLearning(lead_id);
 
     return new Response(JSON.stringify({ success: true, analysis: result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
