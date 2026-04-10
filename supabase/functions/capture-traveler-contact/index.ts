@@ -102,13 +102,13 @@ Deno.serve(async (req) => {
       lead_id: leadId,
       activity_type: "traveler_contact_captured",
       description: "Traveler unlocked detailed review on the existing itinerary lead",
-    }).catch(() => {});
+    }).then(() => {}, () => {});
 
     await refreshLeadTripIntelligence({
       supabaseAdmin,
       leadId,
       reason: "traveler_contact_captured",
-    }).catch(() => {});
+    }).then(() => {}, () => {});
 
     return new Response(JSON.stringify({ success: true, lead: updatedLead }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -1080,7 +1080,7 @@ export async function refreshLeadTripIntelligence(params: {
 }) {
   const { supabaseAdmin, leadId, reason = "manual" } = params;
 
-  await markQueue(supabaseAdmin, leadId, "processing").catch(() => {});
+  await markQueue(supabaseAdmin, leadId, "processing").then(() => {}, () => {});
 
   try {
     const [
@@ -1102,7 +1102,7 @@ export async function refreshLeadTripIntelligence(params: {
 
     if (!lead) throw new Error(`Lead not found: ${leadId}`);
     if (!analyses || analyses.length === 0) {
-      await markQueue(supabaseAdmin, leadId, "done").catch(() => {});
+      await markQueue(supabaseAdmin, leadId, "done").then(() => {}, () => {});
       return { success: true, skipped: true, reason: "no_analysis" };
     }
 
@@ -1605,7 +1605,7 @@ export async function refreshLeadTripIntelligence(params: {
         intent_confidence: intentAssessment.intent_confidence,
         refreshed_at: new Date().toISOString(),
       }, { onConflict: "lead_id" })
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     await supabaseAdmin
       .from("trip_post_analysis_enrichment_queue")
@@ -1621,7 +1621,7 @@ export async function refreshLeadTripIntelligence(params: {
           source_enrichment_version: SOURCE_ENRICHMENT_VERSION,
         },
       }, { onConflict: "lead_id" })
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     await supabaseAdmin
       .from("trip_outcome_learning_queue")
@@ -1637,15 +1637,15 @@ export async function refreshLeadTripIntelligence(params: {
           latest_conversion_status: outcomeSnapshot.conversion_status,
         },
       }, { onConflict: "lead_id" })
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     await supabaseAdmin.from("lead_activity").insert({
       lead_id: leadId,
       activity_type: "trip_brain_refreshed",
       description: `Unified trip intelligence refreshed (${reason})`,
-    }).catch(() => {});
+    }).then(() => {}, () => {});
 
-    await markQueue(supabaseAdmin, leadId, "done").catch(() => {});
+    await markQueue(supabaseAdmin, leadId, "done").then(() => {}, () => {});
 
     return {
       success: true,
@@ -1656,7 +1656,7 @@ export async function refreshLeadTripIntelligence(params: {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await markQueue(supabaseAdmin, leadId, "error", message).catch(() => {});
+    await markQueue(supabaseAdmin, leadId, "error", message).then(() => {}, () => {});
     throw error;
   }
 }
