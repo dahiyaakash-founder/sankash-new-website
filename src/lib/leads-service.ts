@@ -44,6 +44,26 @@ export interface TeamMember {
   supervisor_id?: string | null;
 }
 
+async function triggerTripIntelligenceRefresh(leadId: string, reason: string) {
+  try {
+    await supabase.functions.invoke("refresh-trip-intelligence", {
+      body: { lead_id: leadId, reason },
+    });
+  } catch (error) {
+    console.warn("Trip intelligence refresh failed (non-blocking):", error);
+  }
+}
+
+async function triggerTripOutcomeLearning(leadId: string, reason: string) {
+  try {
+    await supabase.functions.invoke("process-trip-outcome-learning", {
+      body: { lead_id: leadId, reason },
+    });
+  } catch (error) {
+    console.warn("Trip outcome learning failed (non-blocking):", error);
+  }
+}
+
 /**
  * Fetch the default assignee for new public leads.
  * Strategy: round-robin across active supervisors, falling back to admins.
@@ -191,6 +211,10 @@ export async function fetchLeads(opts: {
 export async function updateLead(id: string, updates: LeadUpdate) {
   const { data, error } = await supabase.from("leads").update(updates).eq("id", id).select().single();
   if (error) throw error;
+  void triggerTripIntelligenceRefresh(id, "lead_updated");
+  if ("status" in updates || "outcome" in updates || "quote_amount" in updates || "metadata_json" in updates || "assigned_to" in updates) {
+    void triggerTripOutcomeLearning(id, "lead_updated");
+  }
   return data;
 }
 

@@ -8,6 +8,7 @@ import {
 } from "@/lib/leads-service";
 import { fetchLeadAttachments, getAttachmentUrl, type LeadAttachment } from "@/lib/attachments-service";
 import ItineraryAnalysisDrawer from "@/components/ops/ItineraryAnalysisDrawer";
+import LeadTripIntelligencePanel from "@/components/ops/LeadTripIntelligencePanel";
 import { fetchLeadActivity, logActivity, type LeadActivityEntry } from "@/lib/activity-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,9 @@ const activityTypeLabels: Record<string, string> = {
   lead_created: "Lead created",
   file_uploaded: "File uploaded",
   resubmission: "Resubmission merged",
+  itinerary_analyzed: "Itinerary analyzed",
+  trip_brain_refreshed: "Trip intelligence refreshed",
+  traveler_contact_captured: "Traveler contact captured",
   status_changed: "Status changed",
   priority_changed: "Priority changed",
   owner_changed: "Lead reassigned",
@@ -341,6 +345,9 @@ const OpsLeadDetail = () => {
                 ))}
               </div>
             </div>
+
+            {/* B2. Unified trip brain + ops copilot */}
+            <LeadTripIntelligencePanel leadId={id!} />
 
             {/* C. Uploaded files */}
             {(attachments.length > 0 || lead.quote_file_url) && (

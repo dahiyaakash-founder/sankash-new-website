@@ -3,7 +3,7 @@
  * All files are processed together as one itinerary session via the unified vision pipeline.
  * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import {
   type ValidationErrorType,
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
+import { buildTravelerIntentSnapshot, markTravelerIntentSignal } from "@/lib/traveler-intent-session";
 
 import {
   Dialog,
@@ -42,6 +43,60 @@ import TravelerAnalysisResults from "./TravelerAnalysisResults";
 const MAX_FILES = 5;
 
 type Stage = "upload" | "analyzing" | "results" | "error";
+
+function buildAnalysisMessages(files: File[]) {
+  const isMultiFile = files.length > 1;
+  const hasPdf = files.some((file) => /\.pdf$/i.test(file.name));
+  const hasScreenshots = files.some((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name));
+  const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
+
+  const messages = [
+    {
+      title: "Reading your itinerary files",
+      detail: isMultiFile ? `Looking across ${files.length} files together so nothing gets missed.` : "Opening your travel file and pulling out the visible trip details.",
+    },
+    {
+      title: "Identifying destination, dates, and travelers",
+      detail: "Checking where you're going, when you plan to travel, and who this trip appears to cover.",
+    },
+    {
+      title: "Checking hotels, flights, and inclusions",
+      detail: hasPdf || brochureLike
+        ? "Scanning brochure-style sections for hotel names, flight context, and what's actually included."
+        : "Looking for hotel names, flight details, meals, transfers, and other visible trip pieces.",
+    },
+    {
+      title: "Spotting missing costs and exclusions",
+      detail: "Looking for gaps like flights, meals, insurance, taxes, or unclear pricing that may affect the real trip cost.",
+    },
+    {
+      title: isMultiFile ? "Merging multiple itinerary files" : "Reconciling the trip details",
+      detail: isMultiFile
+        ? "Combining information across your files and checking whether any details conflict."
+        : "Checking whether the visible details line up cleanly before we prepare the review.",
+    },
+    {
+      title: "Preparing your trip review",
+      detail: hasScreenshots ? "Turning screenshot-friendly clues into a clean trip summary you can actually use." : "Turning the extracted details into a simple review with next steps.",
+    },
+  ];
+
+  return messages;
+}
+
+function buildAnalysisContextBadges(files: File[]) {
+  const badges: string[] = [];
+  const hasPdf = files.some((file) => /\.pdf$/i.test(file.name));
+  const imageCount = files.filter((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name)).length;
+  const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
+
+  if (files.length > 1) badges.push(`${files.length} files`);
+  if (hasPdf) badges.push("PDF");
+  if (imageCount > 0) badges.push(imageCount > 1 ? "Screenshots" : "Screenshot");
+  if (brochureLike) badges.push("Brochure-style");
+
+  return badges.slice(0, 4);
+}
 
 
 
@@ -95,51 +150,25 @@ const TravelerQuoteUploader = () => {
   const [leadEmail, setLeadEmail] = useState("");
   const [analysisResult, setAnalysisResult] = useState<ItineraryAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
+  const [analysisStepIndex, setAnalysisStepIndex] = useState(0);
   const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const resumeAttempted = useRef(false);
+  const analysisMessages = useMemo(() => buildAnalysisMessages(files), [files]);
+  const analysisContextBadges = useMemo(() => buildAnalysisContextBadges(files), [files]);
 
-  // ── Refresh-safe resume: persist lead ID to sessionStorage ──
-  const STORAGE_KEY = "sankash_itinerary_lead_id";
-
-  // Persist leadId whenever it changes
   useEffect(() => {
-    if (currentLeadId) {
-      sessionStorage.setItem(STORAGE_KEY, currentLeadId);
+    if (stage !== "analyzing") {
+      setAnalysisStepIndex(0);
+      return;
     }
-  }, [currentLeadId]);
 
-  // On mount, attempt to resume a previous itinerary case
-  useEffect(() => {
-    if (resumeAttempted.current) return;
-    resumeAttempted.current = true;
+    const timer = window.setInterval(() => {
+      setAnalysisStepIndex((current) => (current + 1) % analysisMessages.length);
+    }, 1800);
 
-    const savedLeadId = sessionStorage.getItem(STORAGE_KEY);
-    if (!savedLeadId) return;
-
-    // Attempt to fetch the existing analysis
-    (async () => {
-      try {
-        setStage("analyzing");
-        setAnalysisProgress("Restoring your review…");
-        const { fetchItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
-        const existing = await fetchItineraryAnalysis(savedLeadId);
-        if (existing) {
-          setAnalysisResult(existing);
-          setCurrentLeadId(savedLeadId);
-          setStage("results");
-        } else {
-          // No analysis found — clear and show upload
-          sessionStorage.removeItem(STORAGE_KEY);
-          setStage("upload");
-        }
-      } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
-        setStage("upload");
-      }
-    })();
-  }, []);
+    return () => window.clearInterval(timer);
+  }, [stage, analysisMessages.length]);
 
   const addFiles = useCallback((newFiles: File[]) => {
     const validated: File[] = [];
@@ -169,6 +198,7 @@ const TravelerQuoteUploader = () => {
     if (files.length === 0) return;
     setStage("analyzing");
     setAnalysisProgress("Uploading files…");
+    markTravelerIntentSignal("started_quote_upload");
     trackTravelerQuoteUpload({ file_uploaded: true });
     trackQuoteAnalysisRequested({ audience_type: "traveler" });
 
@@ -190,7 +220,14 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: uploaded.url,
-        metadata_json: { upload_only: true, file_count: files.length },
+        metadata_json: {
+          upload_only: true,
+          file_count: files.length,
+          traveler_intent_session: buildTravelerIntentSnapshot({
+            context: "initial_upload",
+            file_count: files.length,
+          }),
+        },
       });
 
       if (!lead?.id) throw new Error("Lead creation failed");
@@ -281,6 +318,7 @@ const TravelerQuoteUploader = () => {
   const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
     if (!currentLeadId) return;
     setIsReanalyzing(true);
+    markTravelerIntentSignal("added_more_files");
     try {
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
@@ -340,10 +378,35 @@ const TravelerQuoteUploader = () => {
     setPhoneError(null);
     setLeadSubmitting(true);
     setLeadError(null);
+    markTravelerIntentSignal("submitted_contact_details");
     try {
       const { createLeadWithDedup, uploadQuoteFile } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { logLeadCreated } = await import("@/lib/activity-service");
+      const { supabase } = await import("@/integrations/supabase/client");
+
+      if (currentLeadId) {
+        const { data, error } = await supabase.functions.invoke("capture-traveler-contact", {
+          body: {
+            lead_id: currentLeadId,
+            full_name: leadName.trim(),
+            mobile_number: phoneValidation.normalized,
+            email: leadEmail.trim() || null,
+            intent_snapshot: buildTravelerIntentSnapshot({
+              context: "contact_capture",
+              current_lead_id: currentLeadId,
+              file_count: files.length,
+            }),
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        trackTravelerUnlockSubmit({});
+        setLeadSubmitted(true);
+        return;
+      }
 
       let quoteFileUrl: string | null = null;
       if (files.length > 0) {
@@ -360,7 +423,14 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: quoteFileUrl,
-        metadata_json: { confidence: analysisResult?.parsing_confidence ?? "medium", file_count: files.length },
+        metadata_json: {
+          confidence: analysisResult?.parsing_confidence ?? "medium",
+          file_count: files.length,
+          traveler_intent_session: buildTravelerIntentSnapshot({
+            context: "contact_capture",
+            file_count: files.length,
+          }),
+        },
       });
 
       if (files.length > 0 && lead?.id) {
@@ -380,7 +450,8 @@ const TravelerQuoteUploader = () => {
     }
   };
 
-  const fileNames = files.map(f => f.name).join(", ");
+  const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
+  const analysisStepLabel = `${Math.min(analysisStepIndex + 1, analysisMessages.length)} of ${analysisMessages.length}`;
 
   return (
     <>
@@ -486,23 +557,52 @@ const TravelerQuoteUploader = () => {
               </div>
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <Loader2 size={32} className="text-primary animate-spin" />
-                <div className="text-center">
-                  <p className="font-heading font-bold text-foreground">
-                    {analysisProgress || "Processing…"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {files.length > 1
-                      ? `Merging data from ${files.length} files into one review`
-                      : files[0]?.name}
-                  </p>
+                <div className="text-center space-y-2 max-w-sm">
+                  <div className="inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
+                    <span>Step {analysisStepLabel}</span>
+                    {analysisContextBadges.length > 0 && <span className="text-muted-foreground/50">•</span>}
+                    <span>{files.length > 1 ? "Merging trip clues" : "Building your trip read"}</span>
+                  </div>
+                  <div>
+                    <p className="font-heading font-bold text-foreground">
+                      {activeAnalysisMessage?.title || analysisProgress || "Processing…"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {activeAnalysisMessage?.detail ?? (
+                        files.length > 1
+                          ? `Merging data from ${files.length} files into one review`
+                          : files[0]?.name
+                      )}
+                    </p>
+                  </div>
+                  {analysisProgress && analysisProgress !== activeAnalysisMessage?.title && (
+                    <p className="text-[11px] text-primary font-medium">{analysisProgress}</p>
+                  )}
                 </div>
+                {analysisContextBadges.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 max-w-md">
+                    {analysisContextBadges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="rounded-full border bg-muted/30 px-2.5 py-1 text-[11px] text-muted-foreground"
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-1.5 mt-2">
-                  {[0, 1, 2, 3].map((i) => (
+                  {analysisMessages.map((_, i) => (
                     <motion.div
                       key={i}
-                      className="w-8 h-1 rounded-full bg-primary/20"
-                      animate={{ backgroundColor: ["hsl(189 99% 35% / 0.2)", "hsl(189 99% 35% / 0.7)", "hsl(189 99% 35% / 0.2)"] }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.25 }}
+                      className="w-7 h-1 rounded-full bg-primary/20"
+                      animate={{
+                        opacity: i === analysisStepIndex ? 1 : 0.35,
+                        backgroundColor: i === analysisStepIndex
+                          ? "hsl(189 99% 35% / 0.75)"
+                          : "hsl(189 99% 35% / 0.2)",
+                      }}
+                      transition={{ duration: 0.3 }}
                     />
                   ))}
                 </div>
