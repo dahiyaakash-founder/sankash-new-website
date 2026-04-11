@@ -162,7 +162,7 @@ const ForTravelers = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto text-center space-y-4"
+            className="max-w-2xl mx-auto text-center space-y-4"
           >
             <div className="inline-flex items-center gap-2 border border-primary/20 rounded-full px-3.5 py-1">
               <Star size={12} className="text-brand-coral" />
@@ -171,27 +171,26 @@ const ForTravelers = () => {
               </span>
             </div>
 
-            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-[2.75rem] font-heading font-bold tracking-tight leading-[1.15] text-foreground">
               Your smarter start to
               <br />
               <span className="text-gradient-brand">every holiday.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            <p className="text-[15px] sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
               Review a quote. Check what it costs per month. Or shape a trip from scratch.
-              One place to plan, refine, and finance your next holiday.
             </p>
 
-            {/* Trust bar */}
-            <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 pt-1 text-xs text-muted-foreground">
+            {/* Trust chips */}
+            <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 pt-0.5 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-brand-green" /> Free quote review
+                <CheckCircle2 size={12} className="text-brand-green" /> Free quote review
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-brand-green" /> No credit score impact
+                <CheckCircle2 size={12} className="text-brand-green" /> No credit impact
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-brand-green" /> 15+ lending partners
+                <CheckCircle2 size={12} className="text-brand-green" /> 15+ lending partners
               </span>
             </div>
           </motion.div>
@@ -201,74 +200,113 @@ const ForTravelers = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="grid sm:grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto mt-8"
+            className="grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto mt-7 md:mt-10"
           >
             {/* Path 1: Review your quote */}
             <button
               onClick={scrollToUploader}
-              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
+              className="group text-left p-4 rounded-xl border border-primary/15 bg-card hover:border-primary/35 hover:shadow-card transition-all"
             >
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <Upload size={18} className="text-primary" />
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-2.5">
+                <Upload size={16} className="text-primary" />
               </div>
-              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+              <h3 className="text-[13px] sm:text-[14px] font-heading font-bold text-foreground mb-0.5">
                 Review your quote
               </h3>
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                Upload a quote or itinerary for a free review.
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                Upload a quote or itinerary for a free review with EMI options.
               </p>
-              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
-                We'll check pricing, inclusions, and show EMI options.
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary mt-3 group-hover:gap-2 transition-all">
-                Upload & review <ArrowRight size={13} />
+              <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-primary mt-2.5 group-hover:gap-1.5 transition-all">
+                Upload & review <ArrowRight size={12} />
               </span>
             </button>
 
             {/* Path 2: Check EMI */}
             <button
               onClick={scrollToEmi}
-              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
+              className="group text-left p-4 rounded-xl border border-brand-coral/15 bg-card hover:border-brand-coral/35 hover:shadow-card transition-all"
             >
-              <div className="w-9 h-9 rounded-xl bg-brand-coral/10 flex items-center justify-center mb-3">
-                <Calculator size={18} className="text-brand-coral" />
+              <div className="w-8 h-8 rounded-lg bg-brand-coral/10 flex items-center justify-center mb-2.5">
+                <Calculator size={16} className="text-brand-coral" />
               </div>
-              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+              <h3 className="text-[13px] sm:text-[14px] font-heading font-bold text-foreground mb-0.5">
                 Check your EMI
               </h3>
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                See what your holiday costs per month.
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                See what your holiday costs per month — no commitment needed.
               </p>
-              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
-                No commitment. No credit score impact.
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-coral mt-3 group-hover:gap-2 transition-all">
-                Check EMI <ArrowRight size={13} />
+              <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-coral mt-2.5 group-hover:gap-1.5 transition-all">
+                Check EMI <ArrowRight size={12} />
               </span>
             </button>
 
             {/* Path 3: Build my trip */}
             <button
               onClick={scrollToBuildTrip}
-              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-brand-green/20 bg-card hover:border-brand-green/40 hover:shadow-card-hover transition-all"
+              className="group text-left p-4 rounded-xl border border-brand-green/15 bg-card hover:border-brand-green/35 hover:shadow-card transition-all"
             >
-              <div className="w-9 h-9 rounded-xl bg-brand-green/10 flex items-center justify-center mb-3">
-                <Compass size={18} className="text-brand-green" />
+              <div className="w-8 h-8 rounded-lg bg-brand-green/10 flex items-center justify-center mb-2.5">
+                <Compass size={16} className="text-brand-green" />
               </div>
-              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+              <h3 className="text-[13px] sm:text-[14px] font-heading font-bold text-foreground mb-0.5">
                 Build my trip
               </h3>
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
                 Shape a holiday from ideas, inspiration, or a destination.
               </p>
-              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
-                Bring your saved travel ideas — we'll help plan and price.
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-green mt-3 group-hover:gap-2 transition-all">
-                Start building <ArrowRight size={13} />
+              <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-green mt-2.5 group-hover:gap-1.5 transition-all">
+                Start building <ArrowRight size={12} />
               </span>
             </button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── Build My Trip ── */}
+      <section className="py-10 md:py-20 bg-section-alt" ref={buildTripRef} id="build-trip-section">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 lg:pt-4"
+            >
+              <p className="text-xs font-semibold text-brand-green uppercase tracking-widest">
+                Build My Trip
+              </p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+                Shape a holiday from your ideas
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Have a destination in mind? Still deciding? Or saved dozens of travel ideas across Instagram, YouTube, and blogs? 
+                Bring everything here — we'll help turn it into a trip you can plan, price, and finance.
+              </p>
+              <div className="space-y-2 pt-1">
+                {[
+                  "Works with destinations, ideas, or saved inspiration",
+                  "Turn scattered links and screenshots into a real trip plan",
+                  "See realistic and upgraded versions with EMI options",
+                  "Free to use — no obligation, no booking required",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-2.5">
+                    <CheckCircle2 size={13} className="text-brand-green shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <BuildMyTrip />
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -293,7 +331,7 @@ const ForTravelers = () => {
                 Share your itinerary, quote PDF, or even a screenshot. Our team reviews it for pricing, 
                 inclusions, and protection gaps — and shows you what it could cost per month with EMI.
               </p>
-              <div className="space-y-2.5 pt-1">
+              <div className="space-y-2 pt-1">
                 {[
                   "Free review — no obligation to proceed",
                   "Works with any travel agent's quote",
@@ -301,7 +339,7 @@ const ForTravelers = () => {
                   "Your agent still finalises the booking",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <CheckCircle2 size={13} className="text-brand-green shrink-0 mt-0.5" />
                     <p className="text-sm text-muted-foreground">{point}</p>
                   </div>
                 ))}
@@ -321,7 +359,7 @@ const ForTravelers = () => {
       </section>
 
       {/* ── EMI & Affordability ── */}
-      <section id="emi-section" ref={emiSectionRef} className="py-10 md:py-22 bg-section-alt">
+      <section id="emi-section" ref={emiSectionRef} className="py-10 md:py-20 bg-section-alt">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div
@@ -416,7 +454,7 @@ const ForTravelers = () => {
                 Share your destination and budget. We'll send you indicative monthly payment options 
                 so you can plan your holiday with confidence — before speaking to any agent.
               </p>
-              <div className="space-y-2.5 pt-1">
+              <div className="space-y-2 pt-1">
                 {[
                   "No quote needed — just destination and budget",
                   "Get indicative EMI options in minutes",
@@ -424,7 +462,7 @@ const ForTravelers = () => {
                   "Our team follows up with personalised options",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <CheckCircle2 size={13} className="text-brand-green shrink-0 mt-0.5" />
                     <p className="text-sm text-muted-foreground">{point}</p>
                   </div>
                 ))}
@@ -443,56 +481,8 @@ const ForTravelers = () => {
         </div>
       </section>
 
-      {/* ── Build My Trip ── */}
-      <section className="py-10 md:py-22 bg-section-alt" ref={buildTripRef} id="build-trip-section">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="space-y-4 lg:pt-4"
-            >
-              <p className="text-xs font-semibold text-brand-green uppercase tracking-widest">
-                Build My Trip
-              </p>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
-                Shape a holiday from your ideas
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Have a destination in mind? Still deciding? Or saved dozens of travel ideas across Instagram, YouTube, and blogs? 
-                Bring everything here — we'll help turn it into a trip you can plan, price, and finance.
-              </p>
-              <div className="space-y-2.5 pt-1">
-                {[
-                  "Works with destinations, ideas, or saved inspiration",
-                  "Turn scattered links and screenshots into a real trip plan",
-                  "See realistic and upgraded versions with EMI options",
-                  "Free to use — no obligation, no booking required",
-                ].map((point) => (
-                  <div key={point} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
-                    <p className="text-sm text-muted-foreground">{point}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <BuildMyTrip />
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* ── Why SanKash ── */}
-      <section className="py-10 md:py-22">
+      <section className="py-10 md:py-20">
         <div className="container">
           <div className="max-w-2xl mb-6 md:mb-10">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
@@ -510,7 +500,7 @@ const ForTravelers = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="p-4 sm:p-5 rounded-2xl border bg-card hover:shadow-card transition-shadow"
+                className="p-4 sm:p-5 rounded-xl border bg-card hover:shadow-card transition-shadow"
               >
                 <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mb-3">
                   <r.icon size={18} className="text-primary" />
@@ -535,9 +525,9 @@ const ForTravelers = () => {
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            {howItWorks.map((step, i) => (
+            {howItWorks.map((s, i) => (
               <motion.div
-                key={step.num}
+                key={s.num}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -545,13 +535,13 @@ const ForTravelers = () => {
                 className="text-center p-3 sm:p-4 rounded-xl"
               >
                 <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3 font-heading font-bold text-xs">
-                  {step.num}
+                  {s.num}
                 </div>
                 <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2.5">
-                  <step.icon size={18} className="text-primary" />
+                  <s.icon size={18} className="text-primary" />
                 </div>
-                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{step.label}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
+                <h3 className="font-heading font-bold text-foreground mb-1 text-sm">{s.label}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -559,7 +549,7 @@ const ForTravelers = () => {
       </section>
 
       {/* ── Trust & FAQ ── */}
-      <section className="py-10 md:py-22">
+      <section className="py-10 md:py-20">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8 md:gap-10">
             <motion.div
