@@ -210,8 +210,8 @@ interface MergedTripBrain {
 interface TravelerOutput {
   summary: string;
   json: Record<string, unknown>;
-  pain_signals_json: Array<Record<string, unknown>>;
-  pleasure_signals_json: Array<Record<string, unknown>>;
+  pain_signals_json: SignalCard[];
+  pleasure_signals_json: SignalCard[];
   customer_conversion_json: Record<string, unknown>;
   optional_missing_prompts_json: Array<Record<string, unknown>>;
   inspiration_capture_json: Record<string, unknown>;
