@@ -335,7 +335,8 @@ const OpsLeads = () => {
                   <th className="px-3 py-2.5 w-8">
                     <input type="checkbox" checked={selected.size === leads.length && leads.length > 0} onChange={toggleSelectAll} className="rounded" />
                   </th>
-                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Last Activity</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground whitespace-nowrap">Received On</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground whitespace-nowrap">Updated On</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden md:table-cell">Company</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Phone</th>
@@ -348,11 +349,11 @@ const OpsLeads = () => {
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={10} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
+                  <tr><td colSpan={11} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
                 )}
                 {!loading && leads.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-16 text-center">
+                    <td colSpan={11} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Inbox size={28} className="text-muted-foreground/50" />
                         <p className="text-sm font-medium text-muted-foreground">No leads yet</p>
@@ -371,10 +372,12 @@ const OpsLeads = () => {
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleSelect(lead.id)} className="rounded" />
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="text-xs text-foreground">{format(new Date(lead.updated_at), "dd MMM")}</span>
-                      {lead.updated_at !== lead.created_at && (
-                        <span className="block text-[10px] text-muted-foreground/60">Est. {format(new Date(lead.created_at), "dd MMM")}</span>
-                      )}
+                      <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                      <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.created_at), "HH:mm")}</span>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <span className="text-xs text-foreground">{format(new Date(lead.updated_at), "dd MMM yy")}</span>
+                      <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.updated_at), "HH:mm")}</span>
                     </td>
                     <td className="px-3 py-2.5 font-medium whitespace-nowrap">{lead.full_name}</td>
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
