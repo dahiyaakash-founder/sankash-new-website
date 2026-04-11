@@ -214,7 +214,7 @@ function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAddi
       ))}
       {/* Add more files inline */}
       <div className="border border-dashed rounded-lg p-3 space-y-2">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Add More Files</p>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Share More Trip Details</p>
         {additionalFiles.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {additionalFiles.map((f, i) => (
@@ -235,7 +235,7 @@ function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAddi
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1 text-xs flex-1"
             onClick={() => addFileRef.current?.click()}>
-            <ImageIcon size={12} /> Choose files
+            <ImageIcon size={12} /> Add trip details
           </Button>
           {additionalFiles.length > 0 && (
             <Button size="sm" className="gap-1 text-xs" onClick={submitAdditional} disabled={isReanalyzing}>
@@ -307,8 +307,8 @@ function CompletenessBar({ score, confidence }: { score: number; confidence: str
       </div>
       <p className="text-[10px] text-muted-foreground mt-1.5">
         {score >= 70
-          ? "We have enough detail to give you a useful review."
-          : "Upload more files to strengthen this review."}
+          ? "We have a good understanding of your trip to give you useful advice."
+          : "Share more trip details to strengthen this review."}
       </p>
     </motion.div>
   );
@@ -338,11 +338,11 @@ export default function TravelerAnalysisResults({
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
         <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't extract trip details</p>
+        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
         <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          Try uploading clearer screenshots or PDF itineraries.
+          Try sharing clearer screenshots or a PDF itinerary from your travel agent.
         </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Upload different files</Button>
+        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
       </motion.div>
     );
   }
@@ -359,11 +359,11 @@ export default function TravelerAnalysisResults({
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
         <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't extract trip details</p>
+        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
         <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          The uploaded files may not contain recognizable travel information.
+          The items you shared may not contain recognisable travel information.
         </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Upload different files</Button>
+        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
       </motion.div>
     );
   }
@@ -394,7 +394,7 @@ export default function TravelerAnalysisResults({
       <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
         <FileText size={13} className="text-muted-foreground shrink-0" />
         <span className="text-[11px] text-foreground font-medium truncate">
-          {files.length > 1 ? `${files.length} files analyzed` : files[0]?.name}
+          {files.length > 1 ? `${files.length} trip details reviewed` : "Your travel quote reviewed"}
         </span>
       </div>
 
