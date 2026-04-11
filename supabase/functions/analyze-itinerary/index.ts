@@ -1119,7 +1119,7 @@ Deno.serve(async (req) => {
     });
 
     // Step 9: Refresh the unified lead-level trip brain, ops copilot, and memory tables.
-    await refreshLeadTripIntelligence({
+    const refreshResult = await refreshLeadTripIntelligence({
       supabaseAdmin,
       leadId: lead_id,
       reason: "analysis_completed",
@@ -1128,7 +1128,13 @@ Deno.serve(async (req) => {
     triggerPostAnalysisEnrichment(lead_id);
     triggerOutcomeLearning(lead_id);
 
-    return new Response(JSON.stringify({ success: true, analysis: result }), {
+    return new Response(JSON.stringify({
+      success: true,
+      analysis: result,
+      traveler_output: refreshResult?.traveler_output ?? null,
+      ops_summary: refreshResult?.ops_summary ?? null,
+      fast_path_deferred_rollups: refreshResult?.fast_path_deferred_rollups ?? true,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

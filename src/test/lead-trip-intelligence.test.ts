@@ -4,6 +4,7 @@ import {
   deriveLeadClassification,
   buildBenchmarkSummary,
   buildProductFitFlags,
+  buildTravelerOutput,
   buildOpsCopilot,
 } from "../../supabase/functions/_shared/lead-trip-intelligence";
 import { deriveItineraryIntelligence } from "../../supabase/functions/_shared/itinerary-intelligence";
@@ -153,6 +154,25 @@ describe("lead trip intelligence backbone", () => {
       product_fit_summary_json: { emi_candidate_cases: 4 },
     } as any);
     const productFit = buildProductFitFlags(lead as any, merged, intelligence, classification, benchmarkSummary);
+    const travelerOutput = buildTravelerOutput(lead as any, merged, intelligence, {
+      benchmarkSummary,
+      productFit,
+      recommendations: {
+        top_recommendations: [
+          {
+            code: "benchmark_high_rebuild",
+            title: "Offer a cleaner rebuild through SanKash",
+            reasoning: "This quote sits above the visible market band for similar trips.",
+            confidence: "high",
+            category: "benchmark",
+          },
+        ],
+        suggested_alternative_destinations: [],
+        recommended_products: [],
+        suggested_pitch_sequence: [],
+        benchmark_price_position: "high",
+      },
+    });
     const ops = buildOpsCopilot(
       lead as any,
       merged,
@@ -165,8 +185,13 @@ describe("lead trip intelligence backbone", () => {
 
     expect(classification).toBe("sales_lead");
     expect(productFit.rebuild_candidate).toBe(true);
+    expect(travelerOutput.customer_conversion_json.hero_type).toBe("no_cost_emi");
+    expect(Array.isArray(travelerOutput.optional_missing_prompts_json)).toBe(true);
     expect(ops.sankash_opportunity_json.map((item: any) => item.code)).toContain("rebuild");
     expect(ops.sankash_opportunity_json.map((item: any) => item.code)).toContain("emi");
+    expect(ops.lead_mode).toBe("Ask 1 detail first");
+    expect(String(ops.first_question_to_ask)).toContain("travel");
+    expect(Array.isArray(ops.why_the_system_thinks_this_json)).toBe(true);
     expect(ops.call_talking_points_json.some((item: any) => String(item.body).includes("cashback"))).toBe(true);
     expect(ops.what_looks_wrong_json.some((item: any) => item.code === "benchmark_high_quote")).toBe(true);
   });

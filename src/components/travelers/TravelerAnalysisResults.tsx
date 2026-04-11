@@ -1,15 +1,14 @@
 /**
  * Advisory-style traveler analysis results — presents extraction as a
- * smart second opinion on a holiday quote.
+ * smart second opinion on a holiday quote, with a light customer-conversion layer.
  */
-import { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   MapPin, Calendar, Users, CreditCard, Plane, Building2,
-  CheckCircle2, AlertTriangle, Plus, Upload, ImageIcon,
-  FileText, Phone, Lock, ArrowRight, Loader2, X,
-  Shield, Wallet, Eye, HelpCircle, MessageCircle,
+  AlertTriangle, Upload, ImageIcon, FileText, Phone, Lock,
+  ArrowRight, Loader2, X, Shield, Wallet, Eye, MessageCircle,
   Lightbulb, ChevronRight, Sparkles, AlertCircle, Info,
 } from "lucide-react";
 import type {
@@ -18,8 +17,6 @@ import type {
   NextInput,
   UnlockableModule,
 } from "@/lib/itinerary-analysis-service";
-
-/* ── Props ── */
 
 interface Props {
   analysis: ItineraryAnalysis | null;
@@ -31,7 +28,28 @@ interface Props {
   isReanalyzing?: boolean;
 }
 
-/* ── Helpers ── */
+type SignalCard = { code?: string; title?: string; detail?: string; strength?: string };
+type OptionalPrompt = { customer_prompt?: string; reason?: string; suggested_upload?: string };
+type CustomerConversionPayload = {
+  hero_type?: string;
+  hero_headline?: string;
+  hero_subtext?: string;
+  customer_proof_points?: string[];
+  guided_action_blocks?: Array<{ code?: string; title?: string; detail?: string }>;
+  comparison_table_data?: Record<string, unknown>;
+  unlock_reason?: string;
+  unlock_cta?: string;
+  inspiration_capture_prompt?: string;
+  inspiration_capture_help_text?: string;
+};
+
+function asObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
 
 function fmt(n: number | null | undefined, currency?: string): string | null {
   if (n == null) return null;
@@ -53,6 +71,13 @@ function severityStyles(severity: string) {
   return { bg: "bg-accent/50", border: "border-border", icon: "text-primary" };
 }
 
+function heroTone(heroType: string | undefined) {
+  if (heroType === "no_cost_emi") return "bg-primary/5 border-primary/20";
+  if (heroType === "savings") return "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/30";
+  if (heroType === "risk") return "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/30";
+  return "bg-accent/30 border-border";
+}
+
 const SectionHeader = ({ icon: Icon, title, badge }: { icon: any; title: string; badge?: React.ReactNode }) => (
   <div className="flex items-center gap-2 mb-2.5">
     <Icon size={15} className="text-primary shrink-0" />
@@ -65,22 +90,18 @@ const Pill = ({ children, className }: { children: React.ReactNode; className?: 
   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${className}`}>{children}</span>
 );
 
-/* ── Sub-components ── */
-
 function TripSnapshot({ a }: { a: ItineraryAnalysis }) {
   const destination = [a.destination_city, a.destination_country].filter(Boolean).join(", ");
   const dates = a.travel_start_date && a.travel_end_date
     ? `${a.travel_start_date} → ${a.travel_end_date}`
     : a.travel_start_date || a.travel_end_date || null;
-  const duration = a.duration_nights
-    ? `${a.duration_nights}N / ${a.duration_days ?? a.duration_nights + 1}D`
-    : null;
+  const duration = a.duration_nights ? `${a.duration_nights}N / ${a.duration_days ?? a.duration_nights + 1}D` : null;
   const pax = a.traveller_count_total
     ? `${a.traveller_count_total} traveller${a.traveller_count_total > 1 ? "s" : ""}${a.adults_count ? ` (${a.adults_count}A` : ""}${a.children_count ? ` ${a.children_count}C` : ""}${a.infants_count ? ` ${a.infants_count}I` : ""}${a.adults_count ? ")" : ""}`
     : null;
   const hotels = (a.hotel_names_json ?? []).length > 0 ? (a.hotel_names_json as string[]).join(", ") : null;
   const packageLabel = a.package_mode
-    ? a.package_mode.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    ? a.package_mode.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
     : null;
 
   const rows = [
@@ -92,22 +113,20 @@ function TripSnapshot({ a }: { a: ItineraryAnalysis }) {
     { icon: CreditCard, label: "Per person", value: fmt(a.price_per_person, a.currency) },
     { icon: Plane, label: "Package type", value: packageLabel },
     { icon: Users, label: "Travellers", value: pax },
-  ].filter(r => r.value);
-
-  const hasInclusions = a.inclusions_text && a.inclusions_text.length > 5;
+  ].filter((row) => row.value);
 
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
       className="border rounded-xl p-3.5 space-y-1.5">
       <SectionHeader icon={MapPin} title="Trip Snapshot" />
-      {rows.map((r, i) => (
-        <div key={i} className="flex items-center gap-2 py-0.5">
-          <r.icon size={12} className="text-muted-foreground shrink-0" />
-          <span className="text-[11px] text-muted-foreground">{r.label}</span>
-          <span className="text-[11px] font-medium text-foreground ml-auto text-right max-w-[60%] truncate">{r.value}</span>
+      {rows.map((row, index) => (
+        <div key={index} className="flex items-center gap-2 py-0.5">
+          <row.icon size={12} className="text-muted-foreground shrink-0" />
+          <span className="text-[11px] text-muted-foreground">{row.label}</span>
+          <span className="text-[11px] font-medium text-foreground ml-auto text-right max-w-[60%] truncate">{row.value}</span>
         </div>
       ))}
-      {hasInclusions && (
+      {a.inclusions_text && a.inclusions_text.length > 5 && (
         <div className="pt-1.5 border-t mt-1.5">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">What's included</p>
           <p className="text-[11px] text-foreground leading-relaxed">{a.inclusions_text}</p>
@@ -117,6 +136,64 @@ function TripSnapshot({ a }: { a: ItineraryAnalysis }) {
         <div className="pt-1">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Not included</p>
           <p className="text-[11px] text-muted-foreground leading-relaxed">{a.exclusions_text}</p>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function HeroSummary({ customerConversion }: { customerConversion: CustomerConversionPayload }) {
+  if (!customerConversion.hero_headline) return null;
+
+  const comparisonData = asObject(customerConversion.comparison_table_data);
+  const currentSeller = asObject(comparisonData.current_seller);
+  const sankash = asObject(comparisonData.sankash);
+  const proofPoints = asArray<string>(customerConversion.customer_proof_points).slice(0, 4);
+  const actionBlocks = asArray<{ code?: string; title?: string }>(customerConversion.guided_action_blocks).slice(0, 4);
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+      className={`border rounded-xl p-3.5 space-y-3 ${heroTone(customerConversion.hero_type)}`}>
+      <SectionHeader icon={customerConversion.hero_type === "risk" ? Shield : customerConversion.hero_type === "no_cost_emi" ? CreditCard : Sparkles} title="Quick Take" />
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-foreground">{customerConversion.hero_headline}</p>
+        {customerConversion.hero_subtext && (
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{customerConversion.hero_subtext}</p>
+        )}
+      </div>
+
+      {proofPoints.length > 0 && (
+        <div className="grid sm:grid-cols-2 gap-2">
+          {proofPoints.map((point) => (
+            <div key={point} className="rounded-lg border bg-background/80 px-3 py-2 text-[11px] text-foreground">{point}</div>
+          ))}
+        </div>
+      )}
+
+      {(Object.keys(currentSeller).length > 0 || Object.keys(sankash).length > 0) && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-lg border bg-background/80 p-3 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Current seller</p>
+            {currentSeller.upfront_outflow && <p className="text-[11px] text-foreground">{String(currentSeller.upfront_outflow)}</p>}
+            {currentSeller.quote_read && <p className="text-[10px] text-muted-foreground">{String(currentSeller.quote_read)}</p>}
+            {currentSeller.flexibility && <p className="text-[10px] text-muted-foreground">{String(currentSeller.flexibility)}</p>}
+          </div>
+          <div className="rounded-lg border bg-background/80 p-3 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">SanKash route</p>
+            {sankash.upfront_outflow && <p className="text-[11px] text-foreground">{String(sankash.upfront_outflow)}</p>}
+            {sankash.quote_read && <p className="text-[10px] text-muted-foreground">{String(sankash.quote_read)}</p>}
+            {sankash.flexibility && <p className="text-[10px] text-muted-foreground">{String(sankash.flexibility)}</p>}
+          </div>
+        </div>
+      )}
+
+      {actionBlocks.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {actionBlocks.map((action) => (
+            <div key={action.code ?? action.title} className="rounded-full border bg-background/80 px-2.5 py-1">
+              <p className="text-[10px] font-medium text-foreground">{action.title}</p>
+            </div>
+          ))}
         </div>
       )}
     </motion.div>
@@ -151,7 +228,6 @@ function InsightCard({ insight }: { insight: AdvisoryInsight }) {
 
 function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
   if (!insights || insights.length === 0) return null;
-  // Sort: critical first, then warning, then info
   const sorted = [...insights].sort((a, b) => {
     const order = { critical: 0, warning: 1, info: 2 };
     return (order[a.severity] ?? 2) - (order[b.severity] ?? 2);
@@ -160,8 +236,27 @@ function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
       className="space-y-2">
       <SectionHeader icon={Lightbulb} title="Key Things to Check" />
-      {sorted.map((ins, i) => <InsightCard key={i} insight={ins} />)}
+      {sorted.map((insight, index) => <InsightCard key={index} insight={insight} />)}
     </motion.div>
+  );
+}
+
+function SignalCards({ title, items, tone }: { title: string; items: SignalCard[]; tone: "good" | "check" }) {
+  if (items.length === 0) return null;
+  const toneClasses = tone === "good"
+    ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-800/30"
+    : "bg-amber-50 dark:bg-amber-950/20 border-amber-200/70 dark:border-amber-800/30";
+
+  return (
+    <div className="border rounded-xl p-3.5 space-y-2">
+      <SectionHeader icon={tone === "good" ? Sparkles : Shield} title={title} />
+      {items.map((item, index) => (
+        <div key={item.code ?? index} className={`rounded-lg border px-3 py-2 ${toneClasses}`}>
+          <p className="text-[11px] font-semibold text-foreground">{item.title}</p>
+          {item.detail && <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{item.detail}</p>}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -172,10 +267,10 @@ function TravelerQuestions({ questions }: { questions: string[] }) {
       className="border rounded-xl p-3.5 space-y-2">
       <SectionHeader icon={MessageCircle} title="Ask Before Booking" />
       <div className="space-y-1.5">
-        {questions.map((q, i) => (
-          <div key={i} className="flex items-start gap-2 py-0.5">
+        {questions.map((question, index) => (
+          <div key={index} className="flex items-start gap-2 py-0.5">
             <ChevronRight size={11} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] text-foreground leading-relaxed">{q}</p>
+            <p className="text-[11px] text-foreground leading-relaxed">{question}</p>
           </div>
         ))}
       </div>
@@ -183,9 +278,31 @@ function TravelerQuestions({ questions }: { questions: string[] }) {
   );
 }
 
-function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAdditionalFiles, isReanalyzing, submitAdditional }: {
+function OptionalPromptCard({ prompt, inspiration }: { prompt: OptionalPrompt | null; inspiration: Record<string, unknown> }) {
+  if (!prompt && !inspiration.prompt) return null;
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.23 }}
+      className="border rounded-xl p-3.5 space-y-2 bg-accent/20">
+      <SectionHeader icon={Upload} title="Improve This Review" />
+      {prompt && (
+        <div className="rounded-lg border bg-background/80 px-3 py-2">
+          <p className="text-[11px] font-semibold text-foreground">{prompt.customer_prompt ?? "Add one more useful detail"}</p>
+          {prompt.reason && <p className="text-[10px] text-muted-foreground mt-0.5">{prompt.reason}</p>}
+          {prompt.suggested_upload && <p className="text-[10px] text-muted-foreground mt-1">Best upload: {prompt.suggested_upload}</p>}
+        </div>
+      )}
+      {inspiration.prompt && (
+        <div className="rounded-lg border bg-background/80 px-3 py-2">
+          <p className="text-[11px] font-semibold text-foreground">{String(inspiration.prompt)}</p>
+          {inspiration.help_text && <p className="text-[10px] text-muted-foreground mt-0.5">{String(inspiration.help_text)}</p>}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function MissingInputs({ inputs, addFileRef, additionalFiles, setAdditionalFiles, isReanalyzing, submitAdditional }: {
   inputs: NextInput[];
-  onAddMore: (f: File[]) => void;
   addFileRef: React.RefObject<HTMLInputElement>;
   additionalFiles: File[];
   setAdditionalFiles: React.Dispatch<React.SetStateAction<File[]>>;
@@ -193,36 +310,35 @@ function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAddi
   submitAdditional: () => void;
 }) {
   if (!inputs || inputs.length === 0) return null;
-  const highPri = inputs.filter(i => i.priority === "high");
-  const rest = inputs.filter(i => i.priority !== "high");
+  const highPri = inputs.filter((input) => input.priority === "high");
+  const rest = inputs.filter((input) => input.priority !== "high");
   const allInputs = [...highPri, ...rest];
 
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
       className="space-y-2">
       <SectionHeader icon={Upload} title="What's Missing" />
-      {allInputs.map((inp, i) => (
-        <div key={i} className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg px-3 py-2.5">
+      {allInputs.map((input, index) => (
+        <div key={index} className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg px-3 py-2.5">
           <div className="flex items-start gap-2">
             <Upload size={12} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">{inp.label}</p>
-              <p className="text-[10px] text-amber-700/80 dark:text-amber-400/70 mt-0.5">{inp.reason}</p>
+              <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">{input.label}</p>
+              <p className="text-[10px] text-amber-700/80 dark:text-amber-400/70 mt-0.5">{input.reason}</p>
             </div>
           </div>
         </div>
       ))}
-      {/* Add more files inline */}
       <div className="border border-dashed rounded-lg p-3 space-y-2">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Share More Trip Details</p>
         {additionalFiles.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {additionalFiles.map((f, i) => (
-              <div key={`${f.name}-${i}`} className="relative flex items-center gap-1.5 bg-muted rounded px-2 py-1 pr-6 min-w-0">
+            {additionalFiles.map((file, index) => (
+              <div key={`${file.name}-${index}`} className="relative flex items-center gap-1.5 bg-muted rounded px-2 py-1 pr-6 min-w-0">
                 <FileText size={11} className="text-muted-foreground shrink-0" />
-                <span className="text-[10px] text-foreground truncate max-w-[100px]">{f.name}</span>
+                <span className="text-[10px] text-foreground truncate max-w-[100px]">{file.name}</span>
                 <button
-                  onClick={(e) => { e.preventDefault(); setAdditionalFiles(prev => prev.filter((_, j) => j !== i)); }}
+                  onClick={(event) => { event.preventDefault(); setAdditionalFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index)); }}
                   className="absolute right-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full hover:bg-destructive/20 flex items-center justify-center"
                   aria-label="Remove"
                 >
@@ -233,9 +349,8 @@ function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAddi
           </div>
         )}
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1 text-xs flex-1"
-            onClick={() => addFileRef.current?.click()}>
-            <ImageIcon size={12} /> Add trip details
+          <Button variant="outline" size="sm" className="gap-1 text-xs flex-1" onClick={() => addFileRef.current?.click()}>
+            <ImageIcon size={12} /> Add screenshots, PDFs, or trip ideas
           </Button>
           {additionalFiles.length > 0 && (
             <Button size="sm" className="gap-1 text-xs" onClick={submitAdditional} disabled={isReanalyzing}>
@@ -244,19 +359,25 @@ function MissingInputs({ inputs, onAddMore, addFileRef, additionalFiles, setAddi
             </Button>
           )}
         </div>
-        <input ref={addFileRef} type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg" multiple
-          onChange={(e) => {
-            const selected = Array.from(e.target.files ?? []);
-            if (selected.length > 0) setAdditionalFiles(prev => [...prev, ...selected].slice(0, 5));
+        <input
+          ref={addFileRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          multiple
+          onChange={(event) => {
+            const selected = Array.from(event.target.files ?? []);
+            if (selected.length > 0) setAdditionalFiles((prev) => [...prev, ...selected].slice(0, 5));
             if (addFileRef.current) addFileRef.current.value = "";
-          }} />
+          }}
+        />
       </div>
     </motion.div>
   );
 }
 
 function UnlockableModules({ modules }: { modules: UnlockableModule[] }) {
-  const relevant = (modules ?? []).filter(m => m.available);
+  const relevant = (modules ?? []).filter((module) => module.available);
   if (relevant.length === 0) return null;
 
   const iconMap: Record<string, any> = {
@@ -273,13 +394,13 @@ function UnlockableModules({ modules }: { modules: UnlockableModule[] }) {
       className="space-y-2">
       <SectionHeader icon={Sparkles} title="What We Can Unlock Next" />
       <div className="grid grid-cols-2 gap-2">
-        {relevant.map((mod, i) => {
-          const ModIcon = iconMap[mod.module_id] || Sparkles;
+        {relevant.map((module, index) => {
+          const ModIcon = iconMap[module.module_id] || Sparkles;
           return (
-            <div key={i} className="border rounded-lg p-2.5 bg-accent/20 hover:bg-accent/40 transition-colors">
+            <div key={index} className="border rounded-lg p-2.5 bg-accent/20 hover:bg-accent/40 transition-colors">
               <ModIcon size={14} className="text-primary mb-1" />
-              <p className="text-[11px] font-semibold text-foreground">{mod.label}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{mod.description}</p>
+              <p className="text-[11px] font-semibold text-foreground">{module.label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{module.description}</p>
             </div>
           );
         })}
@@ -288,7 +409,7 @@ function UnlockableModules({ modules }: { modules: UnlockableModule[] }) {
   );
 }
 
-function CompletenessBar({ score, confidence }: { score: number; confidence: string }) {
+function CompletenessBar({ score }: { score: number }) {
   const { text, color } = completenessLabel(score);
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
@@ -306,15 +427,11 @@ function CompletenessBar({ score, confidence }: { score: number; confidence: str
         />
       </div>
       <p className="text-[10px] text-muted-foreground mt-1.5">
-        {score >= 70
-          ? "We have a good understanding of your trip to give you useful advice."
-          : "Share more trip details to strengthen this review."}
+        {score >= 70 ? "We have a good understanding of your trip to give you useful advice." : "Share more trip details to strengthen this review."}
       </p>
     </motion.div>
   );
 }
-
-/* ── Main Component ── */
 
 export default function TravelerAnalysisResults({
   analysis: a,
@@ -348,12 +465,30 @@ export default function TravelerAnalysisResults({
   }
 
   const score = a.extracted_completeness_score ?? 0;
-  const hasAdvisory = !!a.advisory_summary;
   const insights = (a.advisory_insights_json ?? []) as AdvisoryInsight[];
   const questions = (a.traveler_questions_json ?? []) as string[];
   const nextInputs = (a.next_inputs_needed_json ?? []) as NextInput[];
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
   const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
+
+  const travelerOutput = asObject(a.traveler_output_json);
+  const customerConversion = {
+    ...asObject(a.customer_conversion_json),
+    ...asObject(travelerOutput.customer_conversion),
+  } as CustomerConversionPayload;
+  const painSignals = (asArray<SignalCard>(travelerOutput.pain_signals).length > 0
+    ? asArray<SignalCard>(travelerOutput.pain_signals)
+    : asArray<SignalCard>(a.pain_signals_json)).slice(0, 3);
+  const pleasureSignals = (asArray<SignalCard>(travelerOutput.pleasure_signals).length > 0
+    ? asArray<SignalCard>(travelerOutput.pleasure_signals)
+    : asArray<SignalCard>(a.pleasure_signals_json)).slice(0, 3);
+  const optionalPrompt = (asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts).length > 0
+    ? asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts)
+    : asArray<OptionalPrompt>(a.optional_missing_prompts_json))[0] ?? null;
+  const inspirationCapture = {
+    ...asObject(a.inspiration_capture_json),
+    ...asObject(travelerOutput.inspiration_capture),
+  };
 
   if (!hasAnyContent) {
     return (
@@ -376,7 +511,6 @@ export default function TravelerAnalysisResults({
       transition={{ duration: 0.3 }}
       className="p-4 sm:p-5 space-y-3.5"
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles size={15} className="text-primary" />
@@ -390,7 +524,6 @@ export default function TravelerAnalysisResults({
         </button>
       </div>
 
-      {/* Files analyzed summary */}
       <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
         <FileText size={13} className="text-muted-foreground shrink-0" />
         <span className="text-[11px] text-foreground font-medium truncate">
@@ -398,22 +531,21 @@ export default function TravelerAnalysisResults({
         </span>
       </div>
 
-      {/* A. Trip Snapshot */}
+      <HeroSummary customerConversion={customerConversion} />
       <TripSnapshot a={a} />
-
-      {/* B. Our Read */}
-      {hasAdvisory && <OurRead summary={a.advisory_summary!} />}
-
-      {/* C. Key Things to Check */}
+      {a.advisory_summary && <OurRead summary={a.advisory_summary} />}
       <KeyInsights insights={insights} />
 
-      {/* D. Questions to Ask Before Booking */}
-      <TravelerQuestions questions={questions} />
+      <div className="grid lg:grid-cols-2 gap-3">
+        <SignalCards title="What Looks Good" items={pleasureSignals} tone="good" />
+        <SignalCards title="Worth Checking" items={painSignals} tone="check" />
+      </div>
 
-      {/* E. What's Missing + Add More */}
+      <TravelerQuestions questions={questions} />
+      <OptionalPromptCard prompt={optionalPrompt} inspiration={inspirationCapture} />
+
       <MissingInputs
         inputs={nextInputs}
-        onAddMore={onAddMore}
         addFileRef={addFileRef}
         additionalFiles={additionalFiles}
         setAdditionalFiles={setAdditionalFiles}
@@ -421,13 +553,9 @@ export default function TravelerAnalysisResults({
         submitAdditional={submitAdditional}
       />
 
-      {/* F. What We Can Unlock */}
       <UnlockableModules modules={modules} />
+      <CompletenessBar score={score} />
 
-      {/* G. Completeness */}
-      <CompletenessBar score={score} confidence={a.parsing_confidence ?? "low"} />
-
-      {/* Unlock CTA */}
       <div className="space-y-2 pt-1">
         <div className="relative rounded-xl overflow-hidden">
           <div className="space-y-1.5 select-none p-3" style={{ filter: "blur(4px)" }} aria-hidden>
@@ -446,20 +574,21 @@ export default function TravelerAnalysisResults({
               Get your detailed review
             </p>
             <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
-              Verify your mobile to unlock savings estimate, EMI options, and personalised recommendations
+              {customerConversion.unlock_reason
+                ? String(customerConversion.unlock_reason)
+                : "Verify your mobile to unlock savings estimate, EMI options, and personalised recommendations"}
             </p>
             <Button size="sm" className="gap-1.5" onClick={onUnlock}>
-              <Phone size={13} /> Unlock full review
+              <Phone size={13} /> {customerConversion.unlock_cta ? String(customerConversion.unlock_cta) : "Unlock full review"}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Warnings footer */}
       {(a.extraction_warnings_json ?? []).length > 0 && (
         <div className="space-y-0.5 px-1 pt-1">
-          {(a.extraction_warnings_json as string[]).map((w, i) => (
-            <p key={i} className="text-[10px] text-amber-600 italic">⚠️ {w}</p>
+          {(a.extraction_warnings_json as string[]).map((warning, index) => (
+            <p key={index} className="text-[10px] text-amber-600 italic">⚠️ {warning}</p>
           ))}
         </div>
       )}

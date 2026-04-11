@@ -92,6 +92,12 @@ export interface ItineraryAnalysis {
   unlockable_modules_json: UnlockableModule[];
   enrichment_status_json: Record<string, string>;
   decision_flags_json: DecisionFlags;
+  traveler_output_json?: Record<string, unknown>;
+  pain_signals_json?: Array<Record<string, unknown>>;
+  pleasure_signals_json?: Array<Record<string, unknown>>;
+  customer_conversion_json?: Record<string, unknown>;
+  optional_missing_prompts_json?: Array<Record<string, unknown>>;
+  inspiration_capture_json?: Record<string, unknown>;
 }
 
 /** Fetch existing analysis for a lead */
@@ -126,5 +132,13 @@ export async function triggerItineraryAnalysis(params: {
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
-  return data.analysis as ItineraryAnalysis;
+  return {
+    ...(data.analysis as ItineraryAnalysis),
+    traveler_output_json: data.traveler_output ?? undefined,
+    customer_conversion_json: data.traveler_output?.customer_conversion ?? undefined,
+    pain_signals_json: Array.isArray(data.traveler_output?.pain_signals) ? data.traveler_output.pain_signals : undefined,
+    pleasure_signals_json: Array.isArray(data.traveler_output?.pleasure_signals) ? data.traveler_output.pleasure_signals : undefined,
+    optional_missing_prompts_json: Array.isArray(data.traveler_output?.optional_missing_prompts) ? data.traveler_output.optional_missing_prompts : undefined,
+    inspiration_capture_json: data.traveler_output?.inspiration_capture ?? undefined,
+  } as ItineraryAnalysis;
 }
