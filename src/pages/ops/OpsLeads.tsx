@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -101,6 +102,9 @@ const OpsLeads = () => {
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [anonCount, setAnonCount] = useState(0);
+  const [mainCount, setMainCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<"main" | "anon">("main");
   const [loading, setLoading] = useState(true);
   const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -145,6 +149,7 @@ const OpsLeads = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const isAnon = activeTab === "anon";
       const res = await fetchLeads({
         search: search || undefined,
         status: (statusFilter || undefined) as LeadStatus | undefined,
@@ -154,6 +159,8 @@ const OpsLeads = () => {
         assignedTo: specialFilter === "my_leads" ? user?.id : undefined,
         unassigned: specialFilter === "unassigned" ? true : undefined,
         overdueFollowUp: specialFilter === "overdue" ? true : undefined,
+        onlyAnonymousTraveler: isAnon ? true : undefined,
+        excludeAnonymousTraveler: !isAnon ? true : undefined,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -163,9 +170,22 @@ const OpsLeads = () => {
       // fail silently
     }
     setLoading(false);
-  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id]);
+  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id, activeTab]);
+
+  // Fetch tab counts (lightweight head-only queries)
+  const loadCounts = useCallback(async () => {
+    try {
+      const [mainRes, anonRes] = await Promise.all([
+        fetchLeads({ excludeAnonymousTraveler: true, page: 1, pageSize: 1 }),
+        fetchLeads({ onlyAnonymousTraveler: true, page: 1, pageSize: 1 }),
+      ]);
+      setMainCount(mainRes.count);
+      setAnonCount(anonRes.count);
+    } catch {}
+  }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
 
   // Load team members for owner display
   useEffect(() => {
@@ -218,7 +238,13 @@ const OpsLeads = () => {
     <OpsLayout>
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
+          <h1 className="text-xl font-heading font-bold">Leads</h1>
+          <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as "main" | "anon"); setPage(1); setSelected(new Set()); }} className="ml-4">
+            <TabsList className="h-8">
+              <TabsTrigger value="main" className="text-xs h-7 px-3">Main Leads <span className="ml-1.5 text-muted-foreground">{mainCount}</span></TabsTrigger>
+              <TabsTrigger value="anon" className="text-xs h-7 px-3">Traveler Anonymous <span className="ml-1.5 text-muted-foreground">{anonCount}</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
            <div className="flex items-center gap-2">
             {selected.size > 0 && canDelete && (
               <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} className="gap-1.5 text-xs">
