@@ -177,6 +177,8 @@ export async function fetchLeads(opts: {
   assignedTo?: string;
   unassigned?: boolean;
   overdueFollowUp?: boolean;
+  onlyAnonymousTraveler?: boolean;
+  excludeAnonymousTraveler?: boolean;
   page?: number;
   pageSize?: number;
   sortBy?: string;
