@@ -451,7 +451,6 @@ const TravelerQuoteUploader = () => {
   };
 
   const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
-  const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
 
   return (
     <>
