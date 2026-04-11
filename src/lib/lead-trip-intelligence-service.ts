@@ -45,6 +45,11 @@ export interface LeadTripBrain {
   seller_questions_json: Array<{ code: string; question: string; why: string; priority: string }>;
   unlockable_modules_json: Array<{ code: string; label: string; status: string; reason: string }>;
   traveler_output_json: Record<string, unknown>;
+  pain_signals_json: Array<{ code: string; title: string; detail: string; strength: string }>;
+  pleasure_signals_json: Array<{ code: string; title: string; detail: string; strength: string }>;
+  customer_conversion_json: Record<string, unknown>;
+  optional_missing_prompts_json: Array<Record<string, unknown>>;
+  inspiration_capture_json: Record<string, unknown>;
   unified_summary: string | null;
   benchmark_key: string | null;
   benchmark_summary_json: Record<string, unknown>;
@@ -83,6 +88,14 @@ export interface LeadOpsCopilot {
   lead_id: string;
   unified_case_id: string;
   lead_classification: LeadClassification;
+  lead_mode: string | null;
+  immediate_next_action_json: Record<string, unknown>;
+  first_question_to_ask: string | null;
+  blocking_missing_input_json: Record<string, unknown>;
+  important_missing_items_json: Array<Record<string, unknown>>;
+  travel_read: string | null;
+  sankash_read: string | null;
+  why_the_system_thinks_this_json: string[];
   recommendation_summary: string | null;
   ops_summary: string | null;
   what_looks_wrong_json: Array<{ code: string; title: string; detail: string; severity: string }>;
@@ -143,6 +156,11 @@ function normalizeBrain(row: any): LeadTripBrain {
     seller_questions_json: castArray(row.seller_questions_json),
     unlockable_modules_json: castArray(row.unlockable_modules_json),
     traveler_output_json: castObject(row.traveler_output_json),
+    pain_signals_json: castArray(row.pain_signals_json),
+    pleasure_signals_json: castArray(row.pleasure_signals_json),
+    customer_conversion_json: castObject(row.customer_conversion_json),
+    optional_missing_prompts_json: castArray(row.optional_missing_prompts_json),
+    inspiration_capture_json: castObject(row.inspiration_capture_json),
     benchmark_summary_json: castObject(row.benchmark_summary_json),
     similar_case_summary_json: castObject(row.similar_case_summary_json),
     product_fit_flags_json: castObject(row.product_fit_flags_json),
@@ -161,6 +179,10 @@ function normalizeBrain(row: any): LeadTripBrain {
 function normalizeCopilot(row: any): LeadOpsCopilot {
   return {
     ...row,
+    immediate_next_action_json: castObject(row.immediate_next_action_json),
+    blocking_missing_input_json: castObject(row.blocking_missing_input_json),
+    important_missing_items_json: castArray(row.important_missing_items_json),
+    why_the_system_thinks_this_json: castArray<string>(row.why_the_system_thinks_this_json),
     what_looks_wrong_json: castArray(row.what_looks_wrong_json),
     sankash_opportunity_json: castArray(row.sankash_opportunity_json),
     call_talking_points_json: castArray(row.call_talking_points_json),

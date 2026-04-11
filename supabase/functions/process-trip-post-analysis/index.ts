@@ -13,6 +13,7 @@ import {
   buildOpsCopilot,
   buildProductFitFlags,
   buildSimilarSummary,
+  buildTravelerOutput,
   deriveLeadClassification,
   mergeLeadAnalysisRows,
   OPS_COPILOT_VERSION,
@@ -119,6 +120,12 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
       activity: activity ?? [],
     });
 
+    await Promise.all([
+      supabaseAdmin.rpc("rebuild_trip_destination_benchmarks").catch(() => {}),
+      supabaseAdmin.rpc("rebuild_trip_hotel_frequency").catch(() => {}),
+      supabaseAdmin.rpc("rebuild_trip_similar_cases").catch(() => {}),
+    ]);
+
     const [
       { data: benchmarkRow },
       { data: alternativeBenchmarks },
@@ -189,6 +196,16 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
       intent,
       sourceLikelihood,
     });
+    const travelerOutput = buildTravelerOutput(
+      lead,
+      merged,
+      intelligence,
+      {
+        benchmarkSummary,
+        productFit,
+        recommendations,
+      },
+    );
     const opsCopilot = buildOpsCopilot(
       lead,
       merged,
@@ -208,6 +225,13 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
       supabaseAdmin
         .from("lead_trip_brains")
         .update({
+          traveler_output_json: travelerOutput.json,
+          unified_summary: travelerOutput.summary,
+          pain_signals_json: travelerOutput.pain_signals_json,
+          pleasure_signals_json: travelerOutput.pleasure_signals_json,
+          customer_conversion_json: travelerOutput.customer_conversion_json,
+          optional_missing_prompts_json: travelerOutput.optional_missing_prompts_json,
+          inspiration_capture_json: travelerOutput.inspiration_capture_json,
           lead_classification: classification,
           benchmark_summary_json: benchmarkSummary,
           similar_case_summary_json: similarSummary,
@@ -240,6 +264,14 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
           lead_id: leadId,
           unified_case_id: brain.id,
           lead_classification: classification,
+          lead_mode: opsCopilot.lead_mode,
+          immediate_next_action_json: opsCopilot.immediate_next_action_json,
+          first_question_to_ask: opsCopilot.first_question_to_ask,
+          blocking_missing_input_json: opsCopilot.blocking_missing_input_json,
+          important_missing_items_json: opsCopilot.important_missing_items_json,
+          travel_read: opsCopilot.travel_read,
+          sankash_read: opsCopilot.sankash_read,
+          why_the_system_thinks_this_json: opsCopilot.why_the_system_thinks_this_json,
           recommendation_summary: opsCopilot.recommendation_summary,
           ops_summary: opsCopilot.ops_summary,
           what_looks_wrong_json: opsCopilot.what_looks_wrong_json,
@@ -280,6 +312,11 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
           lead_classification: classification,
           product_fit_flags_json: productFit,
           recommendation_summary: opsCopilot.recommendation_summary,
+          pain_signals_json: travelerOutput.pain_signals_json,
+          pleasure_signals_json: travelerOutput.pleasure_signals_json,
+          customer_conversion_json: travelerOutput.customer_conversion_json,
+          optional_missing_prompts_json: travelerOutput.optional_missing_prompts_json,
+          inspiration_capture_json: travelerOutput.inspiration_capture_json,
           learning_signal_class: learningSignals.learning_signal_class,
           learning_weight: learningSignals.learning_weight,
           benchmark_signal_weight: learningSignals.benchmark_signal_weight,
@@ -348,10 +385,6 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
         })
         .eq("lead_id", leadId),
     ]);
-
-    await supabaseAdmin.rpc("rebuild_trip_destination_benchmarks").then(() => {}, () => {});
-    await supabaseAdmin.rpc("rebuild_trip_hotel_frequency").then(() => {}, () => {});
-    await supabaseAdmin.rpc("rebuild_trip_similar_cases").then(() => {}, () => {});
 
     return {
       lead_id: leadId,

@@ -24,8 +24,8 @@ import {
   type ProductOutcomeMemoryLike,
 } from "./trip-outcome-learning.ts";
 
-export const TRAVELER_INTELLIGENCE_VERSION = "traveler-intelligence-v1";
-export const OPS_COPILOT_VERSION = "ops-copilot-v2";
+export const TRAVELER_INTELLIGENCE_VERSION = "traveler-intelligence-v2";
+export const OPS_COPILOT_VERSION = "ops-copilot-v3";
 export const BENCHMARK_ENGINE_VERSION = "benchmark-engine-v2";
 export const SOURCE_ENRICHMENT_VERSION = "source-likelihood-v1";
 export const OUTCOME_LEARNING_VERSION = "outcome-learning-v1";
@@ -210,6 +210,24 @@ interface MergedTripBrain {
 interface TravelerOutput {
   summary: string;
   json: Record<string, unknown>;
+  pain_signals_json: Array<Record<string, unknown>>;
+  pleasure_signals_json: Array<Record<string, unknown>>;
+  customer_conversion_json: Record<string, unknown>;
+  optional_missing_prompts_json: Array<Record<string, unknown>>;
+  inspiration_capture_json: Record<string, unknown>;
+}
+
+interface SignalCard {
+  code: string;
+  title: string;
+  detail: string;
+  strength: "strong" | "medium" | "light";
+}
+
+interface CommercialContext {
+  benchmarkSummary?: Record<string, unknown> | null;
+  productFit?: ProductFitFlags | null;
+  recommendations?: RecommendationEngineOutput | null;
 }
 
 function asText(value: unknown): string | null {
@@ -608,10 +626,370 @@ function deriveTags(text: string | null | undefined, type: "inclusion" | "exclus
   return Array.from(new Set(tags));
 }
 
+function containsAny(text: string | null | undefined, patterns: RegExp[]) {
+  const normalized = (text ?? "").toLowerCase();
+  return patterns.some((pattern) => pattern.test(normalized));
+}
+
+function buildPainPleasureSignals(
+  merged: MergedTripBrain,
+  intelligence: DerivedItineraryIntelligence,
+  benchmarkSummary?: Record<string, unknown> | null,
+): {
+  painSignals: SignalCard[];
+  pleasureSignals: SignalCard[];
+} {
+  const painSignals: SignalCard[] = [];
+  const pleasureSignals: SignalCard[] = [];
+  const decisionCodes = new Set(intelligence.decision_flags_json.filter((flag) => flag.active).map((flag) => flag.code));
+  const benchmarkPricePosition = asText(benchmarkSummary?.price_position);
+  const benchmarkMin = asNumber(benchmarkSummary?.min_total_price);
+  const benchmarkMax = asNumber(benchmarkSummary?.max_total_price);
+  const benchmarkRange = benchmarkMin != null && benchmarkMax != null
+    ? `${formatMoney(benchmarkMin, merged.currency)} to ${formatMoney(benchmarkMax, merged.currency)}`
+    : null;
+
+  if (merged.total_price == null && merged.price_per_person == null) {
+    painSignals.push({
+      code: "quote_not_final",
+      title: "Quote still looks incomplete",
+      detail: "The visible files do not show a clean final trip total yet.",
+      strength: "strong",
+    });
+  }
+
+  if (decisionCodes.has("transport_missing_from_total")) {
+    painSignals.push({
+      code: "transport_gap",
+      title: "Travel-to-start-point cost may still be missing",
+      detail: "This looks like a partial trip quote, so the total holiday cost may still move higher.",
+      strength: "strong",
+    });
+  }
+
+  if (merged.traveller_count_total == null) {
+    painSignals.push({
+      code: "traveler_count_missing",
+      title: "Traveler count is not clear yet",
+      detail: "Without the final adult and child count, price fairness and EMI comfort stay fuzzy.",
+      strength: "medium",
+    });
+  }
+
+  if (merged.hotel_names_json.length === 0 && containsAny(merged.inclusions_text, [/\bhotel\b/, /\baccommodation\b/, /\bstay\b/])) {
+    painSignals.push({
+      code: "hotel_uncertainty",
+      title: "Hotel quality is still hard to judge",
+      detail: "Stay is mentioned, but the actual hotel names are not visible yet.",
+      strength: "medium",
+    });
+  }
+
+  if (!containsAny(merged.inclusions_text, [/\bbreakfast\b/, /\blunch\b/, /\bdinner\b/])) {
+    painSignals.push({
+      code: "meal_plan_weak",
+      title: "Meal plan looks thin",
+      detail: "Meals are not clearly covered, so the real on-trip spend may run higher.",
+      strength: "light",
+    });
+  }
+
+  if (merged.domestic_or_international === "international" && merged.insurance_mentioned !== true) {
+    painSignals.push({
+      code: "protection_gap",
+      title: "Protection cover is not visible",
+      detail: "For an international trip, insurance and documentation support should be checked before paying.",
+      strength: "medium",
+    });
+  }
+
+  if (benchmarkPricePosition === "high") {
+    painSignals.push({
+      code: "possible_overpricing",
+      title: "There may be room to improve this quote",
+      detail: benchmarkRange
+        ? `Comparable visible trips have often landed closer to ${benchmarkRange}.`
+        : "The visible quote is running above the usual band for similar trips in memory.",
+      strength: "strong",
+    });
+  }
+
+  if (!merged.travel_start_date && !merged.travel_end_date) {
+    painSignals.push({
+      code: "dates_not_locked",
+      title: "Travel timing is still unclear",
+      detail: "Without locked dates, it is hard to judge value, routing comfort, and urgency.",
+      strength: "light",
+    });
+  }
+
+  if (merged.hotel_names_json.length > 0) {
+    pleasureSignals.push({
+      code: "named_hotel_found",
+      title: "Named stay is visible",
+      detail: `The files show ${merged.hotel_names_json.slice(0, 2).join(", ")}.`,
+      strength: "medium",
+    });
+  }
+
+  if ((merged.airline_names_json.length > 0 || merged.sectors_json.length > 0) && merged.hotel_names_json.length > 0) {
+    pleasureSignals.push({
+      code: "trip_shape_clear",
+      title: "Trip shape is fairly clear",
+      detail: "Flights and stay details are both visible, which makes comparison and rebuild easier.",
+      strength: "strong",
+    });
+  }
+
+  if (containsAny(merged.inclusions_text, [/\bbreakfast\b/, /\btransfer\b/, /\bpickup\b/, /\bactivity\b/, /\bsightseeing\b/])) {
+    pleasureSignals.push({
+      code: "helpful_inclusions",
+      title: "Useful inclusions are already visible",
+      detail: "Meals, transfers, or activities are visible in the quote, which can improve convenience.",
+      strength: "medium",
+    });
+  }
+
+  if (benchmarkPricePosition === "fair") {
+    pleasureSignals.push({
+      code: "fair_value",
+      title: "The visible price looks in line",
+      detail: "This quote sits inside the normal market band for comparable visible trips.",
+      strength: "medium",
+    });
+  }
+
+  if (benchmarkPricePosition === "low") {
+    pleasureSignals.push({
+      code: "sharp_price",
+      title: "The visible price looks sharp",
+      detail: "This quote is below the usual market band, so the main job is checking what might be missing.",
+      strength: "strong",
+    });
+  }
+
+  if (merged.duration_days != null && merged.traveller_count_total != null) {
+    pleasureSignals.push({
+      code: "trip_basics_locked",
+      title: "Trip basics are already visible",
+      detail: "The current files already show duration and traveler count, which helps us tighten the review faster.",
+      strength: "light",
+    });
+  }
+
+  return {
+    painSignals: painSignals.slice(0, 5),
+    pleasureSignals: pleasureSignals.slice(0, 4),
+  };
+}
+
+function buildOptionalMissingPrompts(merged: MergedTripBrain, intelligence: DerivedItineraryIntelligence) {
+  const prompts = intelligence.next_inputs_needed_json.slice(0, 3).map((item) => ({
+    code: item.code,
+    phone_question:
+      item.code === "traveller_count_total"
+        ? "How many adults, children, or infants is this quote for?"
+        : item.code === "travel_dates"
+          ? "What exact travel dates are you planning around?"
+          : item.code === "hotel_details"
+            ? "Can you send the hotel page or the stay section from the quote?"
+            : item.code === "price_confirmation"
+              ? "Can you share the final quote page or total price breakup?"
+              : item.code === "flight_details"
+                ? "Can you share the flight screenshot or ticket page too?"
+                : `Can you share ${item.label.toLowerCase()}?`,
+    whatsapp_question:
+      item.code === "traveller_count_total"
+        ? "Share the adult/child count and I’ll tighten the quote review."
+        : item.code === "travel_dates"
+          ? "Send the exact dates or the quote page showing dates and I’ll recheck the trip."
+          : item.code === "hotel_details"
+            ? "Send the hotel page or full brochure PDF and I’ll check the stay quality properly."
+            : item.code === "price_confirmation"
+              ? "Send the final quote page or breakup screenshot and I’ll check the full cost properly."
+              : item.code === "flight_details"
+                ? "Send the flight screenshot or ticket page and I’ll unlock the timing check."
+                : `Send ${item.label.toLowerCase()} and I’ll tighten the review.`,
+    customer_prompt:
+      item.code === "traveller_count_total"
+        ? "Add how many adults and children are traveling"
+        : item.code === "travel_dates"
+          ? "Add the exact travel dates"
+          : item.code === "hotel_details"
+            ? "Add the hotel page or full package PDF"
+            : item.code === "price_confirmation"
+              ? "Add the final quote page or total breakup"
+              : item.code === "flight_details"
+                ? "Add the flight screenshot or ticket page"
+                : `Add ${item.label.toLowerCase()}`,
+    reason: item.reason,
+    suggested_upload: item.suggested_upload ?? item.label,
+  }));
+
+  if (merged.analysis_count <= 1 && prompts.length === 0) {
+    prompts.push({
+      code: "better_context",
+      phone_question: "Do you have one clearer screenshot or the final quote page?",
+      whatsapp_question: "Send one clearer screenshot, the final quote page, or the hotel page and I’ll tighten the review.",
+      customer_prompt: "Add one clearer screenshot or the final quote page",
+      reason: "A little more context can turn this from a broad read into a sharper trip decision.",
+      suggested_upload: "Final quote page, hotel page, or flight screenshot",
+    });
+  }
+
+  return prompts;
+}
+
+function buildCustomerConversionOutput(
+  lead: LeadRecord,
+  merged: MergedTripBrain,
+  intelligence: DerivedItineraryIntelligence,
+  painSignals: SignalCard[],
+  pleasureSignals: SignalCard[],
+  optionalMissingPrompts: Array<Record<string, unknown>>,
+  context?: CommercialContext,
+) {
+  const benchmarkSummary = context?.benchmarkSummary ?? {};
+  const productFit = context?.productFit ?? null;
+  const recommendations = context?.recommendations ?? null;
+  const destination = destinationLabel(merged.destination_city, merged.destination_country);
+  const priceBand = asText(benchmarkSummary.price_position) ?? "unknown";
+  const marketRange =
+    benchmarkSummary.min_total_price != null && benchmarkSummary.max_total_price != null
+      ? `${formatMoney(asNumber(benchmarkSummary.min_total_price), merged.currency)} to ${formatMoney(asNumber(benchmarkSummary.max_total_price), merged.currency)}`
+      : null;
+
+  let heroType: "no_cost_emi" | "savings" | "risk" | "better_trip" | "unclear_quote" = "unclear_quote";
+  let heroHeadline = "We found useful trip clues";
+  let heroSubtext = "A couple of important trip details are still missing, so this review is useful but not final yet.";
+
+  if (productFit?.no_cost_emi_candidate) {
+    heroType = "no_cost_emi";
+    heroHeadline = merged.total_price != null
+      ? `This ${formatMoney(merged.total_price, merged.currency)} trip can be turned into a pay-later option`
+      : "This trip can likely be turned into a pay-later option";
+    heroSubtext = "If the itinerary is booked through SanKash, No-Cost EMI can return interest and charges as cashback to the customer account.";
+  } else if (priceBand === "high") {
+    heroType = "savings";
+    heroHeadline = "This quote may have room to improve";
+    heroSubtext = marketRange
+      ? `Comparable visible trips are often closer to ${marketRange}, so this is worth a sharper quote check.`
+      : "The visible quote is running above the usual band for similar trips in our market memory.";
+  } else if (painSignals.length >= 2) {
+    heroType = "risk";
+    heroHeadline = "A few booking risks are still open in this quote";
+    heroSubtext = painSignals[0]?.detail ?? "Some important trip details still need to be checked before paying.";
+  } else if (pleasureSignals.length >= 2) {
+    heroType = "better_trip";
+    heroHeadline = "This trip already has a decent starting shape";
+    heroSubtext = "We can use the visible details to compare value, improve the plan, or turn it into a smoother SanKash booking.";
+  }
+
+  const proofPoints = [
+    merged.total_price != null ? `Visible quote: ${formatMoney(merged.total_price, merged.currency)}` : null,
+    marketRange ? `Market memory range: ${marketRange}` : null,
+    painSignals[0]?.title ? `Watch-out: ${painSignals[0].title}` : null,
+    pleasureSignals[0]?.title ? `What looks good: ${pleasureSignals[0].title}` : null,
+  ].filter(Boolean);
+
+  const guidedActions = [
+    merged.total_price != null
+      ? {
+          code: "can_i_save_money",
+          title: "Can I save money?",
+          detail: priceBand === "high" ? "This quote looks high enough to justify a cleaner comparison." : "We can still check whether there is room to improve price or inclusions.",
+        }
+      : null,
+    productFit?.emi_eligible
+      ? {
+          code: "can_i_pay_later",
+          title: "Can I pay later?",
+          detail: productFit.no_cost_emi_candidate
+            ? "Yes. If booked through SanKash, No-Cost EMI can turn this into a lower cash-outflow plan."
+            : "Yes. This trip looks large enough for a standard EMI conversation.",
+        }
+      : null,
+    painSignals.length > 0
+      ? {
+          code: "what_looks_risky",
+          title: "What looks risky?",
+          detail: painSignals[0].detail,
+        }
+      : null,
+    {
+      code: "can_this_trip_be_improved",
+      title: "Can this trip be improved?",
+      detail: recommendations?.top_recommendations?.[0]?.reasoning ?? "Yes. We can tighten the quote, improve trip clarity, or rebuild it with better value.",
+    },
+    {
+      code: "add_inspiration",
+      title: "Add what inspired me",
+      detail: "Drop the reel, story, screenshot, or place idea here and we'll see how it can fit into your trip.",
+    },
+  ].filter(Boolean);
+
+  const alternativeDestinations = recommendations?.suggested_alternative_destinations ?? [];
+  const betterTripSuggestions = [
+    ...(recommendations?.top_recommendations ?? []).slice(0, 2).map((item) => item.title),
+    ...painSignals.slice(0, 1).map((item) => `Fix: ${item.title}`),
+  ].slice(0, 3);
+
+  const travelerName = asText(lead.full_name);
+  const unlockReason = productFit?.no_cost_emi_candidate
+    ? "Unlock the full pay-later and trip-improvement read"
+    : priceBand === "high"
+      ? "Unlock the stronger quote-comparison read"
+      : "Unlock the full SanKash review";
+  const unlockCta = "Unlock with WhatsApp";
+
+  return {
+    hero_type: heroType,
+    hero_headline: heroHeadline,
+    hero_subtext: heroSubtext,
+    hero_strength: painSignals.length >= 2 || pleasureSignals.length >= 2 ? "strong" : "medium",
+    hero_confidence: merged.parsing_confidence,
+    customer_proof_points: proofPoints.slice(0, 4),
+    comparison_table_data: {
+      current_seller: {
+        upfront_outflow: merged.total_price != null ? formatMoney(merged.total_price, merged.currency) : "Not fully visible",
+        quote_read: priceBand === "high" ? "Looks above usual band" : priceBand === "fair" ? "Looks in range" : "Still unclear",
+        flexibility: "Pay now with the current seller",
+      },
+      sankash: {
+        upfront_outflow: productFit?.emi_eligible ? "Can be spread into EMI" : "Can be reviewed for better value",
+        quote_read: "SanKash can re-check price, gaps, and missing cost risk",
+        flexibility: productFit?.no_cost_emi_candidate ? "No-Cost EMI works when booked through SanKash" : "EMI / rebuild / protection options may be available",
+      },
+    },
+    guided_action_blocks: guidedActions,
+    unlock_reason: unlockReason,
+    unlock_cta: unlockCta,
+    post_unlock_payload: {
+      traveler_name: travelerName,
+      destination,
+      quote_amount: merged.total_price,
+      hero_type: heroType,
+      top_gap: painSignals[0]?.title ?? null,
+    },
+    travel_universe_signals: [
+      merged.package_mode !== "unknown" ? merged.package_mode.replace(/_/g, " ") : null,
+      merged.domestic_or_international ?? null,
+      merged.duration_days != null ? `${merged.duration_days}-day trip` : null,
+      merged.traveller_count_total != null ? `${merged.traveller_count_total} travelers` : null,
+    ].filter(Boolean),
+    suggested_alternative_destinations: alternativeDestinations,
+    better_trip_suggestions: betterTripSuggestions,
+    inspiration_capture_prompt: "Drop the reel, story, screenshot, or place idea here and we'll see how it can fit into your trip.",
+    inspiration_capture_help_text: "This is optional. It helps us understand the kind of experience you actually want, not just the quote you received.",
+    optional_missing_prompts: optionalMissingPrompts,
+  };
+}
+
 export function buildTravelerOutput(
   lead: LeadRecord,
   merged: MergedTripBrain,
   intelligence: DerivedItineraryIntelligence,
+  context?: CommercialContext,
 ): TravelerOutput {
   const destination = destinationLabel(merged.destination_city, merged.destination_country);
   const found: string[] = [];
@@ -639,6 +1017,23 @@ export function buildTravelerOutput(
     merged.package_mode !== "unknown" ? `as a ${merged.package_mode.replace(/_/g, " ")}` : null,
   ].filter(Boolean).join(" ");
 
+  const { painSignals, pleasureSignals } = buildPainPleasureSignals(merged, intelligence, context?.benchmarkSummary);
+  const optionalMissingPrompts = buildOptionalMissingPrompts(merged, intelligence);
+  const customerConversion = buildCustomerConversionOutput(
+    lead,
+    merged,
+    intelligence,
+    painSignals,
+    pleasureSignals,
+    optionalMissingPrompts,
+    context,
+  );
+  const inspirationCapture = {
+    prompt: customerConversion.inspiration_capture_prompt,
+    help_text: customerConversion.inspiration_capture_help_text,
+    accepted_inputs: ["instagram_reel", "story_screenshot", "place_screenshot", "friend_recommendation", "activity_idea"],
+  };
+
   return {
     summary,
     json: {
@@ -656,7 +1051,17 @@ export function buildTravelerOutput(
       what_is_missing: missing,
       what_you_can_unlock_next: unlock,
       trust_summary: intelligence.advisory_insights_json.slice(0, 4),
+      pain_signals: painSignals,
+      pleasure_signals: pleasureSignals,
+      customer_conversion: customerConversion,
+      optional_missing_prompts: optionalMissingPrompts,
+      inspiration_capture: inspirationCapture,
     },
+    pain_signals_json: painSignals,
+    pleasure_signals_json: pleasureSignals,
+    customer_conversion_json: customerConversion,
+    optional_missing_prompts_json: optionalMissingPrompts,
+    inspiration_capture_json: inspirationCapture,
   };
 }
 
@@ -1005,15 +1410,94 @@ export function buildOpsCopilot(
     opportunities.length > 0 ? `Best next pitch: ${opportunities[0].title}.` : undefined,
   ].filter(Boolean).join(" ");
 
+  const firstMissingInput = intelligence.next_inputs_needed_json[0] ?? null;
+  const leadMode =
+    !merged.contact_present && safeIntent.conversion_probability_band === "high"
+      ? "Anonymous but high intent"
+      : classification === "noise"
+        ? "Weak lead"
+        : safeIntent.recommended_pitch_angle === "lead_with_emi_and_no_cost_emi"
+          ? "EMI-first case"
+          : safeMulti.multi_itinerary_type === "same_trip_multi_seller" || safeMulti.multi_itinerary_type === "same_destination_price_comparison"
+            ? "Compare quote case"
+            : safeMulti.multi_itinerary_type === "multi_destination_indecision"
+              ? "Destination confused"
+              : firstMissingInput
+                ? "Ask 1 detail first"
+                : safeIntent.conversion_probability_band === "high"
+                  ? "Call now"
+                  : "WhatsApp first";
+
+  const immediateNextAction = firstMissingInput
+    ? {
+        code: firstMissingInput.code,
+        title: `Ask for ${firstMissingInput.label}`,
+        why_now: firstMissingInput.reason,
+      }
+    : pitchSequence[0] ?? {
+        code: "clarify_and_close",
+        title: "Call and move the case forward",
+        why_now: "The visible trip has enough clarity to open with a practical pitch.",
+      };
+
+  const firstQuestionToAsk = firstMissingInput
+    ? intelligence.traveler_questions_json.find((item) => item.code === firstMissingInput.code)?.question
+      ?? `Can you share ${firstMissingInput.label.toLowerCase()}?`
+    : safeIntent.recommended_pitch_angle === "guide_to_best_fit_destination"
+      ? "What matters most here: price, comfort, or destination fit?"
+      : safeIntent.recommended_pitch_angle === "lead_with_emi_and_no_cost_emi"
+        ? "Would paying this trip over monthly EMI make the decision easier?"
+        : "What part of this quote feels the least clear or least comfortable to you right now?";
+
+  const importantMissingItems = intelligence.next_inputs_needed_json.slice(0, 3).map((item) => ({
+    code: item.code,
+    label: item.label,
+    reason: item.reason,
+    suggested_upload: item.suggested_upload ?? item.label,
+  }));
+
+  const travelRead = [
+    `${destination} ${merged.package_mode !== "unknown" ? merged.package_mode.replace(/_/g, " ") : "trip"}`,
+    merged.total_price != null ? `at ${formatMoney(merged.total_price, merged.currency)}` : null,
+    merged.traveller_count_total != null ? `for ${merged.traveller_count_total} travelers` : null,
+  ].filter(Boolean).join(" ");
+
+  const sankashRead = opportunities[0]?.title
+    ? `${opportunities[0].title} is the strongest first move.`
+    : "Use SanKash for quote clarity first, then pitch the best-fit financing or protection layer.";
+
+  const whyTheSystemThinksThis = [
+    safeIntent.intent_explanation,
+    safeMulti.ops_conversion_use,
+    firstMissingInput ? `The main blocker is ${firstMissingInput.label.toLowerCase()}.` : "The visible trip already has enough context for a cleaner pitch.",
+    typeof sourceLikelihood?.explanation === "string" ? sourceLikelihood.explanation : null,
+    typeof safeOutcomeLearning.summary === "string" ? safeOutcomeLearning.summary : null,
+  ].filter(Boolean);
+
   return {
     recommendation_summary: recommendationSummary,
     ops_summary: `${destination} | ${merged.package_mode.replace(/_/g, " ")} | lead quality ${productFit.lead_quality_score}/100`,
+    lead_mode: leadMode,
+    immediate_next_action_json: immediateNextAction,
+    first_question_to_ask: firstQuestionToAsk,
+    blocking_missing_input_json: firstMissingInput
+      ? {
+          code: firstMissingInput.code,
+          label: firstMissingInput.label,
+          reason: firstMissingInput.reason,
+          suggested_upload: firstMissingInput.suggested_upload ?? firstMissingInput.label,
+        }
+      : {},
+    important_missing_items_json: importantMissingItems,
+    travel_read: travelRead,
+    sankash_read: sankashRead,
+    why_the_system_thinks_this_json: whyTheSystemThinksThis,
     what_looks_wrong_json: wrongItems,
     sankash_opportunity_json: opportunities,
     call_talking_points_json: talkingPoints,
     pitch_sequence_json: pitchSequence,
     whatsapp_follow_up: whatsappFollowUp,
-    next_best_action_json: pitchSequence[0] ?? { code: "collect_missing_context", title: "Collect missing trip context", why_now: "The case still needs clearer source material." },
+    next_best_action_json: immediateNextAction,
     benchmark_summary_json: benchmarkSummary,
     similar_trip_summary_json: similarSummary,
     product_fit_flags_json: productFit,
@@ -1071,6 +1555,15 @@ async function rebuildRollups(supabaseAdmin: any) {
   await supabaseAdmin.rpc("rebuild_trip_destination_benchmarks");
   await supabaseAdmin.rpc("rebuild_trip_hotel_frequency");
   await supabaseAdmin.rpc("rebuild_trip_similar_cases");
+}
+
+function shouldDeferRollupRefresh(reason: string) {
+  return [
+    "analysis_completed",
+    "traveler_contact_captured",
+    "capture_traveler_contact",
+    "upload_completed",
+  ].includes(reason);
 }
 
 export async function refreshLeadTripIntelligence(params: {
@@ -1140,7 +1633,6 @@ export async function refreshLeadTripIntelligence(params: {
     });
 
     const classification = deriveLeadClassification(lead as LeadRecord, merged, intelligence);
-    const travelerOutput = buildTravelerOutput(lead as LeadRecord, merged, intelligence);
     const multiItinerary = deriveMultiItineraryInsight({
       lead: lead as LeadRecord,
       analyses: (analyses ?? []) as AnalysisRecord[],
@@ -1167,6 +1659,15 @@ export async function refreshLeadTripIntelligence(params: {
       intelligence,
       classification,
       { price_position: "unknown", note: "Benchmark pending" },
+    );
+    const travelerOutput = buildTravelerOutput(
+      lead as LeadRecord,
+      merged,
+      intelligence,
+      {
+        benchmarkSummary: { price_position: "unknown", note: "Benchmark pending" },
+        productFit: initialProductFit,
+      },
     );
 
     const brainRecord = {
@@ -1212,6 +1713,11 @@ export async function refreshLeadTripIntelligence(params: {
       unlockable_modules_json: intelligence.unlockable_modules_json,
       traveler_output_json: travelerOutput.json,
       unified_summary: travelerOutput.summary,
+      pain_signals_json: travelerOutput.pain_signals_json,
+      pleasure_signals_json: travelerOutput.pleasure_signals_json,
+      customer_conversion_json: travelerOutput.customer_conversion_json,
+      optional_missing_prompts_json: travelerOutput.optional_missing_prompts_json,
+      inspiration_capture_json: travelerOutput.inspiration_capture_json,
       benchmark_key: merged.benchmark_key,
       benchmark_summary_json: {},
       similar_case_summary_json: {},
@@ -1288,6 +1794,11 @@ export async function refreshLeadTripIntelligence(params: {
       extracted_completeness_score: intelligence.extracted_completeness_score,
       product_fit_flags_json: initialProductFit,
       recommendation_summary: null,
+      pain_signals_json: travelerOutput.pain_signals_json,
+      pleasure_signals_json: travelerOutput.pleasure_signals_json,
+      customer_conversion_json: travelerOutput.customer_conversion_json,
+      optional_missing_prompts_json: travelerOutput.optional_missing_prompts_json,
+      inspiration_capture_json: travelerOutput.inspiration_capture_json,
       outcome: lead.outcome ?? "open",
       active_for_benchmark: classification !== "noise" && intelligence.extracted_completeness_score >= 20,
       benchmark_engine_version: BENCHMARK_ENGINE_VERSION,
@@ -1318,7 +1829,9 @@ export async function refreshLeadTripIntelligence(params: {
       .upsert(marketMemoryRecord, { onConflict: "unified_case_id" });
     if (memoryError) throw memoryError;
 
-    await rebuildRollups(supabaseAdmin);
+    if (!shouldDeferRollupRefresh(reason)) {
+      await rebuildRollups(supabaseAdmin);
+    }
 
     const { data: benchmarkRow } = await supabaseAdmin
       .from("trip_destination_benchmarks")
@@ -1445,6 +1958,16 @@ export async function refreshLeadTripIntelligence(params: {
       pitchRows: ((pitchOutcomeRows ?? []) as PitchOutcomeMemoryLike[]).filter((row) => row.pitch_angle !== "unknown"),
       productRows: ((productOutcomeRows ?? []) as ProductOutcomeMemoryLike[]).filter((row) => row.product_code != null),
     });
+    const finalTravelerOutput = buildTravelerOutput(
+      lead as LeadRecord,
+      merged,
+      intelligence,
+      {
+        benchmarkSummary,
+        productFit: finalProductFit,
+        recommendations: recommendationEngine,
+      },
+    );
     const opsCopilot = buildOpsCopilot(
       lead as LeadRecord,
       merged,
@@ -1463,6 +1986,13 @@ export async function refreshLeadTripIntelligence(params: {
     const { error: brainUpdateError } = await supabaseAdmin
       .from("lead_trip_brains")
       .update({
+        traveler_output_json: finalTravelerOutput.json,
+        unified_summary: finalTravelerOutput.summary,
+        pain_signals_json: finalTravelerOutput.pain_signals_json,
+        pleasure_signals_json: finalTravelerOutput.pleasure_signals_json,
+        customer_conversion_json: finalTravelerOutput.customer_conversion_json,
+        optional_missing_prompts_json: finalTravelerOutput.optional_missing_prompts_json,
+        inspiration_capture_json: finalTravelerOutput.inspiration_capture_json,
         benchmark_summary_json: benchmarkSummary,
         similar_case_summary_json: similarSummary,
         product_fit_flags_json: finalProductFit,
@@ -1498,6 +2028,11 @@ export async function refreshLeadTripIntelligence(params: {
       .update({
         product_fit_flags_json: finalProductFit,
         recommendation_summary: opsCopilot.recommendation_summary,
+        pain_signals_json: finalTravelerOutput.pain_signals_json,
+        pleasure_signals_json: finalTravelerOutput.pleasure_signals_json,
+        customer_conversion_json: finalTravelerOutput.customer_conversion_json,
+        optional_missing_prompts_json: finalTravelerOutput.optional_missing_prompts_json,
+        inspiration_capture_json: finalTravelerOutput.inspiration_capture_json,
         learning_signal_class: learningSignals.learning_signal_class,
         learning_weight: learningSignals.learning_weight,
         benchmark_signal_weight: learningSignals.benchmark_signal_weight,
@@ -1525,6 +2060,14 @@ export async function refreshLeadTripIntelligence(params: {
         lead_id: leadId,
         unified_case_id: brain.id,
         lead_classification: classification,
+        lead_mode: opsCopilot.lead_mode,
+        immediate_next_action_json: opsCopilot.immediate_next_action_json,
+        first_question_to_ask: opsCopilot.first_question_to_ask,
+        blocking_missing_input_json: opsCopilot.blocking_missing_input_json,
+        important_missing_items_json: opsCopilot.important_missing_items_json,
+        travel_read: opsCopilot.travel_read,
+        sankash_read: opsCopilot.sankash_read,
+        why_the_system_thinks_this_json: opsCopilot.why_the_system_thinks_this_json,
         recommendation_summary: opsCopilot.recommendation_summary,
         ops_summary: opsCopilot.ops_summary,
         what_looks_wrong_json: opsCopilot.what_looks_wrong_json,
@@ -1653,6 +2196,9 @@ export async function refreshLeadTripIntelligence(params: {
       lead_classification: classification,
       benchmark_key: merged.benchmark_key,
       product_fit_flags: finalProductFit,
+      traveler_output: finalTravelerOutput.json,
+      ops_summary: opsCopilot.ops_summary,
+      fast_path_deferred_rollups: shouldDeferRollupRefresh(reason),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

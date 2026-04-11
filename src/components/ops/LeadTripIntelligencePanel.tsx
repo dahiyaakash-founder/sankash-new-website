@@ -139,6 +139,8 @@ export default function LeadTripIntelligencePanel({ leadId }: { leadId: string }
   const recommendedProducts = ops.recommended_products_json ?? [];
   const sourceLikelihood = ops.source_likelihood_json ?? {};
   const outcomeLearning = ops.outcome_learning_summary_json ?? brain.outcome_learning_summary_json ?? {};
+  const importantMissingItems = ops.important_missing_items_json ?? [];
+  const whySystemThinksThis = ops.why_the_system_thinks_this_json ?? [];
 
   return (
     <div className="space-y-4">
@@ -187,6 +189,59 @@ export default function LeadTripIntelligencePanel({ leadId }: { leadId: string }
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><IndianRupee size={12} /> Quote & Quality</div>
             <p className="text-sm font-semibold">{formatMoney(brain.total_price ?? brain.price_per_person, brain.currency ?? "INR")}</p>
             <p className="text-xs text-muted-foreground">{brain.extracted_completeness_score ?? 0}/100 completeness · {brain.analysis_count} analysis run{brain.analysis_count > 1 ? "s" : ""}</p>
+          </div>
+        </div>
+
+        <div className="grid xl:grid-cols-2 gap-3">
+          <div className="rounded-xl border bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Target size={14} className="text-primary" />
+              <h3 className="text-sm font-heading font-semibold">Call Cockpit</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ops.lead_mode && <Badge>{ops.lead_mode}</Badge>}
+              {ops.best_pitch_angle && <Badge variant="outline" className="capitalize">{ops.best_pitch_angle.replace(/_/g, " ")}</Badge>}
+            </div>
+            <div className="space-y-2">
+              <div className="rounded-lg border bg-background p-3">
+                <p className="text-[11px] text-muted-foreground">One thing to do first</p>
+                <p className="text-sm font-semibold mt-1">{String(ops.immediate_next_action_json?.title ?? ops.next_best_action_json?.title ?? "Collect the strongest missing trip context")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{String(ops.immediate_next_action_json?.why_now ?? ops.next_best_action_json?.why_now ?? "Use the merged trip brain to close the next gap fast.")}</p>
+              </div>
+              {ops.first_question_to_ask && (
+                <div className="rounded-lg border bg-background p-3">
+                  <p className="text-[11px] text-muted-foreground">Ask this first</p>
+                  <p className="text-sm font-medium mt-1">{ops.first_question_to_ask}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-primary" />
+              <h3 className="text-sm font-heading font-semibold">System Read</h3>
+            </div>
+            {ops.travel_read && (
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Travel read</p>
+                <p className="text-sm mt-1">{ops.travel_read}</p>
+              </div>
+            )}
+            {ops.sankash_read && (
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">SanKash read</p>
+                <p className="text-sm mt-1">{ops.sankash_read}</p>
+              </div>
+            )}
+            {whySystemThinksThis.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Why the system thinks this</p>
+                {whySystemThinksThis.slice(0, 4).map((line) => (
+                  <p key={line} className="text-xs text-muted-foreground">• {line}</p>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -302,6 +357,17 @@ export default function LeadTripIntelligencePanel({ leadId }: { leadId: string }
             <p className="text-sm font-semibold">{String(ops.next_best_action_json?.title ?? "Collect the strongest missing trip context")}</p>
             <p className="text-xs text-muted-foreground">{String(ops.next_best_action_json?.why_now ?? "Use the merged trip brain to close the next gap fast.")}</p>
           </div>
+          {importantMissingItems.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Important missing items</p>
+              {importantMissingItems.slice(0, 3).map((item) => (
+                <div key={String(item.code ?? item.label)} className="rounded-lg border bg-muted/30 p-3">
+                  <p className="text-sm font-medium">{String(item.label ?? item.code ?? "Missing item")}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{String(item.reason ?? "This missing detail is blocking a stronger trip read.")}</p>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "Urgency", value: ops.urgency_score },
