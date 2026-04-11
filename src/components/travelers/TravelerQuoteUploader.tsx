@@ -52,32 +52,32 @@ function buildAnalysisMessages(files: File[]) {
 
   const messages = [
     {
-      title: "Reading your itinerary files",
-      detail: isMultiFile ? `Looking across ${files.length} files together so nothing gets missed.` : "Opening your travel file and pulling out the visible trip details.",
+      title: "Getting to know your holiday",
+      detail: isMultiFile ? `Piecing together the full picture from ${files.length} parts of your trip plan.` : "Taking a close look at your travel plan to understand what's been offered.",
     },
     {
-      title: "Identifying destination, dates, and travelers",
-      detail: "Checking where you're going, when you plan to travel, and who this trip appears to cover.",
+      title: "Mapping your destination and travel dates",
+      detail: "Understanding where you're headed, when you plan to go, and who's travelling.",
     },
     {
-      title: "Checking hotels, flights, and inclusions",
+      title: "Reviewing stays, flights, and what's included",
       detail: hasPdf || brochureLike
-        ? "Scanning brochure-style sections for hotel names, flight context, and what's actually included."
-        : "Looking for hotel names, flight details, meals, transfers, and other visible trip pieces.",
+        ? "Going through the itinerary to check hotel quality, flight details, and what's covered in the price."
+        : "Looking at the hotels, flights, meals, transfers, and everything else that shapes this trip.",
     },
     {
-      title: "Spotting missing costs and exclusions",
-      detail: "Looking for gaps like flights, meals, insurance, taxes, or unclear pricing that may affect the real trip cost.",
+      title: "Looking for hidden costs and surprises",
+      detail: "Checking for anything that might not be included — like visa fees, insurance, airport transfers, or taxes.",
     },
     {
-      title: isMultiFile ? "Merging multiple itinerary files" : "Reconciling the trip details",
+      title: isMultiFile ? "Building one clear picture from all your trip details" : "Putting the full trip together",
       detail: isMultiFile
-        ? "Combining information across your files and checking whether any details conflict."
-        : "Checking whether the visible details line up cleanly before we prepare the review.",
+        ? "Connecting the dots across your itineraries to spot anything that doesn't line up."
+        : "Making sure everything adds up before we share our thoughts.",
     },
     {
-      title: "Preparing your trip review",
-      detail: hasScreenshots ? "Turning screenshot-friendly clues into a clean trip summary you can actually use." : "Turning the extracted details into a simple review with next steps.",
+      title: "Shaping your personalised trip review",
+      detail: hasScreenshots ? "Turning every detail into a clear, useful summary of your holiday plan." : "Preparing a clear review with insights, tips, and next steps for your trip.",
     },
   ];
 
@@ -90,10 +90,10 @@ function buildAnalysisContextBadges(files: File[]) {
   const imageCount = files.filter((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name)).length;
   const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
 
-  if (files.length > 1) badges.push(`${files.length} files`);
-  if (hasPdf) badges.push("PDF");
+  if (files.length > 1) badges.push(`${files.length} items`);
+  if (hasPdf) badges.push("Itinerary PDF");
   if (imageCount > 0) badges.push(imageCount > 1 ? "Screenshots" : "Screenshot");
-  if (brochureLike) badges.push("Brochure-style");
+  if (brochureLike) badges.push("Travel package");
 
   return badges.slice(0, 4);
 }
@@ -197,7 +197,7 @@ const TravelerQuoteUploader = () => {
   const startAnalysis = useCallback(async () => {
     if (files.length === 0) return;
     setStage("analyzing");
-    setAnalysisProgress("Uploading files…");
+    setAnalysisProgress("Preparing your trip details…");
     markTravelerIntentSignal("started_quote_upload");
     trackTravelerQuoteUpload({ file_uploaded: true });
     trackQuoteAnalysisRequested({ audience_type: "traveler" });
@@ -209,7 +209,7 @@ const TravelerQuoteUploader = () => {
       const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
 
       // Upload first file as the quote file
-      setAnalysisProgress("Uploading files…");
+      setAnalysisProgress("Securing your trip details…");
       const uploaded = await uploadQuoteFile(files[0]);
 
       // Create lead
@@ -233,7 +233,7 @@ const TravelerQuoteUploader = () => {
       if (!lead?.id) throw new Error("Lead creation failed");
 
       // Upload all files as attachments and collect URLs
-      setAnalysisProgress("Processing files…");
+      setAnalysisProgress("Organising your holiday details…");
       const fileInputs: { file_url: string; file_name: string }[] = [];
 
       for (let i = 0; i < files.length; i++) {
@@ -257,7 +257,7 @@ const TravelerQuoteUploader = () => {
       await logLeadCreated(lead.id, "for-travelers").catch(() => {});
 
       // Trigger unified AI analysis
-      setAnalysisProgress("Analyzing your trip details…");
+      setAnalysisProgress("Reviewing your holiday plan…");
       const analysis = await triggerItineraryAnalysis({
         lead_id: lead.id,
         files: fileInputs,
@@ -274,7 +274,7 @@ const TravelerQuoteUploader = () => {
     } catch (err) {
       console.error("Upload/analysis error:", err);
       setErrorTitle("Something went wrong");
-      setErrorBody("We couldn't process your files. Please try again.");
+      setErrorBody("We couldn't review your trip details. Please try again.");
       setErrorType(null);
       setStage("error");
     }
@@ -469,7 +469,7 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 <FileText size={14} className="text-primary" />
-                Quote Review
+                Holiday Quote Review
               </div>
               <label
                 onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -486,10 +486,10 @@ const TravelerQuoteUploader = () => {
                 </div>
                 <div className="text-center">
                   <p className="font-heading font-bold text-sm text-foreground">
-                    Drop quotes, itineraries, or screenshots
+                    Drop your travel quote, itinerary, or screenshots
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Upload up to {MAX_FILES} files — we'll merge them into one review
+                    Share up to {MAX_FILES} items — we'll build one clear review of your trip
                   </p>
                 </div>
                 <input
@@ -500,8 +500,8 @@ const TravelerQuoteUploader = () => {
                   multiple
                   onChange={handleInputChange}
                 />
-                <Button variant="outline" size="sm" className="mt-1 pointer-events-none">
-                  Browse Files
+               <Button variant="outline" size="sm" className="mt-1 pointer-events-none">
+                  Choose from device
                 </Button>
               </label>
 
@@ -510,7 +510,7 @@ const TravelerQuoteUploader = () => {
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      {files.length} file{files.length > 1 ? "s" : ""} selected
+                      {files.length} {files.length > 1 ? "items" : "item"} ready for review
                     </p>
                     {files.length < MAX_FILES && (
                       <button
@@ -527,7 +527,7 @@ const TravelerQuoteUploader = () => {
                     ))}
                   </div>
                   <Button size="sm" className="w-full gap-1.5 mt-2" onClick={startAnalysis}>
-                    <ArrowRight size={14} /> Analyze {files.length > 1 ? `${files.length} files` : "file"}
+                    <ArrowRight size={14} /> Review my trip
                   </Button>
                 </div>
               )}
@@ -535,7 +535,7 @@ const TravelerQuoteUploader = () => {
               <div className="flex items-start gap-2 mt-3 px-1">
                 <Info size={11} className="text-muted-foreground/50 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
-                  PDF, JPG, PNG, DOC · Up to {MAX_FILES} files · Screenshots from WhatsApp or OTA apps work too · Max 10 MB each
+                  PDF, JPG, PNG, DOC · Up to {MAX_FILES} items · Screenshots from WhatsApp or travel apps work too · Max 10 MB each
                 </p>
               </div>
             </motion.div>
@@ -553,31 +553,29 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6">
                 <FileText size={14} className="text-primary" />
-                Reviewing {files.length > 1 ? `${files.length} Files` : "Quote"}
+                Reviewing Your Holiday
               </div>
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <Loader2 size={32} className="text-primary animate-spin" />
                 <div className="text-center space-y-2 max-w-sm">
                   <div className="inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
-                    <span>Step {analysisStepLabel}</span>
-                    {analysisContextBadges.length > 0 && <span className="text-muted-foreground/50">•</span>}
-                    <span>{files.length > 1 ? "Merging trip clues" : "Building your trip read"}</span>
+                    {analysisContextBadges.length > 0 && analysisContextBadges.map((badge) => (
+                      <span key={badge}>{badge}</span>
+                    ))}
+                    {analysisContextBadges.length === 0 && <span>Reviewing your trip plan</span>}
                   </div>
                   <div>
                     <p className="font-heading font-bold text-foreground">
-                      {activeAnalysisMessage?.title || analysisProgress || "Processing…"}
+                      {activeAnalysisMessage?.title || analysisProgress || "Getting to know your trip…"}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {activeAnalysisMessage?.detail ?? (
                         files.length > 1
-                          ? `Merging data from ${files.length} files into one review`
-                          : files[0]?.name
+                          ? `Building one clear picture from your ${files.length} trip details`
+                          : "Taking a close look at your holiday plan"
                       )}
                     </p>
                   </div>
-                  {analysisProgress && analysisProgress !== activeAnalysisMessage?.title && (
-                    <p className="text-[11px] text-primary font-medium">{analysisProgress}</p>
-                  )}
                 </div>
                 {analysisContextBadges.length > 0 && (
                   <div className="flex flex-wrap justify-center gap-2 max-w-md">
@@ -622,7 +620,7 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 <FileText size={14} className="text-primary" />
-                Upload Issue
+                We Hit a Snag
               </div>
               <div className="flex flex-col items-center justify-center py-5 space-y-4 text-center">
                 <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
@@ -636,7 +634,7 @@ const TravelerQuoteUploader = () => {
                   <div className="flex items-start gap-2 bg-accent/50 rounded-lg px-3 py-2 max-w-[320px]">
                     <AlertCircle size={12} className="text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed text-left">
-                      <span className="font-semibold">Why this failed:</span> We could not detect enough travel details.
+                      <span className="font-semibold">What happened:</span> We couldn't find enough trip information to work with.
                     </p>
                   </div>
                 )}
@@ -648,7 +646,7 @@ const TravelerQuoteUploader = () => {
                     onClick={() => setShowSamples(!showSamples)}
                     className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 transition-colors font-medium"
                   >
-                    <HelpCircle size={11} /> See accepted files
+                    <HelpCircle size={11} /> What can I share?
                   </button>
                 </div>
                 <AnimatePresence>
