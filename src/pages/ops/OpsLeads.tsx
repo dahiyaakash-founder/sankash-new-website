@@ -379,7 +379,27 @@ const OpsLeads = () => {
                       <span className="text-xs text-foreground">{format(new Date(lead.updated_at), "dd MMM yy")}</span>
                       <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.updated_at), "HH:mm")}</span>
                     </td>
-                    <td className="px-3 py-2.5 font-medium whitespace-nowrap">{lead.full_name}</td>
+                    <td className="px-3 py-2.5 font-medium whitespace-nowrap">
+                      {(() => {
+                        const name = lead.full_name?.trim();
+                        const isGeneric = !name || name.toLowerCase() === "traveler enquiry" || name.toLowerCase() === "traveller enquiry" || name.toLowerCase() === "anonymous";
+                        if (!isGeneric) return name;
+                        const srcMap: Record<string, string> = {
+                          traveler_emi_enquiry: "Anon EMI Enquiry",
+                          traveler_quote_unlock: "Anon Quote Unlock",
+                          traveler_quote_review: "Anon Quote Review",
+                          itinerary_upload: "Anon Itinerary Review",
+                          insurance_query: "Anon Insurance Query",
+                        };
+                        const label = srcMap[lead.lead_source_type ?? ""] ?? "Anon Traveler";
+                        const phone = lead.mobile_number?.trim();
+                        return (
+                          <span className="text-muted-foreground italic">
+                            {label}{phone ? <span className="not-italic font-mono ml-1.5 text-foreground/70">{phone}</span> : null}
+                          </span>
+                        );
+                      })()}
+                    </td>
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden lg:table-cell font-mono">{lead.mobile_number ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>
