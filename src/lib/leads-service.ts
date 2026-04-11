@@ -184,9 +184,17 @@ export async function fetchLeads(opts: {
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, onlyAnonymousTraveler, excludeAnonymousTraveler, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
+
+  // Anonymous traveler filter: itinerary_upload + traveler + no contact info
+  if (onlyAnonymousTraveler) {
+    query = query.eq("lead_source_type", "itinerary_upload").eq("audience_type", "traveler").is("email", null).is("mobile_number", null);
+  } else if (excludeAnonymousTraveler) {
+    // Exclude rows matching all 4 conditions. Equivalent to: at least one condition is false.
+    query = query.or("lead_source_type.neq.itinerary_upload,audience_type.neq.traveler,email.not.is.null,mobile_number.not.is.null");
+  }
 
   if (search) {
     query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,company_name.ilike.%${search}%,mobile_number.ilike.%${search}%`);
