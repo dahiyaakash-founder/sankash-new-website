@@ -102,6 +102,9 @@ const OpsLeads = () => {
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [anonCount, setAnonCount] = useState(0);
+  const [mainCount, setMainCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<"main" | "anon">("main");
   const [loading, setLoading] = useState(true);
   const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
