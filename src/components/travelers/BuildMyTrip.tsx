@@ -12,10 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  MapPin, Compass, Sparkles, ArrowRight, ArrowLeft,
+  MapPin, Compass, ArrowRight, ArrowLeft,
   Upload, Link2, Image, FileText, X, Plus, CheckCircle2,
-  Loader2, Users, Calendar, Wallet, Globe, Heart,
-  MessageCircle, CreditCard, TrendingUp, Star,
+  Loader2, Globe, Heart,
+  MessageCircle, CreditCard, Star,
 } from "lucide-react";
 import { validateFile } from "@/lib/upload-validation";
 import { toast } from "sonner";
@@ -57,28 +57,30 @@ function ModeCard({
   icon: Icon,
   title,
   desc,
-  accent,
+  iconBg,
+  iconColor,
   onClick,
 }: {
   icon: any;
   title: string;
   desc: string;
-  accent: string;
+  iconBg: string;
+  iconColor: string;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`group text-left p-5 rounded-2xl border-2 ${accent} bg-card hover:shadow-card-hover transition-all w-full`}
+      className="group flex items-start gap-3.5 text-left p-3.5 rounded-xl border border-border/80 bg-card hover:border-primary/30 hover:shadow-card transition-all w-full"
     >
-      <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center mb-3">
-        <Icon size={20} className="text-primary" />
+      <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
+        <Icon size={17} className={iconColor} />
       </div>
-      <h3 className="text-[15px] font-heading font-bold text-foreground mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary mt-3 group-hover:gap-2.5 transition-all">
-        Get started <ArrowRight size={14} />
-      </span>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[13px] font-heading font-bold text-foreground mb-0.5">{title}</h3>
+        <p className="text-[12px] text-muted-foreground leading-relaxed">{desc}</p>
+      </div>
+      <ArrowRight size={14} className="text-muted-foreground/50 group-hover:text-primary shrink-0 mt-1 transition-colors" />
     </button>
   );
 }
@@ -91,17 +93,17 @@ function InspirationItem({
   onRemove: () => void;
 }) {
   const icon =
-    item.type === "link" ? <Link2 size={12} className="text-primary shrink-0" />
-    : item.type === "file" ? <FileText size={12} className="text-brand-coral shrink-0" />
-    : <MessageCircle size={12} className="text-muted-foreground shrink-0" />;
+    item.type === "link" ? <Link2 size={11} className="text-primary shrink-0" />
+    : item.type === "file" ? <FileText size={11} className="text-brand-coral shrink-0" />
+    : <MessageCircle size={11} className="text-muted-foreground shrink-0" />;
 
   return (
-    <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-3 py-2 pr-8 relative group min-w-0">
+    <div className="flex items-center gap-2 bg-accent/50 rounded-lg px-2.5 py-1.5 pr-7 relative group min-w-0">
       {icon}
-      <span className="text-[12px] text-foreground truncate">{item.value}</span>
+      <span className="text-[11px] text-foreground truncate">{item.value}</span>
       <button
         onClick={onRemove}
-        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full hover:bg-destructive/20 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity"
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full hover:bg-destructive/20 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity"
         aria-label="Remove"
       >
         <X size={10} />
@@ -125,25 +127,27 @@ function QuestionStep({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.25 }}
-      className="space-y-4"
+      exit={{ opacity: 0, x: -16 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-3.5"
     >
-      <div className="flex items-center gap-2 mb-1">
+      {/* Progress dots */}
+      <div className="flex items-center gap-3">
         <div className="flex gap-1">
           {Array.from({ length: total }).map((_, i) => (
             <div
               key={i}
-              className={`h-1 rounded-full transition-all ${
-                i <= current ? "w-6 bg-primary" : "w-4 bg-muted"
+              className={`h-1 rounded-full transition-all duration-300 ${
+                i <= current ? "w-5 bg-primary" : "w-3 bg-border"
               }`}
             />
           ))}
         </div>
+        <span className="text-[10px] text-muted-foreground">{current + 1} of {total}</span>
       </div>
-      <p className="font-heading font-bold text-foreground text-[15px] leading-snug">
+      <p className="font-heading font-bold text-foreground text-[14px] leading-snug">
         {question.question}
       </p>
       {question.options ? (
@@ -152,7 +156,7 @@ function QuestionStep({
             <button
               key={opt}
               onClick={() => onAnswer(opt)}
-              className={`text-left px-3.5 py-2.5 rounded-xl border-2 text-sm transition-all ${
+              className={`text-left px-3 py-2.5 rounded-lg border text-[12px] transition-all ${
                 answer === opt
                   ? "border-primary bg-primary/5 text-foreground font-medium"
                   : "border-border hover:border-primary/30 text-muted-foreground"
@@ -183,15 +187,15 @@ function ResultVersionCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border-2 p-4 sm:p-5 space-y-3 transition-shadow ${
+      className={`rounded-xl border p-4 space-y-2.5 transition-shadow ${
         isPrimary
-          ? "border-primary/30 bg-primary/[0.02] shadow-card"
+          ? "border-primary/25 bg-primary/[0.02] shadow-card"
           : "border-border hover:shadow-card"
       }`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span
-          className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full ${
+          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
             version.tagColor ?? (isPrimary ? "bg-primary/10 text-primary" : "bg-accent text-muted-foreground")
           }`}
         >
@@ -203,23 +207,23 @@ function ResultVersionCard({
           </span>
         )}
       </div>
-      <h4 className="font-heading font-bold text-foreground text-base leading-snug">
+      <h4 className="font-heading font-bold text-foreground text-[15px] leading-snug">
         {version.headline}
       </h4>
-      <p className="text-sm text-muted-foreground leading-relaxed">{version.summary}</p>
-      <div className="space-y-1.5">
+      <p className="text-[12px] text-muted-foreground leading-relaxed">{version.summary}</p>
+      <div className="space-y-1">
         {version.highlights.map((h) => (
           <div key={h} className="flex items-start gap-2">
-            <CheckCircle2 size={12} className="text-brand-green shrink-0 mt-0.5" />
-            <span className="text-[12px] text-foreground">{h}</span>
+            <CheckCircle2 size={11} className="text-brand-green shrink-0 mt-0.5" />
+            <span className="text-[11px] text-foreground leading-relaxed">{h}</span>
           </div>
         ))}
       </div>
       {version.emiMonthly && (
-        <div className="flex items-center gap-2 pt-1 border-t">
-          <CreditCard size={13} className="text-primary" />
+        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-border/60">
+          <CreditCard size={13} className="text-primary shrink-0" />
           <span className="text-sm font-heading font-bold text-foreground">{version.emiMonthly}</span>
-          <span className="text-xs text-muted-foreground">/month · {version.emiTenure}</span>
+          <span className="text-[11px] text-muted-foreground">/month · {version.emiTenure}</span>
         </div>
       )}
     </div>
@@ -392,13 +396,8 @@ const BuildMyTrip = () => {
     setIsProcessing(false);
   };
 
-  const canProceed =
-    mode === "destination" ? destination.trim().length > 0
-    : mode === "inspiration" ? inspirationItems.length > 0
-    : true; // explore mode can always proceed
-
   return (
-    <div className="bg-card rounded-2xl border shadow-card overflow-hidden">
+    <div className="bg-card rounded-xl border shadow-card overflow-hidden">
       <AnimatePresence mode="wait">
         {/* ── Mode Select ── */}
         {step === "mode-select" && (
@@ -407,40 +406,43 @@ const BuildMyTrip = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-5 sm:p-6 space-y-4"
+            className="p-4 sm:p-5 space-y-3.5"
           >
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <Compass size={14} className="text-primary" />
-              Build My Trip
-            </div>
             <div className="space-y-1">
-              <h3 className="font-heading font-bold text-foreground text-base sm:text-lg leading-snug">
+              <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <Compass size={13} className="text-brand-green" />
+                Build My Trip
+              </div>
+              <h3 className="font-heading font-bold text-foreground text-[15px] leading-snug">
                 How would you like to start?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[12px] text-muted-foreground">
                 Tell us what you have — we'll help shape it into a trip you can plan and price.
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <ModeCard
                 icon={MapPin}
                 title="I know where I want to go"
-                desc="Share your destination and we'll help shape the right trip."
-                accent="border-primary/20 hover:border-primary/40"
+                desc="Share your destination and we'll shape the right trip."
+                iconBg="bg-primary/10"
+                iconColor="text-primary"
                 onClick={() => selectMode("destination")}
               />
               <ModeCard
                 icon={Globe}
                 title="I'm not sure where to go"
-                desc="Tell us what you're in the mood for — we'll suggest destinations that fit."
-                accent="border-primary/20 hover:border-primary/40"
+                desc="Tell us what you're in the mood for — we'll suggest places that fit."
+                iconBg="bg-accent"
+                iconColor="text-primary"
                 onClick={() => selectMode("explore")}
               />
               <ModeCard
                 icon={Heart}
                 title="I've saved lots of trip ideas"
-                desc="Bring all your travel inspiration together — links, screenshots, notes, recommendations. We'll make sense of them."
-                accent="border-brand-coral/20 hover:border-brand-coral/40"
+                desc="Bring your Instagram saves, YouTube links, screenshots, and notes. We'll make sense of it all."
+                iconBg="bg-brand-coral/10"
+                iconColor="text-brand-coral"
                 onClick={() => selectMode("inspiration")}
               />
             </div>
@@ -454,27 +456,27 @@ const BuildMyTrip = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-5 sm:p-6 space-y-4"
+            className="p-4 sm:p-5 space-y-3.5"
           >
             <button
               onClick={() => setStep("mode-select")}
-              className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft size={12} /> Back
+              <ArrowLeft size={11} /> Back
             </button>
 
             {/* Destination Mode */}
             {mode === "destination" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <MapPin size={14} className="text-primary" />
-                  Destination in Mind
-                </div>
+              <div className="space-y-3.5">
                 <div className="space-y-1">
-                  <h3 className="font-heading font-bold text-foreground text-base leading-snug">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <MapPin size={13} className="text-primary" />
+                    Destination in Mind
+                  </div>
+                  <h3 className="font-heading font-bold text-foreground text-[14px] leading-snug">
                     Where are you thinking of going?
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     A city, country, or region — whatever you have in mind.
                   </p>
                 </div>
@@ -497,16 +499,16 @@ const BuildMyTrip = () => {
 
             {/* Explore Mode */}
             {mode === "explore" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <Globe size={14} className="text-primary" />
-                  Open Exploration
-                </div>
+              <div className="space-y-3.5">
                 <div className="space-y-1">
-                  <h3 className="font-heading font-bold text-foreground text-base leading-snug">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Globe size={13} className="text-primary" />
+                    Open Exploration
+                  </div>
+                  <h3 className="font-heading font-bold text-foreground text-[14px] leading-snug">
                     Let's find the right destination for you
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     We'll ask a few quick questions about what you're looking for — and suggest places that fit.
                   </p>
                 </div>
@@ -518,79 +520,101 @@ const BuildMyTrip = () => {
 
             {/* Inspiration Dump Mode */}
             {mode === "inspiration" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  <Heart size={14} className="text-brand-coral" />
-                  Your Travel Inspiration
-                </div>
+              <div className="space-y-3.5">
                 <div className="space-y-1">
-                  <h3 className="font-heading font-bold text-foreground text-base leading-snug">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Heart size={13} className="text-brand-coral" />
+                    Your Travel Inspiration
+                  </div>
+                  <h3 className="font-heading font-bold text-foreground text-[14px] leading-snug">
                     Put all your saved travel ideas here
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
                     Instagram reels, YouTube videos, blog links, screenshots, hotel names, friend recommendations — anything you've saved. We'll make sense of it all.
                   </p>
                 </div>
 
                 {/* Inspiration items */}
                 {inspirationItems.length > 0 && (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
                     {inspirationItems.map((item, i) => (
                       <InspirationItem key={`${item.value}-${i}`} item={item} onRemove={() => removeItem(i)} />
                     ))}
                   </div>
                 )}
 
+                {/* Empty state hint */}
+                {inspirationItems.length === 0 && (
+                  <div className="bg-accent/30 rounded-lg p-3 space-y-1.5">
+                    <p className="text-[11px] font-medium text-foreground/80">What works well here:</p>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                      {[
+                        "Instagram reels & posts",
+                        "YouTube travel videos",
+                        "Blog or article links",
+                        "Klook / Viator links",
+                        "Hotel or resort names",
+                        "Screenshots from apps",
+                        "Friend recommendations",
+                        "Place names & ideas",
+                      ].map((hint) => (
+                        <div key={hint} className="flex items-center gap-1.5">
+                          <CheckCircle2 size={8} className="text-brand-green shrink-0" />
+                          <span className="text-[10px] text-muted-foreground">{hint}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Add link */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
-                    <Link2 size={11} className="text-primary" /> Add a link
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                    <Link2 size={10} className="text-primary" /> Add a link
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <Input
                       placeholder="Paste an Instagram, YouTube, blog, or hotel link"
                       value={linkInput}
                       onChange={(e) => setLinkInput(e.target.value)}
-                      className="text-sm flex-1"
+                      className="text-[12px] flex-1"
                       onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addLink())}
                     />
-                    <Button variant="outline" size="sm" onClick={addLink} disabled={!linkInput.trim()}>
-                      <Plus size={14} />
+                    <Button variant="outline" size="sm" onClick={addLink} disabled={!linkInput.trim()} className="px-2.5">
+                      <Plus size={13} />
                     </Button>
                   </div>
                 </div>
 
                 {/* Add note / recommendation */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
-                    <MessageCircle size={11} className="text-primary" /> Add a note or recommendation
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                    <MessageCircle size={10} className="text-primary" /> Add a note or recommendation
                   </label>
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder="e.g. My friend said Santorini in October is amazing, or: I want a hotel with an infinity pool"
-                      value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
-                      className="text-sm flex-1 min-h-[60px]"
-                      rows={2}
-                    />
-                  </div>
-                  <Button variant="outline" size="sm" className="gap-1" onClick={addNote} disabled={!textInput.trim()}>
-                    <Plus size={12} /> Add note
+                  <Textarea
+                    placeholder="e.g. My friend said Santorini in October is amazing, or: I want a hotel with an infinity pool"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    className="text-[12px] min-h-[52px]"
+                    rows={2}
+                  />
+                  <Button variant="outline" size="sm" className="gap-1 text-[11px]" onClick={addNote} disabled={!textInput.trim()}>
+                    <Plus size={11} /> Add note
                   </Button>
                 </div>
 
                 {/* Add screenshots / files */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
-                    <Image size={11} className="text-primary" /> Add screenshots or saved images
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                    <Image size={10} className="text-primary" /> Add screenshots or saved images
                   </label>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 w-full"
+                    className="gap-1.5 w-full text-[11px]"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload size={12} /> Choose from device
+                    <Upload size={11} /> Choose from device
                   </Button>
                   <input
                     ref={fileInputRef}
@@ -604,28 +628,6 @@ const BuildMyTrip = () => {
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
                   />
-                </div>
-
-                {/* Helper text */}
-                <div className="bg-accent/40 rounded-xl p-3 space-y-1.5">
-                  <p className="text-[11px] font-semibold text-foreground">What works well here:</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      "Instagram reels & posts",
-                      "YouTube travel videos",
-                      "Blog or article links",
-                      "Klook / Viator links",
-                      "Hotel or resort names",
-                      "Screenshots from apps",
-                      "Friend recommendations",
-                      "Place names & ideas",
-                    ].map((hint) => (
-                      <div key={hint} className="flex items-center gap-1.5">
-                        <CheckCircle2 size={9} className="text-brand-green shrink-0" />
-                        <span className="text-[10px] text-muted-foreground">{hint}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <Button
@@ -647,20 +649,20 @@ const BuildMyTrip = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-5 sm:p-6 space-y-4"
+            className="p-4 sm:p-5 space-y-3.5"
           >
             <button
               onClick={() => {
                 if (questionIndex > 0) setQuestionIndex((i) => i - 1);
                 else setStep("input");
               }}
-              className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft size={12} /> Back
+              <ArrowLeft size={11} /> Back
             </button>
 
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <Compass size={14} className="text-primary" />
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <Compass size={13} className="text-primary" />
               Shaping Your Trip
             </div>
 
@@ -701,24 +703,24 @@ const BuildMyTrip = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-5 sm:p-6 space-y-4"
+            className="p-4 sm:p-5 space-y-3.5"
           >
             {isProcessing ? (
-              <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                <Loader2 size={32} className="text-primary animate-spin" />
-                <div className="text-center space-y-1.5">
-                  <p className="font-heading font-bold text-foreground">
+              <div className="flex flex-col items-center justify-center py-10 space-y-3">
+                <Loader2 size={28} className="text-primary animate-spin" />
+                <div className="text-center space-y-1">
+                  <p className="font-heading font-bold text-foreground text-[14px]">
                     Shaping your trip
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     Matching destinations, stays, and pricing to what you're looking for…
                   </p>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1">
                   {[0, 1, 2, 3].map((i) => (
                     <motion.div
                       key={i}
-                      className="w-6 h-1 rounded-full bg-primary/20"
+                      className="w-5 h-0.5 rounded-full bg-primary/20"
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.5, delay: i * 0.3, repeat: Infinity }}
                     />
@@ -726,38 +728,38 @@ const BuildMyTrip = () => {
                 </div>
               </div>
             ) : result ? (
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Star size={15} className="text-primary" />
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    <Star size={14} className="text-primary" />
+                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
                       Your Trip Direction
                     </span>
                   </div>
                   <button
                     onClick={reset}
-                    className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
                   >
                     Start over
                   </button>
                 </div>
 
                 {/* Direction headline */}
-                <div className="bg-accent/30 rounded-xl p-4 space-y-2">
-                  <h3 className="font-heading font-bold text-foreground text-lg leading-snug">
+                <div className="bg-accent/30 rounded-xl p-3.5 space-y-1.5">
+                  <h3 className="font-heading font-bold text-foreground text-base leading-snug">
                     {result.direction}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
                     {result.whyItFits}
                   </p>
-                  <div className="flex items-start gap-2 pt-1">
-                    <ArrowRight size={12} className="text-primary shrink-0 mt-0.5" />
-                    <p className="text-[12px] text-foreground font-medium">{result.nextStep}</p>
+                  <div className="flex items-start gap-2 pt-0.5">
+                    <ArrowRight size={11} className="text-primary shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-foreground font-medium">{result.nextStep}</p>
                   </div>
                 </div>
 
                 {/* Version cards */}
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {result.versions.map((version, i) => (
                     <ResultVersionCard key={version.label} version={version} isPrimary={i === 0} />
                   ))}
@@ -765,10 +767,10 @@ const BuildMyTrip = () => {
 
                 {/* EMI signal */}
                 {result.emiSignal && (
-                  <div className="flex items-start gap-2.5 bg-primary/5 rounded-xl border border-primary/15 p-3.5">
-                    <CreditCard size={14} className="text-primary shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 bg-primary/[0.04] rounded-lg border border-primary/15 p-3">
+                    <CreditCard size={13} className="text-primary shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-[12px] font-semibold text-foreground">{result.emiSignal}</p>
+                      <p className="text-[11px] font-semibold text-foreground">{result.emiSignal}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
                       </p>
@@ -778,7 +780,7 @@ const BuildMyTrip = () => {
 
                 {/* Deeper details */}
                 {result.deeperDetails && result.deeperDetails.length > 0 && (
-                  <div className="border rounded-xl p-3.5 space-y-1.5">
+                  <div className="border rounded-lg p-3 space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Good to Know
                     </p>
@@ -792,7 +794,7 @@ const BuildMyTrip = () => {
                 )}
 
                 {/* CTA */}
-                <Button className="w-full gap-2" size="lg">
+                <Button className="w-full gap-2">
                   Get detailed pricing & EMI options <ArrowRight size={14} />
                 </Button>
                 <p className="text-[10px] text-muted-foreground text-center">
