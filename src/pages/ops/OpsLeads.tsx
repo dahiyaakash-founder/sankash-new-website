@@ -149,6 +149,7 @@ const OpsLeads = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const isAnon = activeTab === "anon";
       const res = await fetchLeads({
         search: search || undefined,
         status: (statusFilter || undefined) as LeadStatus | undefined,
@@ -158,6 +159,8 @@ const OpsLeads = () => {
         assignedTo: specialFilter === "my_leads" ? user?.id : undefined,
         unassigned: specialFilter === "unassigned" ? true : undefined,
         overdueFollowUp: specialFilter === "overdue" ? true : undefined,
+        onlyAnonymousTraveler: isAnon ? true : undefined,
+        excludeAnonymousTraveler: !isAnon ? true : undefined,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -167,9 +170,22 @@ const OpsLeads = () => {
       // fail silently
     }
     setLoading(false);
-  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id]);
+  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id, activeTab]);
+
+  // Fetch tab counts (lightweight head-only queries)
+  const loadCounts = useCallback(async () => {
+    try {
+      const [mainRes, anonRes] = await Promise.all([
+        fetchLeads({ excludeAnonymousTraveler: true, page: 1, pageSize: 1 }),
+        fetchLeads({ onlyAnonymousTraveler: true, page: 1, pageSize: 1 }),
+      ]);
+      setMainCount(mainRes.count);
+      setAnonCount(anonRes.count);
+    } catch {}
+  }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
 
   // Load team members for owner display
   useEffect(() => {
