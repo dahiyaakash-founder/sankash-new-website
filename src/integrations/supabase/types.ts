@@ -412,16 +412,21 @@ export type Database = {
           benchmark_price_position: string
           benchmark_summary_json: Json
           best_pitch_angle: string | null
+          blocking_missing_input_json: Json
           call_talking_points_json: Json
           conversion_probability_band: string
           decision_stage: string | null
+          first_question_to_ask: string | null
           id: string
+          immediate_next_action_json: Json
+          important_missing_items_json: Json
           intent_confidence: string | null
           intent_explanation: string | null
           intent_score: number
           intent_summary_json: Json
           lead_classification: string
           lead_id: string
+          lead_mode: string | null
           lead_quality_score: number
           likely_customer_motive: string | null
           multi_itinerary_read_json: Json
@@ -437,31 +442,39 @@ export type Database = {
           recommended_products_json: Json
           refreshed_at: string
           sankash_opportunity_json: Json
+          sankash_read: string | null
           similar_trip_summary_json: Json
           source_likelihood_json: Json
           suggested_alternative_destinations_json: Json
           suggested_pitch_sequence_json: Json
           top_recommendations_json: Json
+          travel_read: string | null
           traveler_trust_score: number
           unified_case_id: string
           urgency_score: number
           what_looks_wrong_json: Json
           whatsapp_follow_up: string | null
+          why_the_system_thinks_this_json: Json
         }
         Insert: {
           benchmark_price_position?: string
           benchmark_summary_json?: Json
           best_pitch_angle?: string | null
+          blocking_missing_input_json?: Json
           call_talking_points_json?: Json
           conversion_probability_band?: string
           decision_stage?: string | null
+          first_question_to_ask?: string | null
           id?: string
+          immediate_next_action_json?: Json
+          important_missing_items_json?: Json
           intent_confidence?: string | null
           intent_explanation?: string | null
           intent_score?: number
           intent_summary_json?: Json
           lead_classification?: string
           lead_id: string
+          lead_mode?: string | null
           lead_quality_score?: number
           likely_customer_motive?: string | null
           multi_itinerary_read_json?: Json
@@ -477,31 +490,39 @@ export type Database = {
           recommended_products_json?: Json
           refreshed_at?: string
           sankash_opportunity_json?: Json
+          sankash_read?: string | null
           similar_trip_summary_json?: Json
           source_likelihood_json?: Json
           suggested_alternative_destinations_json?: Json
           suggested_pitch_sequence_json?: Json
           top_recommendations_json?: Json
+          travel_read?: string | null
           traveler_trust_score?: number
           unified_case_id: string
           urgency_score?: number
           what_looks_wrong_json?: Json
           whatsapp_follow_up?: string | null
+          why_the_system_thinks_this_json?: Json
         }
         Update: {
           benchmark_price_position?: string
           benchmark_summary_json?: Json
           best_pitch_angle?: string | null
+          blocking_missing_input_json?: Json
           call_talking_points_json?: Json
           conversion_probability_band?: string
           decision_stage?: string | null
+          first_question_to_ask?: string | null
           id?: string
+          immediate_next_action_json?: Json
+          important_missing_items_json?: Json
           intent_confidence?: string | null
           intent_explanation?: string | null
           intent_score?: number
           intent_summary_json?: Json
           lead_classification?: string
           lead_id?: string
+          lead_mode?: string | null
           lead_quality_score?: number
           likely_customer_motive?: string | null
           multi_itinerary_read_json?: Json
@@ -517,16 +538,19 @@ export type Database = {
           recommended_products_json?: Json
           refreshed_at?: string
           sankash_opportunity_json?: Json
+          sankash_read?: string | null
           similar_trip_summary_json?: Json
           source_likelihood_json?: Json
           suggested_alternative_destinations_json?: Json
           suggested_pitch_sequence_json?: Json
           top_recommendations_json?: Json
+          travel_read?: string | null
           traveler_trust_score?: number
           unified_case_id?: string
           urgency_score?: number
           what_looks_wrong_json?: Json
           whatsapp_follow_up?: string | null
+          why_the_system_thinks_this_json?: Json
         }
         Relationships: []
       }
@@ -582,6 +606,7 @@ export type Database = {
           contact_present: boolean
           conversion_probability_band: string
           currency: string | null
+          customer_conversion_json: Json
           customer_name: string | null
           decision_flags_json: Json
           decision_stage: string | null
@@ -597,6 +622,7 @@ export type Database = {
           id: string
           inclusions_text: string | null
           infants_count: number | null
+          inspiration_capture_json: Json
           intelligence_refreshed_at: string
           intent_confidence: string | null
           intent_explanation: string | null
@@ -611,10 +637,13 @@ export type Database = {
           multi_itinerary_summary_json: Json
           multi_itinerary_type: string
           ops_copilot_version: string
+          optional_missing_prompts_json: Json
           outcome_learning_summary_json: Json
           outcome_learning_version: string | null
           package_mode: string
+          pain_signals_json: Json
           parsing_confidence: string | null
+          pleasure_signals_json: Json
           price_per_person: number | null
           product_fit_flags_json: Json
           recommendation_engine_json: Json
@@ -657,6 +686,7 @@ export type Database = {
           contact_present?: boolean
           conversion_probability_band?: string
           currency?: string | null
+          customer_conversion_json?: Json
           customer_name?: string | null
           decision_flags_json?: Json
           decision_stage?: string | null
@@ -672,6 +702,7 @@ export type Database = {
           id?: string
           inclusions_text?: string | null
           infants_count?: number | null
+          inspiration_capture_json?: Json
           intelligence_refreshed_at?: string
           intent_confidence?: string | null
           intent_explanation?: string | null
@@ -686,10 +717,13 @@ export type Database = {
           multi_itinerary_summary_json?: Json
           multi_itinerary_type?: string
           ops_copilot_version?: string
+          optional_missing_prompts_json?: Json
           outcome_learning_summary_json?: Json
           outcome_learning_version?: string | null
           package_mode?: string
+          pain_signals_json?: Json
           parsing_confidence?: string | null
+          pleasure_signals_json?: Json
           price_per_person?: number | null
           product_fit_flags_json?: Json
           recommendation_engine_json?: Json
@@ -732,6 +766,7 @@ export type Database = {
           contact_present?: boolean
           conversion_probability_band?: string
           currency?: string | null
+          customer_conversion_json?: Json
           customer_name?: string | null
           decision_flags_json?: Json
           decision_stage?: string | null
@@ -747,6 +782,7 @@ export type Database = {
           id?: string
           inclusions_text?: string | null
           infants_count?: number | null
+          inspiration_capture_json?: Json
           intelligence_refreshed_at?: string
           intent_confidence?: string | null
           intent_explanation?: string | null
@@ -761,10 +797,13 @@ export type Database = {
           multi_itinerary_summary_json?: Json
           multi_itinerary_type?: string
           ops_copilot_version?: string
+          optional_missing_prompts_json?: Json
           outcome_learning_summary_json?: Json
           outcome_learning_version?: string | null
           package_mode?: string
+          pain_signals_json?: Json
           parsing_confidence?: string | null
+          pleasure_signals_json?: Json
           price_per_person?: number | null
           product_fit_flags_json?: Json
           recommendation_engine_json?: Json
@@ -1392,6 +1431,7 @@ export type Database = {
           contact_present: boolean
           conversion_probability_band: string
           currency: string | null
+          customer_conversion_json: Json
           decision_stage: string | null
           destination_city: string | null
           destination_country: string | null
@@ -1404,6 +1444,7 @@ export type Database = {
           id: string
           inclusions_tags_json: Json
           infants_count: number | null
+          inspiration_capture_json: Json
           itinerary_archetype: string | null
           last_seen_at: string
           latest_conversion_status: string | null
@@ -1414,11 +1455,14 @@ export type Database = {
           likely_customer_motive: string | null
           missing_fields_json: Json
           multi_itinerary_type: string
+          optional_missing_prompts_json: Json
           outcome: string
           outcome_feedback_json: Json
           outcome_learning_version: string | null
           package_mode: string
+          pain_signals_json: Json
           parsing_confidence: string | null
+          pleasure_signals_json: Json
           price_per_person: number | null
           product_fit_flags_json: Json
           recommendation_engine_json: Json
@@ -1449,6 +1493,7 @@ export type Database = {
           contact_present?: boolean
           conversion_probability_band?: string
           currency?: string | null
+          customer_conversion_json?: Json
           decision_stage?: string | null
           destination_city?: string | null
           destination_country?: string | null
@@ -1461,6 +1506,7 @@ export type Database = {
           id?: string
           inclusions_tags_json?: Json
           infants_count?: number | null
+          inspiration_capture_json?: Json
           itinerary_archetype?: string | null
           last_seen_at?: string
           latest_conversion_status?: string | null
@@ -1471,11 +1517,14 @@ export type Database = {
           likely_customer_motive?: string | null
           missing_fields_json?: Json
           multi_itinerary_type?: string
+          optional_missing_prompts_json?: Json
           outcome?: string
           outcome_feedback_json?: Json
           outcome_learning_version?: string | null
           package_mode?: string
+          pain_signals_json?: Json
           parsing_confidence?: string | null
+          pleasure_signals_json?: Json
           price_per_person?: number | null
           product_fit_flags_json?: Json
           recommendation_engine_json?: Json
@@ -1506,6 +1555,7 @@ export type Database = {
           contact_present?: boolean
           conversion_probability_band?: string
           currency?: string | null
+          customer_conversion_json?: Json
           decision_stage?: string | null
           destination_city?: string | null
           destination_country?: string | null
@@ -1518,6 +1568,7 @@ export type Database = {
           id?: string
           inclusions_tags_json?: Json
           infants_count?: number | null
+          inspiration_capture_json?: Json
           itinerary_archetype?: string | null
           last_seen_at?: string
           latest_conversion_status?: string | null
@@ -1528,11 +1579,14 @@ export type Database = {
           likely_customer_motive?: string | null
           missing_fields_json?: Json
           multi_itinerary_type?: string
+          optional_missing_prompts_json?: Json
           outcome?: string
           outcome_feedback_json?: Json
           outcome_learning_version?: string | null
           package_mode?: string
+          pain_signals_json?: Json
           parsing_confidence?: string | null
+          pleasure_signals_json?: Json
           price_per_person?: number | null
           product_fit_flags_json?: Json
           recommendation_engine_json?: Json
