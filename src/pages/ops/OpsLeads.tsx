@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
