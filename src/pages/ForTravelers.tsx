@@ -18,9 +18,11 @@ import {
   BadgeCheck,
   UserCheck,
   Star,
+  Compass,
 } from "lucide-react";
 import TravelerQuoteUploader from "@/components/travelers/TravelerQuoteUploader";
 import TravelerEmiEnquiry from "@/components/travelers/TravelerEmiEnquiry";
+import BuildMyTrip from "@/components/travelers/BuildMyTrip";
 import { markTravelerIntentSignal } from "@/lib/traveler-intent-session";
 
 const howItWorks = [
@@ -91,11 +93,16 @@ const faqs = [
     q: "Can I use SanKash if I am not booking through a registered SanKash travel agent?",
     a: "Yes, in many cases you can. You may book through your own travel agent, make eligible direct travel bookings, or share the details of a non-registered agent with us. Where feasible, our team can evaluate and onboard the agent so your booking can be supported through SanKash.",
   },
+  {
+    q: "What is Build My Trip?",
+    a: "Build My Trip helps you shape a holiday from scratch. Whether you have a destination in mind, are still exploring, or have saved lots of travel ideas across Instagram, YouTube, and other platforms — we'll help turn those into a structured trip plan with real pricing and EMI options. It's free to use and there's no obligation.",
+  },
 ];
 
 const ForTravelers = () => {
   const uploaderRef = React.useRef<HTMLDivElement>(null);
   const emiSectionRef = React.useRef<HTMLDivElement>(null);
+  const buildTripRef = React.useRef<HTMLDivElement>(null);
   const [emiAmount, setEmiAmount] = React.useState(85000);
   const emiExamples = React.useMemo(() => computeEmiExamples(emiAmount), [emiAmount]);
 
@@ -112,6 +119,11 @@ const ForTravelers = () => {
 
   const scrollToEmi = () => {
     emiSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const scrollToBuildTrip = () => {
+    markTravelerIntentSignal("opened_build_trip_section");
+    buildTripRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   React.useEffect(() => {
@@ -139,7 +151,7 @@ const ForTravelers = () => {
     <SiteLayout>
       <SEOHead
         title="Travel EMI — Pay for Your Holiday in Easy Monthly Instalments | SanKash"
-        description="Check what your holiday costs per month. Upload a quote or enter an amount to see No Cost EMI options from 15+ lenders. No credit score impact."
+        description="Review your quote, check EMI options, or build a trip from scratch. Upload a quote or enter an amount to see No Cost EMI options from 15+ lenders."
         jsonLd={createFAQSchema(faqs)}
       />
 
@@ -160,14 +172,14 @@ const ForTravelers = () => {
             </div>
 
             <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl font-heading font-bold tracking-tight leading-tight text-foreground">
-              Make a smarter holiday decision
+              Your smarter start to
               <br />
-              <span className="text-gradient-brand">before you pay.</span>
+              <span className="text-gradient-brand">every holiday.</span>
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              Compare your quote. Understand what it costs per month. Spot gaps before you commit.
-              SanKash helps you get clarity — not just a loan.
+              Review a quote. Check what it costs per month. Or shape a trip from scratch.
+              One place to plan, refine, and finance your next holiday.
             </p>
 
             {/* Trust bar */}
@@ -184,54 +196,76 @@ const ForTravelers = () => {
             </div>
           </motion.div>
 
-          {/* ── Dual-path journey cards ── */}
+          {/* ── 3 Entry Path Cards ── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8"
+            className="grid sm:grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto mt-8"
           >
-            {/* Path 1: Have a quote */}
+            {/* Path 1: Review your quote */}
             <button
               onClick={scrollToUploader}
-              className="group text-left p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
+              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <Upload size={20} className="text-primary" />
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                <Upload size={18} className="text-primary" />
               </div>
-              <h3 className="text-base font-heading font-bold text-foreground mb-1">
-                I have a travel quote
+              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+                Review your quote
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                Upload your itinerary or quote for a free review with EMI options.
+              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                Upload a quote or itinerary for a free review.
               </p>
-              <p className="text-[11px] text-muted-foreground/70 italic">
-                → We'll review your quote and show where you can save or pay monthly.
+              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
+                We'll check pricing, inclusions, and show EMI options.
               </p>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary mt-3 group-hover:gap-2.5 transition-all">
-                Upload & Review <ArrowRight size={14} />
+              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary mt-3 group-hover:gap-2 transition-all">
+                Upload & review <ArrowRight size={13} />
               </span>
             </button>
 
-            {/* Path 2: No quote yet */}
+            {/* Path 2: Check EMI */}
             <button
               onClick={scrollToEmi}
-              className="group text-left p-5 rounded-2xl border-2 border-brand-coral/20 bg-card hover:border-brand-coral/40 hover:shadow-card-hover transition-all"
+              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary/40 hover:shadow-card-hover transition-all"
             >
-              <div className="w-10 h-10 rounded-xl bg-brand-coral/10 flex items-center justify-center mb-3">
-                <Calculator size={20} className="text-brand-coral" />
+              <div className="w-9 h-9 rounded-xl bg-brand-coral/10 flex items-center justify-center mb-3">
+                <Calculator size={18} className="text-brand-coral" />
               </div>
-              <h3 className="text-base font-heading font-bold text-foreground mb-1">
-                I'm still exploring
+              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+                Check your EMI
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                Tell us where you want to go — we'll show what it costs per month.
+              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                See what your holiday costs per month.
               </p>
-              <p className="text-[11px] text-muted-foreground/70 italic">
-                → Share destination & budget. Get indicative EMI options, no commitment.
+              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
+                No commitment. No credit score impact.
               </p>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-coral mt-3 group-hover:gap-2.5 transition-all">
-                Check Holiday EMI <ArrowRight size={14} />
+              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-coral mt-3 group-hover:gap-2 transition-all">
+                Check EMI <ArrowRight size={13} />
+              </span>
+            </button>
+
+            {/* Path 3: Build my trip */}
+            <button
+              onClick={scrollToBuildTrip}
+              className="group text-left p-4 sm:p-5 rounded-2xl border-2 border-brand-green/20 bg-card hover:border-brand-green/40 hover:shadow-card-hover transition-all"
+            >
+              <div className="w-9 h-9 rounded-xl bg-brand-green/10 flex items-center justify-center mb-3">
+                <Compass size={18} className="text-brand-green" />
+              </div>
+              <h3 className="text-[14px] sm:text-[15px] font-heading font-bold text-foreground mb-1">
+                Build my trip
+              </h3>
+              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                Shape a holiday from ideas, inspiration, or a destination.
+              </p>
+              <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">
+                Bring your saved travel ideas — we'll help plan and price.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-green mt-3 group-hover:gap-2 transition-all">
+                Start building <ArrowRight size={13} />
               </span>
             </button>
           </motion.div>
@@ -250,7 +284,7 @@ const ForTravelers = () => {
               className="space-y-4 lg:pt-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
-                Have a quote?
+                Review Your Quote
               </p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
                 Upload it. We'll tell you if it's a good deal.
@@ -298,7 +332,7 @@ const ForTravelers = () => {
               className="space-y-4"
             >
               <p className="text-xs font-semibold text-primary uppercase tracking-widest">
-                EMI & Affordability
+                Check Your EMI
               </p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
                 What does your holiday actually cost per month?
@@ -404,6 +438,54 @@ const ForTravelers = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <TravelerEmiEnquiry />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Build My Trip ── */}
+      <section className="py-10 md:py-22 bg-section-alt" ref={buildTripRef} id="build-trip-section">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 lg:pt-4"
+            >
+              <p className="text-xs font-semibold text-brand-green uppercase tracking-widest">
+                Build My Trip
+              </p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold tracking-tight text-foreground">
+                Shape a holiday from your ideas
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Have a destination in mind? Still deciding? Or saved dozens of travel ideas across Instagram, YouTube, and blogs? 
+                Bring everything here — we'll help turn it into a trip you can plan, price, and finance.
+              </p>
+              <div className="space-y-2.5 pt-1">
+                {[
+                  "Works with destinations, ideas, or saved inspiration",
+                  "Turn scattered links and screenshots into a real trip plan",
+                  "See realistic and upgraded versions with EMI options",
+                  "Free to use — no obligation, no booking required",
+                ].map((point) => (
+                  <div key={point} className="flex items-start gap-2.5">
+                    <CheckCircle2 size={14} className="text-brand-green shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <BuildMyTrip />
             </motion.div>
           </div>
         </div>
@@ -540,6 +622,7 @@ const ForTravelers = () => {
       <AssistantEntryPoint prompts={[
         { label: "Ask about my quote", onClick: () => document.getElementById("quote-upload-section")?.scrollIntoView({ behavior: "smooth", block: "center" }) },
         { label: "Check EMI options", href: "#emi-section" },
+        { label: "Build a trip", href: "#build-trip-section" },
       ]} />
 
       {/* ── Final CTA ── */}
@@ -556,7 +639,7 @@ const ForTravelers = () => {
             Don't just book. Book smarter.
           </h2>
           <p className="text-primary-foreground/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Upload your holiday quote or check EMI — know exactly what you're paying before you commit.
+            Review a quote, check EMI, or build a trip from scratch — know exactly what you're getting before you commit.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
             <Button
@@ -566,8 +649,8 @@ const ForTravelers = () => {
             >
               Upload My Quote <ArrowRight size={18} />
             </Button>
-            <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToEmi}>
-              <Calculator size={16} /> Check EMI Options
+            <Button variant="ghost-dark" size="xl" className="gap-2 w-full sm:w-auto" onClick={scrollToBuildTrip}>
+              <Compass size={16} /> Build My Trip
             </Button>
           </div>
         </div>
