@@ -451,7 +451,7 @@ const TravelerQuoteUploader = () => {
   };
 
   const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
-  const analysisStepLabel = `${Math.min(analysisStepIndex + 1, analysisMessages.length)} of ${analysisMessages.length}`;
+  const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
 
   return (
     <>
