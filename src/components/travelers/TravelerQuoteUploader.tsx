@@ -127,7 +127,7 @@ function FileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
         className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/10 hover:bg-destructive/20 flex items-center justify-center transition-colors"
-        aria-label="Remove file"
+        aria-label="Remove"
       >
         <X size={10} className="text-muted-foreground" />
       </button>
