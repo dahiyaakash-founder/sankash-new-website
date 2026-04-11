@@ -13,6 +13,7 @@ type PageVisit = {
 type IntentMarker =
   | "viewed_emi_section"
   | "opened_upload_section"
+  | "opened_build_trip_section"
   | "started_quote_upload"
   | "added_more_files"
   | "submitted_contact_details";
