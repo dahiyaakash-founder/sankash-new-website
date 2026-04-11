@@ -238,7 +238,13 @@ const OpsLeads = () => {
     <OpsLayout>
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
+          <h1 className="text-xl font-heading font-bold">Leads</h1>
+          <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as "main" | "anon"); setPage(1); setSelected(new Set()); }} className="ml-4">
+            <TabsList className="h-8">
+              <TabsTrigger value="main" className="text-xs h-7 px-3">Main Leads <span className="ml-1.5 text-muted-foreground">{mainCount}</span></TabsTrigger>
+              <TabsTrigger value="anon" className="text-xs h-7 px-3">Traveler Anonymous <span className="ml-1.5 text-muted-foreground">{anonCount}</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
            <div className="flex items-center gap-2">
             {selected.size > 0 && canDelete && (
               <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} className="gap-1.5 text-xs">
