@@ -24,6 +24,7 @@ describe("TravelerBuildTripFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /See next useful question/i }));
 
+    expect(screen.getByText("Our read of what you shared")).toBeInTheDocument();
     expect(screen.getByText("Most useful next detail")).toBeInTheDocument();
     expect(
       screen.getAllByText(/When are you roughly hoping to travel|What kind of trip is this starting to look like/i).length,
@@ -35,6 +36,7 @@ describe("TravelerBuildTripFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /See trip direction/i }));
 
+    expect(screen.getByText("Our read of what you shared")).toBeInTheDocument();
     expect(screen.getByText("Trip direction")).toBeInTheDocument();
     expect(screen.getAllByText(/romantic/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Bookable read")).toBeInTheDocument();

@@ -92,6 +92,54 @@ function confidenceTone(confidence: BuildTripConfidence) {
   return "text-muted-foreground";
 }
 
+function confidenceLabel(confidence: BuildTripConfidence) {
+  if (confidence === "high") return "Strong signal";
+  if (confidence === "medium") return "Likely";
+  return "Early read";
+}
+
+function OurReadSection({
+  engine,
+}: {
+  engine: ReturnType<typeof buildTripEngine>;
+}) {
+  const read = engine.synthesis.our_read;
+  if (!engine.render_contract.show_our_read) return null;
+  if (read.items.length === 0 && read.source_traces.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border p-4 space-y-3">
+      <div className="space-y-1">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{read.headline}</p>
+        <p className="text-sm text-foreground">{read.summary}</p>
+      </div>
+
+      {read.items.length > 0 && (
+        <div className="grid sm:grid-cols-2 gap-2">
+          {read.items.map((item) => (
+            <div key={`${item.label}-${item.value}`} className="rounded-lg border bg-accent/20 p-3 space-y-1">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{item.label}</p>
+              <p className="text-sm font-medium text-foreground">{item.value}</p>
+              <p className={`text-[11px] font-medium ${confidenceTone(item.confidence)}`}>{confidenceLabel(item.confidence)}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {read.source_traces.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Picked up from your shared details</p>
+          <div className="flex flex-wrap gap-2">
+            {read.source_traces.map((trace) => (
+              <Badge key={trace} variant="outline">{trace}</Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function mapStartModeToLegacyEntryMode(mode: BuildTripStartMode) {
   if (mode === "known_destination") return "yes" as const;
   if (mode === "destination_discovery") return "no" as const;
@@ -300,6 +348,8 @@ export default function TravelerBuildTripFlow({
           </div>
           )}
         </div>
+
+        <OurReadSection engine={result} />
 
         {result.render_contract.show_next_question && result.synthesis.next_clarification_prompt && (
           <div className="rounded-xl border p-4 space-y-1.5">
@@ -670,6 +720,8 @@ export default function TravelerBuildTripFlow({
               ))}
             </div>
           </div>
+
+          <OurReadSection engine={engine} />
 
           {engine.render_contract.show_next_question && engine.synthesis.next_clarification_prompt && (
             <div className="rounded-xl border p-4 space-y-1.5">

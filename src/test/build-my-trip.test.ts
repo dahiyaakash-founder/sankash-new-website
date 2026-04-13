@@ -14,8 +14,11 @@ describe("build-my-trip engine", () => {
 
     expect(engine.signals.input_strength).toBe("weak");
     expect(engine.render_contract.state).toBe("guided_question");
+    expect(engine.render_contract.show_our_read).toBe(true);
     expect(engine.clarifying_questions.length).toBeGreaterThan(0);
     expect(engine.synthesis.next_clarification_prompt).toBeTruthy();
+    expect(engine.synthesis.our_read.headline).toBe("Our read of what you shared");
+    expect(engine.synthesis.our_read.source_traces).toContain("Instagram idea");
     expect(engine.synthesis.trip_direction.toLowerCase()).not.toContain("bali");
   });
 
@@ -32,8 +35,11 @@ describe("build-my-trip engine", () => {
     expect(engine.signals.input_strength).toBe("medium");
     expect(engine.render_contract.state).toBe("trip_direction");
     expect(engine.signals.vibe_signals).toContain("romantic");
+    expect(engine.synthesis.our_read.summary.toLowerCase()).toContain("romantic");
+    expect(engine.synthesis.our_read.items.some((item) => item.label === "Likely trip type")).toBe(true);
     expect(engine.synthesis.trip_direction.toLowerCase()).toContain("romantic");
     expect(engine.synthesis.next_clarification_prompt).toBeTruthy();
+    expect(engine.clarifying_questions[0]?.question.toLowerCase()).toMatch(/couple|resort|comfort|budget/);
   });
 
   it("extracts destination signals from inspiration dumps with multiple items", () => {
@@ -66,6 +72,8 @@ describe("build-my-trip engine", () => {
         ["Thailand", "Phuket", "Krabi"].includes(destination),
       ),
     ).toBe(true);
+    expect(engine.synthesis.our_read.items.some((item) => item.label === "Likely destination")).toBe(true);
+    expect(engine.clarifying_questions[0]?.question.toLowerCase()).toMatch(/phuket|thailand|similar options|stay-comfort|which should lead|adventure/);
     expect(engine.synthesis.bookable_read.status).not.toBe("insufficient_trip_structure");
   });
 
