@@ -475,6 +475,7 @@ function buildMissingAnchors(params: {
   destinationShortlist: string[];
   signals: {
     vibe_signals: string[];
+    stay_style_signals?: string[];
     traveler_mix_signal: string | null;
     duration_signal: string | null;
   };
@@ -955,7 +956,7 @@ function buildBookableRead(params: {
       status: "multiple_bookable_directions" as const,
       summary: "We found a few directions worth pricing, but one destination choice will make the next step much cleaner.",
       pricing_type: "range" as const,
-      pricing_confidence: hasBudget ? "medium" : "low",
+      pricing_confidence: hasBudget ? "medium" as const : "low" as const,
       price_summary: hasBudget
         ? `These directions can likely be shaped somewhere around ${budgetBand?.label ?? "your range"}, but the final price will depend on which destination wins.`
         : "We can likely turn this into bookable options once one destination direction is chosen.",
@@ -979,7 +980,7 @@ function buildBookableRead(params: {
       status: "partial_bookable_match" as const,
       summary: "We already have a usable trip direction. One more detail should turn this into a stronger pricing read.",
       pricing_type: hasBudget ? "estimated" as const : "unavailable" as const,
-      pricing_confidence: hasBudget ? "medium" : "low",
+      pricing_confidence: hasBudget ? "medium" as const : "low" as const,
       price_summary: hasBudget
         ? `This looks shapeable around ${budgetBand?.label ?? "your current budget"}, but the final trip still needs one more anchor.`
         : "We need either a cleaner budget or timing signal before we price this properly.",
