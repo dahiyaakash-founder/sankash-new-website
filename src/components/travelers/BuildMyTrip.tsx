@@ -4,7 +4,8 @@
  * 2. I'm not sure where to go (open exploration)
  * 3. I've saved lots of trip ideas (inspiration dump)
  *
- * UI shell only — backend logic is handled by Codex via edge functions.
+ * UI shell — backend processing is handled by Codex via edge functions.
+ * No local placeholder questions or hardcoded results.
  */
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,21 +16,15 @@ import {
   MapPin, Compass, ArrowRight, ArrowLeft,
   Upload, Link2, Image, FileText, X, Plus, CheckCircle2,
   Loader2, Globe, Heart,
-  MessageCircle, CreditCard, Star,
+  MessageCircle, CreditCard, Star, Phone,
 } from "lucide-react";
 import { validateFile } from "@/lib/upload-validation";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ─── Types ─── */
 type StartMode = "destination" | "explore" | "inspiration";
-type FlowStep = "mode-select" | "input" | "questions" | "results";
-
-interface TripQuestion {
-  id: string;
-  question: string;
-  options?: string[];
-  type: "choice" | "text" | "multi";
-}
+type FlowStep = "mode-select" | "input" | "processing" | "results" | "contact-capture";
 
 interface TripResultVersion {
   label: string;
@@ -112,72 +107,6 @@ function InspirationItem({
   );
 }
 
-function QuestionStep({
-  question,
-  answer,
-  onAnswer,
-  current,
-  total,
-}: {
-  question: TripQuestion;
-  answer: string;
-  onAnswer: (val: string) => void;
-  current: number;
-  total: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -16 }}
-      transition={{ duration: 0.2 }}
-      className="space-y-3.5"
-    >
-      {/* Progress dots */}
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1">
-          {Array.from({ length: total }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i <= current ? "w-5 bg-primary" : "w-3 bg-border"
-              }`}
-            />
-          ))}
-        </div>
-        <span className="text-[10px] text-muted-foreground">{current + 1} of {total}</span>
-      </div>
-      <p className="font-heading font-bold text-foreground text-[14px] leading-snug">
-        {question.question}
-      </p>
-      {question.options ? (
-        <div className="grid grid-cols-2 gap-2">
-          {question.options.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => onAnswer(opt)}
-              className={`text-left px-3 py-2.5 rounded-lg border text-[12px] transition-all ${
-                answer === opt
-                  ? "border-primary bg-primary/5 text-foreground font-medium"
-                  : "border-border hover:border-primary/30 text-muted-foreground"
-              }`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <Input
-          placeholder="Type your answer..."
-          value={answer}
-          onChange={(e) => onAnswer(e.target.value)}
-          className="text-sm"
-        />
-      )}
-    </motion.div>
-  );
-}
-
 function ResultVersionCard({
   version,
   isPrimary,
@@ -230,34 +159,6 @@ function ResultVersionCard({
   );
 }
 
-/* ─── Placeholder questions (will come from backend) ─── */
-const PLACEHOLDER_QUESTIONS: TripQuestion[] = [
-  {
-    id: "travel_style",
-    question: "What kind of holiday experience are you imagining?",
-    options: ["Relaxation & leisure", "Adventure & exploration", "Culture & sightseeing", "Mix of everything"],
-    type: "choice",
-  },
-  {
-    id: "budget_range",
-    question: "What's a comfortable budget range for this trip?",
-    options: ["Under ₹50,000", "₹50K – ₹1 Lakh", "₹1L – ₹3 Lakhs", "₹3 Lakhs+"],
-    type: "choice",
-  },
-  {
-    id: "travel_month",
-    question: "When are you thinking of travelling?",
-    options: ["Next month", "2–3 months", "3–6 months", "Still flexible"],
-    type: "choice",
-  },
-  {
-    id: "group_size",
-    question: "Who's travelling?",
-    options: ["Just me", "Couple", "Family with kids", "Group of friends"],
-    type: "choice",
-  },
-];
-
 /* ─── Main component ─── */
 const BuildMyTrip = () => {
   const [step, setStep] = useState<FlowStep>("mode-select");
@@ -265,6 +166,9 @@ const BuildMyTrip = () => {
 
   // Destination mode
   const [destination, setDestination] = useState("");
+
+  // Explore mode
+  const [exploreMood, setExploreMood] = useState("");
 
   // Inspiration dump
   const [inspirationItems, setInspirationItems] = useState<
@@ -274,13 +178,16 @@ const BuildMyTrip = () => {
   const [textInput, setTextInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Questions
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-
-  // Results (placeholder)
+  // Processing & results
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState("");
   const [result, setResult] = useState<TripResult | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null);
+
+  // Contact capture
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   const selectMode = (m: StartMode) => {
     setMode(m);
@@ -316,84 +223,187 @@ const BuildMyTrip = () => {
     setInspirationItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const proceedToQuestions = () => {
-    setStep("questions");
-    setQuestionIndex(0);
+  /** Check if inspiration mode has at least one valid item (link, note, or file) */
+  const hasValidInspirationInput = inspirationItems.length > 0;
+
+  /** Build the payload for the backend */
+  const buildPayload = () => {
+    const payload: Record<string, any> = {
+      mode,
+      audience_type: "traveler",
+    };
+
+    if (mode === "destination") {
+      payload.destination = destination.trim();
+    } else if (mode === "explore") {
+      payload.mood = exploreMood.trim();
+    } else if (mode === "inspiration") {
+      payload.inspiration_items = inspirationItems.map((item) => ({
+        type: item.type,
+        value: item.value,
+      }));
+    }
+
+    return payload;
   };
 
-  const handleAnswer = (val: string) => {
-    const q = PLACEHOLDER_QUESTIONS[questionIndex];
-    setAnswers((prev) => ({ ...prev, [q.id]: val }));
-    // Auto-advance for choice questions
-    if (q.type === "choice") {
-      if (questionIndex < PLACEHOLDER_QUESTIONS.length - 1) {
-        setTimeout(() => setQuestionIndex((i) => i + 1), 300);
-      } else {
-        setTimeout(() => processTrip(), 300);
+  /** Submit to backend for trip shaping */
+  const processTrip = async () => {
+    setStep("processing");
+    setIsProcessing(true);
+    setBackendError(null);
+    setResult(null);
+    setProcessingMessage("Analysing your inputs and matching trip options…");
+
+    try {
+      const payload = buildPayload();
+
+      // Upload any files from inspiration items first
+      const fileItems = inspirationItems.filter((item) => item.file);
+      const fileUrls: { file_url: string; file_name: string }[] = [];
+
+      if (fileItems.length > 0) {
+        setProcessingMessage("Uploading your files…");
+        for (const item of fileItems) {
+          if (!item.file) continue;
+          const ext = item.file.name.split(".").pop() ?? "bin";
+          const storagePath = `build-my-trip/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("lead-attachments")
+            .upload(storagePath, item.file);
+
+          if (uploadError) {
+            console.warn("File upload failed:", uploadError.message);
+            continue;
+          }
+
+          const { data: urlData } = supabase.storage
+            .from("lead-attachments")
+            .getPublicUrl(storagePath);
+
+          fileUrls.push({ file_url: urlData.publicUrl, file_name: item.file.name });
+        }
+        payload.files = fileUrls;
       }
+
+      setProcessingMessage("Shaping your trip — matching destinations, stays, and pricing…");
+
+      // Call the analyze-itinerary edge function with build-my-trip context
+      const { data, error } = await supabase.functions.invoke("analyze-itinerary", {
+        body: {
+          ...payload,
+          source: "build-my-trip",
+          files: fileUrls.length > 0 ? fileUrls : undefined,
+        },
+      });
+
+      if (error) throw error;
+
+      // If the backend returned structured trip results, use them
+      if (data?.traveler_output || data?.analysis) {
+        const travelerOutput = data.traveler_output;
+        const analysis = data.analysis;
+
+        // Map backend response to our result shape
+        const mappedResult: TripResult = {
+          direction: travelerOutput?.headline_takeaway
+            || analysis?.advisory_summary
+            || `Your ${mode === "destination" ? destination : "trip"} direction`,
+          whyItFits: travelerOutput?.concise_explanation
+            || analysis?.advisory_summary
+            || "Based on what you shared, here's what we found.",
+          nextStep: "Share your mobile number to receive a detailed trip plan with real pricing and EMI options.",
+          versions: [],
+          emiSignal: travelerOutput?.emi_signal || undefined,
+          deeperDetails: travelerOutput?.deeper_details || [],
+        };
+
+        // Map versions if available
+        if (travelerOutput?.realistic_version) {
+          mappedResult.versions.push({
+            label: "Realistic Version",
+            tag: "Best fit",
+            headline: travelerOutput.realistic_version.headline || "Your trip",
+            summary: travelerOutput.realistic_version.summary || "",
+            highlights: travelerOutput.realistic_version.highlights || [],
+            emiMonthly: travelerOutput.realistic_version.emi_monthly,
+            emiTenure: travelerOutput.realistic_version.emi_tenure,
+          });
+        }
+
+        if (travelerOutput?.upgraded_version) {
+          mappedResult.versions.push({
+            label: "Upgraded Version",
+            headline: travelerOutput.upgraded_version.headline || "Premium option",
+            summary: travelerOutput.upgraded_version.summary || "",
+            highlights: travelerOutput.upgraded_version.highlights || [],
+            emiMonthly: travelerOutput.upgraded_version.emi_monthly,
+            emiTenure: travelerOutput.upgraded_version.emi_tenure,
+            tagColor: "bg-brand-coral/10 text-brand-coral",
+          });
+        }
+
+        setResult(mappedResult);
+        setStep("results");
+      } else {
+        // Backend processed but no structured output yet — show contact capture
+        setStep("contact-capture");
+      }
+    } catch (err: any) {
+      console.error("Build My Trip processing error:", err);
+      // Graceful fallback: show contact capture instead of error
+      setBackendError(err?.message || "Processing is temporarily unavailable");
+      setStep("contact-capture");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const processTrip = async () => {
-    setStep("results");
-    setIsProcessing(true);
-    // Simulate processing — in production, this calls a backend function
-    await new Promise((r) => setTimeout(r, 3000));
-    setResult({
-      direction: "Southeast Asia Beach & Culture",
-      whyItFits: "Based on your preferences for relaxation with cultural elements, a 7-night Bali trip balances both beautifully within your budget range.",
-      nextStep: "Share your mobile number to receive a detailed trip plan with real pricing and EMI options.",
-      versions: [
-        {
-          label: "Realistic Version",
-          tag: "Best fit",
-          headline: "7N Bali · Beach + Temple Trail",
-          summary: "A well-balanced itinerary covering Ubud's culture and Seminyak's beaches, with quality 4-star stays.",
-          highlights: [
-            "4-star stays in Ubud & Seminyak",
-            "Includes transfers & breakfast",
-            "Temple tours + rice terrace visit",
-            "Beach club access included",
-          ],
-          emiMonthly: "₹8,500",
-          emiTenure: "6 months No Cost EMI",
+  /** Submit contact for follow-up */
+  const submitContact = async () => {
+    if (!contactPhone.trim()) {
+      toast.error("Please enter your mobile number");
+      return;
+    }
+
+    try {
+      const payload = buildPayload();
+
+      await supabase.functions.invoke("capture-traveler-contact", {
+        body: {
+          full_name: contactName.trim() || "Traveler",
+          mobile_number: contactPhone.trim(),
+          source: "build-my-trip",
+          mode,
+          destination: mode === "destination" ? destination : undefined,
+          inspiration_count: mode === "inspiration" ? inspirationItems.length : undefined,
+          ...payload,
         },
-        {
-          label: "Upgraded Version",
-          headline: "7N Bali · Premium Beach & Wellness",
-          summary: "Same destinations, elevated stays with pool villas, spa credits, and a sunset dinner cruise.",
-          highlights: [
-            "5-star pool villa stays",
-            "Spa & wellness credits included",
-            "Private transfers throughout",
-            "Sunset dinner cruise experience",
-          ],
-          emiMonthly: "₹12,800",
-          emiTenure: "6 months No Cost EMI",
-          tagColor: "bg-brand-coral/10 text-brand-coral",
-        },
-      ],
-      emiSignal: "Both versions are eligible for No Cost EMI — the upgrade is just ₹4,300/month more.",
-      deeperDetails: [
-        "Flight options: Direct from major metros, 6-7hr",
-        "Best months: April–October (dry season)",
-        "Visa: Free on arrival for Indian passport holders",
-      ],
-    });
-    setIsProcessing(false);
+      });
+
+      setContactSubmitted(true);
+      toast.success("We'll get back to you with a detailed trip plan!");
+    } catch (err) {
+      console.error("Contact capture error:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   const reset = () => {
     setStep("mode-select");
     setMode(null);
     setDestination("");
+    setExploreMood("");
     setInspirationItems([]);
     setLinkInput("");
     setTextInput("");
-    setQuestionIndex(0);
-    setAnswers({});
     setResult(null);
     setIsProcessing(false);
+    setBackendError(null);
+    setContactPhone("");
+    setContactName("");
+    setContactSubmitted(false);
   };
 
   return (
@@ -490,9 +500,9 @@ const BuildMyTrip = () => {
                 <Button
                   className="w-full gap-2"
                   disabled={!destination.trim()}
-                  onClick={proceedToQuestions}
+                  onClick={processTrip}
                 >
-                  Continue <ArrowRight size={14} />
+                  Shape my trip <ArrowRight size={14} />
                 </Button>
               </div>
             )}
@@ -506,14 +516,25 @@ const BuildMyTrip = () => {
                     Open Exploration
                   </div>
                   <h3 className="font-heading font-bold text-foreground text-[14px] leading-snug">
-                    Let's find the right destination for you
+                    What kind of holiday are you in the mood for?
                   </h3>
                   <p className="text-[12px] text-muted-foreground">
-                    We'll ask a few quick questions about what you're looking for — and suggest places that fit.
+                    Tell us anything — beach vibes, mountains, culture, adventure, relaxation, family-friendly — we'll suggest places that fit.
                   </p>
                 </div>
-                <Button className="w-full gap-2" onClick={proceedToQuestions}>
-                  Let's go <ArrowRight size={14} />
+                <Textarea
+                  placeholder="e.g. I want a relaxing beach holiday with my partner, somewhere warm and not too expensive"
+                  value={exploreMood}
+                  onChange={(e) => setExploreMood(e.target.value)}
+                  className="text-[12px] min-h-[60px]"
+                  rows={3}
+                />
+                <Button
+                  className="w-full gap-2"
+                  disabled={!exploreMood.trim()}
+                  onClick={processTrip}
+                >
+                  Shape my trip <ArrowRight size={14} />
                 </Button>
               </div>
             )}
@@ -630,10 +651,21 @@ const BuildMyTrip = () => {
                   />
                 </div>
 
+                {/* Item count indicator */}
+                {inspirationItems.length > 0 && (
+                  <p className="text-[10px] text-muted-foreground">
+                    {inspirationItems.length} item{inspirationItems.length !== 1 ? "s" : ""} added
+                    {" · "}
+                    {inspirationItems.filter((i) => i.type === "link").length > 0 && `${inspirationItems.filter((i) => i.type === "link").length} link${inspirationItems.filter((i) => i.type === "link").length !== 1 ? "s" : ""}`}
+                    {inspirationItems.filter((i) => i.type === "text").length > 0 && `, ${inspirationItems.filter((i) => i.type === "text").length} note${inspirationItems.filter((i) => i.type === "text").length !== 1 ? "s" : ""}`}
+                    {inspirationItems.filter((i) => i.type === "file").length > 0 && `, ${inspirationItems.filter((i) => i.type === "file").length} file${inspirationItems.filter((i) => i.type === "file").length !== 1 ? "s" : ""}`}
+                  </p>
+                )}
+
                 <Button
                   className="w-full gap-2"
-                  disabled={inspirationItems.length === 0}
-                  onClick={proceedToQuestions}
+                  disabled={!hasValidInspirationInput}
+                  onClick={processTrip}
                 >
                   Shape my trip <ArrowRight size={14} />
                 </Button>
@@ -642,61 +674,136 @@ const BuildMyTrip = () => {
           </motion.div>
         )}
 
-        {/* ── Questions Flow ── */}
-        {step === "questions" && (
+        {/* ── Processing ── */}
+        {step === "processing" && (
           <motion.div
-            key="questions"
+            key="processing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="p-4 sm:p-5"
+          >
+            <div className="flex flex-col items-center justify-center py-10 space-y-3">
+              <Loader2 size={28} className="text-primary animate-spin" />
+              <div className="text-center space-y-1">
+                <p className="font-heading font-bold text-foreground text-[14px]">
+                  Shaping your trip
+                </p>
+                <p className="text-[12px] text-muted-foreground">
+                  {processingMessage}
+                </p>
+              </div>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-5 h-0.5 rounded-full bg-primary/20"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, delay: i * 0.3, repeat: Infinity }}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Contact Capture (fallback when backend hasn't returned structured results) ── */}
+        {step === "contact-capture" && (
+          <motion.div
+            key="contact-capture"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="p-4 sm:p-5 space-y-3.5"
           >
-            <button
-              onClick={() => {
-                if (questionIndex > 0) setQuestionIndex((i) => i - 1);
-                else setStep("input");
-              }}
-              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft size={11} /> Back
-            </button>
+            {!contactSubmitted ? (
+              <>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Star size={13} className="text-primary" />
+                    Almost There
+                  </div>
+                  <h3 className="font-heading font-bold text-foreground text-[15px] leading-snug">
+                    We've captured your trip inputs
+                  </h3>
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
+                    Share your mobile number and our team will get back to you with a detailed trip plan, real pricing, and EMI options.
+                  </p>
+                </div>
 
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              <Compass size={13} className="text-primary" />
-              Shaping Your Trip
-            </div>
+                {/* Summary of what was shared */}
+                <div className="bg-accent/30 rounded-lg p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What you shared</p>
+                  {mode === "destination" && (
+                    <p className="text-[12px] text-foreground">📍 Destination: {destination}</p>
+                  )}
+                  {mode === "explore" && (
+                    <p className="text-[12px] text-foreground">🧭 Mood: {exploreMood}</p>
+                  )}
+                  {mode === "inspiration" && (
+                    <p className="text-[12px] text-foreground">
+                      💡 {inspirationItems.length} inspiration item{inspirationItems.length !== 1 ? "s" : ""} shared
+                    </p>
+                  )}
+                </div>
 
-            <AnimatePresence mode="wait">
-              <QuestionStep
-                key={PLACEHOLDER_QUESTIONS[questionIndex].id}
-                question={PLACEHOLDER_QUESTIONS[questionIndex]}
-                answer={answers[PLACEHOLDER_QUESTIONS[questionIndex].id] || ""}
-                onAnswer={handleAnswer}
-                current={questionIndex}
-                total={PLACEHOLDER_QUESTIONS.length}
-              />
-            </AnimatePresence>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Your name (optional)"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Mobile number *"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    className="text-sm"
+                    type="tel"
+                    maxLength={15}
+                  />
+                </div>
 
-            {PLACEHOLDER_QUESTIONS[questionIndex].type !== "choice" && (
-              <Button
-                className="w-full gap-2"
-                disabled={!answers[PLACEHOLDER_QUESTIONS[questionIndex].id]}
-                onClick={() => {
-                  if (questionIndex < PLACEHOLDER_QUESTIONS.length - 1) {
-                    setQuestionIndex((i) => i + 1);
-                  } else {
-                    processTrip();
-                  }
-                }}
-              >
-                {questionIndex < PLACEHOLDER_QUESTIONS.length - 1 ? "Next" : "Build my trip"}{" "}
-                <ArrowRight size={14} />
-              </Button>
+                <Button
+                  className="w-full gap-2"
+                  disabled={!contactPhone.trim()}
+                  onClick={submitContact}
+                >
+                  <Phone size={14} /> Send me a trip plan
+                </Button>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  We'll share a personalised trip plan on WhatsApp or call.
+                </p>
+
+                <button
+                  onClick={reset}
+                  className="w-full text-[11px] text-muted-foreground hover:text-foreground transition-colors text-center pt-1"
+                >
+                  Start over
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 space-y-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
+                  <CheckCircle2 size={24} className="text-brand-green" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-heading font-bold text-foreground text-[15px]">
+                    You're all set!
+                  </h3>
+                  <p className="text-[12px] text-muted-foreground max-w-[240px]">
+                    Our team will review your trip inputs and reach out with a detailed plan, pricing, and EMI options.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={reset} className="mt-2 gap-1.5 text-[12px]">
+                  <Compass size={12} /> Build another trip
+                </Button>
+              </div>
             )}
           </motion.div>
         )}
 
-        {/* ── Results ── */}
+        {/* ── Results (from backend) ── */}
         {step === "results" && (
           <motion.div
             key="results"
@@ -705,29 +812,7 @@ const BuildMyTrip = () => {
             exit={{ opacity: 0 }}
             className="p-4 sm:p-5 space-y-3.5"
           >
-            {isProcessing ? (
-              <div className="flex flex-col items-center justify-center py-10 space-y-3">
-                <Loader2 size={28} className="text-primary animate-spin" />
-                <div className="text-center space-y-1">
-                  <p className="font-heading font-bold text-foreground text-[14px]">
-                    Shaping your trip
-                  </p>
-                  <p className="text-[12px] text-muted-foreground">
-                    Matching destinations, stays, and pricing to what you're looking for…
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-5 h-0.5 rounded-full bg-primary/20"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.5, delay: i * 0.3, repeat: Infinity }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : result ? (
+            {result ? (
               <div className="space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -759,11 +844,13 @@ const BuildMyTrip = () => {
                 </div>
 
                 {/* Version cards */}
-                <div className="space-y-2.5">
-                  {result.versions.map((version, i) => (
-                    <ResultVersionCard key={version.label} version={version} isPrimary={i === 0} />
-                  ))}
-                </div>
+                {result.versions.length > 0 && (
+                  <div className="space-y-2.5">
+                    {result.versions.map((version, i) => (
+                      <ResultVersionCard key={version.label} version={version} isPrimary={i === 0} />
+                    ))}
+                  </div>
+                )}
 
                 {/* EMI signal */}
                 {result.emiSignal && (
@@ -794,7 +881,7 @@ const BuildMyTrip = () => {
                 )}
 
                 {/* CTA */}
-                <Button className="w-full gap-2">
+                <Button className="w-full gap-2" onClick={() => setStep("contact-capture")}>
                   Get detailed pricing & EMI options <ArrowRight size={14} />
                 </Button>
                 <p className="text-[10px] text-muted-foreground text-center">
