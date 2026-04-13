@@ -4,8 +4,8 @@
  * 2. I'm not sure where to go (open exploration)
  * 3. I've saved lots of trip ideas (inspiration dump)
  *
- * UI shell — backend processing is handled by Codex via edge functions.
- * No local placeholder questions or hardcoded results.
+ * Uses build-my-trip.ts service layer for backend calls and response mapping.
+ * Rich results rendered via TravelerBuildTripFlow.
  */
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,30 +21,19 @@ import {
 import { validateFile } from "@/lib/upload-validation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  type BuildMyTripResult,
+  type InspirationItem,
+  buildPayload,
+  uploadInspirationFiles,
+  invokeBuildMyTrip,
+} from "@/lib/build-my-trip";
+import { saveTripSession, clearTripSession } from "@/lib/traveler-trip-context";
+import TravelerBuildTripFlow from "@/components/travelers/TravelerBuildTripFlow";
 
 /* ─── Types ─── */
 type StartMode = "destination" | "explore" | "inspiration";
 type FlowStep = "mode-select" | "input" | "processing" | "results" | "contact-capture";
-
-interface TripResultVersion {
-  label: string;
-  tag?: string;
-  headline: string;
-  summary: string;
-  highlights: string[];
-  emiMonthly?: string;
-  emiTenure?: string;
-  tagColor?: string;
-}
-
-interface TripResult {
-  direction: string;
-  whyItFits: string;
-  nextStep: string;
-  versions: TripResultVersion[];
-  emiSignal?: string;
-  deeperDetails?: string[];
-}
 
 /* ─── Sub-components ─── */
 
@@ -80,11 +69,11 @@ function ModeCard({
   );
 }
 
-function InspirationItem({
+function InspirationItemRow({
   item,
   onRemove,
 }: {
-  item: { type: "link" | "text" | "file"; value: string; file?: File };
+  item: InspirationItem;
   onRemove: () => void;
 }) {
   const icon =
@@ -107,58 +96,6 @@ function InspirationItem({
   );
 }
 
-function ResultVersionCard({
-  version,
-  isPrimary,
-}: {
-  version: TripResultVersion;
-  isPrimary: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-xl border p-4 space-y-2.5 transition-shadow ${
-        isPrimary
-          ? "border-primary/25 bg-primary/[0.02] shadow-card"
-          : "border-border hover:shadow-card"
-      }`}
-    >
-      <div className="flex items-center gap-2 flex-wrap">
-        <span
-          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
-            version.tagColor ?? (isPrimary ? "bg-primary/10 text-primary" : "bg-accent text-muted-foreground")
-          }`}
-        >
-          {version.label}
-        </span>
-        {version.tag && (
-          <span className="text-[10px] font-semibold text-brand-green bg-brand-green/10 px-2 py-0.5 rounded-full">
-            {version.tag}
-          </span>
-        )}
-      </div>
-      <h4 className="font-heading font-bold text-foreground text-[15px] leading-snug">
-        {version.headline}
-      </h4>
-      <p className="text-[12px] text-muted-foreground leading-relaxed">{version.summary}</p>
-      <div className="space-y-1">
-        {version.highlights.map((h) => (
-          <div key={h} className="flex items-start gap-2">
-            <CheckCircle2 size={11} className="text-brand-green shrink-0 mt-0.5" />
-            <span className="text-[11px] text-foreground leading-relaxed">{h}</span>
-          </div>
-        ))}
-      </div>
-      {version.emiMonthly && (
-        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-border/60">
-          <CreditCard size={13} className="text-primary shrink-0" />
-          <span className="text-sm font-heading font-bold text-foreground">{version.emiMonthly}</span>
-          <span className="text-[11px] text-muted-foreground">/month · {version.emiTenure}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─── Main component ─── */
 const BuildMyTrip = () => {
   const [step, setStep] = useState<FlowStep>("mode-select");
@@ -171,9 +108,7 @@ const BuildMyTrip = () => {
   const [exploreMood, setExploreMood] = useState("");
 
   // Inspiration dump
-  const [inspirationItems, setInspirationItems] = useState<
-    { type: "link" | "text" | "file"; value: string; file?: File }[]
-  >([]);
+  const [inspirationItems, setInspirationItems] = useState<InspirationItem[]>([]);
   const [linkInput, setLinkInput] = useState("");
   const [textInput, setTextInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -181,7 +116,7 @@ const BuildMyTrip = () => {
   // Processing & results
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState("");
-  const [result, setResult] = useState<TripResult | null>(null);
+  const [result, setResult] = useState<BuildMyTripResult | null>(null);
   const [backendError, setBackendError] = useState<string | null>(null);
 
   // Contact capture
@@ -192,6 +127,7 @@ const BuildMyTrip = () => {
   const selectMode = (m: StartMode) => {
     setMode(m);
     setStep("input");
+    saveTripSession({ mode: m, step: "input" });
   };
 
   const addLink = () => {
@@ -226,27 +162,6 @@ const BuildMyTrip = () => {
   /** Check if inspiration mode has at least one valid item (link, note, or file) */
   const hasValidInspirationInput = inspirationItems.length > 0;
 
-  /** Build the payload for the backend */
-  const buildPayload = () => {
-    const payload: Record<string, any> = {
-      mode,
-      audience_type: "traveler",
-    };
-
-    if (mode === "destination") {
-      payload.destination = destination.trim();
-    } else if (mode === "explore") {
-      payload.mood = exploreMood.trim();
-    } else if (mode === "inspiration") {
-      payload.inspiration_items = inspirationItems.map((item) => ({
-        type: item.type,
-        value: item.value,
-      }));
-    }
-
-    return payload;
-  };
-
   /** Submit to backend for trip shaping */
   const processTrip = async () => {
     setStep("processing");
@@ -254,107 +169,53 @@ const BuildMyTrip = () => {
     setBackendError(null);
     setResult(null);
     setProcessingMessage("Analysing your inputs and matching trip options…");
+    saveTripSession({ mode, step: "processing" });
 
     try {
-      const payload = buildPayload();
-
-      // Upload any files from inspiration items first
-      const fileItems = inspirationItems.filter((item) => item.file);
-      const fileUrls: { file_url: string; file_name: string }[] = [];
-
-      if (fileItems.length > 0) {
+      // Upload any files first
+      let fileUrls: { file_url: string; file_name: string }[] = [];
+      if (inspirationItems.some((item) => item.file)) {
         setProcessingMessage("Uploading your files…");
-        for (const item of fileItems) {
-          if (!item.file) continue;
-          const ext = item.file.name.split(".").pop() ?? "bin";
-          const storagePath = `build-my-trip/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("lead-attachments")
-            .upload(storagePath, item.file);
-
-          if (uploadError) {
-            console.warn("File upload failed:", uploadError.message);
-            continue;
-          }
-
-          const { data: urlData } = supabase.storage
-            .from("lead-attachments")
-            .getPublicUrl(storagePath);
-
-          fileUrls.push({ file_url: urlData.publicUrl, file_name: item.file.name });
-        }
-        payload.files = fileUrls;
+        fileUrls = await uploadInspirationFiles(inspirationItems);
       }
 
       setProcessingMessage("Shaping your trip — matching destinations, stays, and pricing…");
 
-      // Call the analyze-itinerary edge function with build-my-trip context
-      const { data, error } = await supabase.functions.invoke("analyze-itinerary", {
-        body: {
-          ...payload,
-          source: "build-my-trip",
-          files: fileUrls.length > 0 ? fileUrls : undefined,
+      const payload = buildPayload(
+        mode!,
+        {
+          destination,
+          mood: exploreMood,
+          inspirationItems,
         },
-      });
+        fileUrls
+      );
 
-      if (error) throw error;
+      const { mapped } = await invokeBuildMyTrip(payload);
 
-      // If the backend returned structured trip results, use them
-      if (data?.traveler_output || data?.analysis) {
-        const travelerOutput = data.traveler_output;
-        const analysis = data.analysis;
-
-        // Map backend response to our result shape
-        const mappedResult: TripResult = {
-          direction: travelerOutput?.headline_takeaway
-            || analysis?.advisory_summary
-            || `Your ${mode === "destination" ? destination : "trip"} direction`,
-          whyItFits: travelerOutput?.concise_explanation
-            || analysis?.advisory_summary
-            || "Based on what you shared, here's what we found.",
-          nextStep: "Share your mobile number to receive a detailed trip plan with real pricing and EMI options.",
-          versions: [],
-          emiSignal: travelerOutput?.emi_signal || undefined,
-          deeperDetails: travelerOutput?.deeper_details || [],
-        };
-
-        // Map versions if available
-        if (travelerOutput?.realistic_version) {
-          mappedResult.versions.push({
-            label: "Realistic Version",
-            tag: "Best fit",
-            headline: travelerOutput.realistic_version.headline || "Your trip",
-            summary: travelerOutput.realistic_version.summary || "",
-            highlights: travelerOutput.realistic_version.highlights || [],
-            emiMonthly: travelerOutput.realistic_version.emi_monthly,
-            emiTenure: travelerOutput.realistic_version.emi_tenure,
-          });
+      if (mapped) {
+        // Decide rendering based on result strength
+        if (mapped.resultStrength === "weak" && mapped.versions.length === 0 && mapped.destinationShortlist.length === 0) {
+          // Weak result with nothing to show — contact capture
+          setResult(mapped);
+          setStep("contact-capture");
+          saveTripSession({ step: "contact-capture", resultStrength: "weak" });
+        } else {
+          // Medium or strong result — show rich flow
+          setResult(mapped);
+          setStep("results");
+          saveTripSession({ step: "results", resultStrength: mapped.resultStrength });
         }
-
-        if (travelerOutput?.upgraded_version) {
-          mappedResult.versions.push({
-            label: "Upgraded Version",
-            headline: travelerOutput.upgraded_version.headline || "Premium option",
-            summary: travelerOutput.upgraded_version.summary || "",
-            highlights: travelerOutput.upgraded_version.highlights || [],
-            emiMonthly: travelerOutput.upgraded_version.emi_monthly,
-            emiTenure: travelerOutput.upgraded_version.emi_tenure,
-            tagColor: "bg-brand-coral/10 text-brand-coral",
-          });
-        }
-
-        setResult(mappedResult);
-        setStep("results");
       } else {
-        // Backend processed but no structured output yet — show contact capture
+        // Backend processed but returned nothing structured — contact capture fallback
         setStep("contact-capture");
+        saveTripSession({ step: "contact-capture" });
       }
     } catch (err: any) {
       console.error("Build My Trip processing error:", err);
-      // Graceful fallback: show contact capture instead of error
       setBackendError(err?.message || "Processing is temporarily unavailable");
       setStep("contact-capture");
+      saveTripSession({ step: "contact-capture" });
     } finally {
       setIsProcessing(false);
     }
@@ -368,7 +229,11 @@ const BuildMyTrip = () => {
     }
 
     try {
-      const payload = buildPayload();
+      const payload = buildPayload(mode!, {
+        destination,
+        mood: exploreMood,
+        inspirationItems,
+      });
 
       await supabase.functions.invoke("capture-traveler-contact", {
         body: {
@@ -404,6 +269,7 @@ const BuildMyTrip = () => {
     setContactPhone("");
     setContactName("");
     setContactSubmitted(false);
+    clearTripSession();
   };
 
   return (
@@ -469,7 +335,7 @@ const BuildMyTrip = () => {
             className="p-4 sm:p-5 space-y-3.5"
           >
             <button
-              onClick={() => setStep("mode-select")}
+              onClick={() => { setStep("mode-select"); saveTripSession({ step: "mode-select" }); }}
               className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={11} /> Back
@@ -559,7 +425,7 @@ const BuildMyTrip = () => {
                 {inspirationItems.length > 0 && (
                   <div className="space-y-1 max-h-40 overflow-y-auto">
                     {inspirationItems.map((item, i) => (
-                      <InspirationItem key={`${item.value}-${i}`} item={item} onRemove={() => removeItem(i)} />
+                      <InspirationItemRow key={`${item.value}-${i}`} item={item} onRemove={() => removeItem(i)} />
                     ))}
                   </div>
                 )}
@@ -607,7 +473,7 @@ const BuildMyTrip = () => {
                   </div>
                 </div>
 
-                {/* Add note / recommendation */}
+                {/* Add note */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                     <MessageCircle size={10} className="text-primary" /> Add a note or recommendation
@@ -651,7 +517,7 @@ const BuildMyTrip = () => {
                   />
                 </div>
 
-                {/* Item count indicator */}
+                {/* Item count */}
                 {inspirationItems.length > 0 && (
                   <p className="text-[10px] text-muted-foreground">
                     {inspirationItems.length} item{inspirationItems.length !== 1 ? "s" : ""} added
@@ -707,7 +573,7 @@ const BuildMyTrip = () => {
           </motion.div>
         )}
 
-        {/* ── Contact Capture (fallback when backend hasn't returned structured results) ── */}
+        {/* ── Contact Capture (fallback) ── */}
         {step === "contact-capture" && (
           <motion.div
             key="contact-capture"
@@ -731,7 +597,7 @@ const BuildMyTrip = () => {
                   </p>
                 </div>
 
-                {/* Summary of what was shared */}
+                {/* Summary */}
                 <div className="bg-accent/30 rounded-lg p-3 space-y-1">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">What you shared</p>
                   {mode === "destination" && (
@@ -803,93 +669,13 @@ const BuildMyTrip = () => {
           </motion.div>
         )}
 
-        {/* ── Results (from backend) ── */}
-        {step === "results" && (
-          <motion.div
-            key="results"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="p-4 sm:p-5 space-y-3.5"
-          >
-            {result ? (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Star size={14} className="text-primary" />
-                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
-                      Your Trip Direction
-                    </span>
-                  </div>
-                  <button
-                    onClick={reset}
-                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
-                  >
-                    Start over
-                  </button>
-                </div>
-
-                {/* Direction headline */}
-                <div className="bg-accent/30 rounded-xl p-3.5 space-y-1.5">
-                  <h3 className="font-heading font-bold text-foreground text-base leading-snug">
-                    {result.direction}
-                  </h3>
-                  <p className="text-[12px] text-muted-foreground leading-relaxed">
-                    {result.whyItFits}
-                  </p>
-                  <div className="flex items-start gap-2 pt-0.5">
-                    <ArrowRight size={11} className="text-primary shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-foreground font-medium">{result.nextStep}</p>
-                  </div>
-                </div>
-
-                {/* Version cards */}
-                {result.versions.length > 0 && (
-                  <div className="space-y-2.5">
-                    {result.versions.map((version, i) => (
-                      <ResultVersionCard key={version.label} version={version} isPrimary={i === 0} />
-                    ))}
-                  </div>
-                )}
-
-                {/* EMI signal */}
-                {result.emiSignal && (
-                  <div className="flex items-start gap-2 bg-primary/[0.04] rounded-lg border border-primary/15 p-3">
-                    <CreditCard size={13} className="text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[11px] font-semibold text-foreground">{result.emiSignal}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        No Cost EMI is subject to customer eligibility and lender approval. T&C apply.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Deeper details */}
-                {result.deeperDetails && result.deeperDetails.length > 0 && (
-                  <div className="border rounded-lg p-3 space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      Good to Know
-                    </p>
-                    {result.deeperDetails.map((d) => (
-                      <div key={d} className="flex items-start gap-2">
-                        <CheckCircle2 size={10} className="text-brand-green shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-muted-foreground">{d}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* CTA */}
-                <Button className="w-full gap-2" onClick={() => setStep("contact-capture")}>
-                  Get detailed pricing & EMI options <ArrowRight size={14} />
-                </Button>
-                <p className="text-[10px] text-muted-foreground text-center">
-                  We'll ask for your mobile to share a detailed trip plan with real pricing.
-                </p>
-              </div>
-            ) : null}
-          </motion.div>
+        {/* ── Rich Results (via TravelerBuildTripFlow) ── */}
+        {step === "results" && result && (
+          <TravelerBuildTripFlow
+            result={result}
+            onReset={reset}
+            onContactCapture={() => setStep("contact-capture")}
+          />
         )}
       </AnimatePresence>
     </div>
