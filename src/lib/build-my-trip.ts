@@ -94,9 +94,23 @@ export interface BuildTripFinanceRead {
   monthly_upgrade_delta: string | null;
 }
 
+export interface BuildTripReadBackItem {
+  label: string;
+  value: string;
+  confidence: BuildTripConfidence;
+}
+
+export interface BuildTripReadBack {
+  headline: string;
+  summary: string;
+  items: BuildTripReadBackItem[];
+  source_traces: string[];
+}
+
 export interface BuildTripSynthesisOutput {
   headline: string;
   subtext: string;
+  our_read: BuildTripReadBack;
   trip_direction: string;
   destination_shortlist: string[];
   trip_structure: string;
@@ -123,6 +137,7 @@ export interface BuildTripRenderContract {
   state: BuildTripRenderState;
   reason: string;
   allow_save: boolean;
+  show_our_read: boolean;
   show_next_question: boolean;
   show_trip_direction: boolean;
   show_destination_shortlist: boolean;
@@ -205,6 +220,7 @@ const ACTIVITY_KEYWORDS: Record<string, RegExp[]> = {
   island_hopping: [/\bisland hop\b/, /\bphi phi\b/, /\bboat trip\b/],
   nightlife: [/\bnightlife\b/, /\bparty\b/, /\bclub\b/],
   water_activities: [/\bscuba\b/, /\bsnorkel\b/, /\bparasail\b/, /\bwater sport\b/],
+  thrill_activities: [/\bbungee\b/, /\bzipline\b/, /\bthrill\b/, /\bparaglid(?:e|ing)?\b/, /\batv\b/],
   sightseeing: [/\bsightseeing\b/, /\btemple\b/, /\bmarket\b/, /\btour\b/],
   relaxation: [/\bspa\b/, /\bpool\b/, /\bbeach day\b/, /\bsunset\b/],
   food: [/\bfood\b/, /\bstreet food\b/, /\brestaurant\b/, /\bcafe\b/],
@@ -419,6 +435,53 @@ function normalizeInspirationInputs(inputs: TravelerInspirationInput[]) {
     });
   }
   return Array.from(map.values()).slice(0, 12);
+}
+
+function sourceTraceLabel(item: TravelerInspirationInput) {
+  if (item.type === "link") return item.label ?? "Travel link";
+  if (item.type === "friend_tip") return "Friend recommendation";
+  if (item.type === "hotel") return "Stay idea";
+  if (item.type === "place") return "Place idea";
+  if (item.type === "screenshot") return "Screenshot";
+  return item.label ?? "Travel note";
+}
+
+function describeTravelerMix(travelerMix: string | null) {
+  if (travelerMix === "couple") return "Couple or honeymoon-style trip";
+  if (travelerMix === "family") return "Family-friendly holiday";
+  if (travelerMix === "friends") return "Friends or group trip";
+  if (travelerMix === "solo") return "Solo trip";
+  return null;
+}
+
+function describeVibe(vibes: string[]) {
+  if (vibes.length === 0) return null;
+  return vibes.slice(0, 3).map((value) => humanize(value)).join(" + ");
+}
+
+function describeFocus(signals: BuildTripSignalExtraction) {
+  if (
+    signals.stay_style_signals.includes("resort_led")
+    || signals.stay_style_signals.includes("beach_property")
+    || signals.stay_style_signals.includes("villa")
+    || signals.stay_style_signals.includes("premium")
+  ) {
+    return "More resort-led and comfort-led than activity-packed";
+  }
+
+  if (signals.activity_signals.includes("thrill_activities") || signals.activity_signals.includes("water_activities")) {
+    return "Adventure cues are showing up strongly";
+  }
+
+  if (signals.activity_signals.length >= 2) {
+    return "More experience-led than hotel-led";
+  }
+
+  if (signals.vibe_signals.includes("family")) {
+    return "Comfort and trip smoothness may matter more than squeezing in everything";
+  }
+
+  return null;
 }
 
 function detectDestinations(brief: BuildTripBrief, inspirationInputs: TravelerInspirationInput[]) {
@@ -662,6 +725,94 @@ export function buildClarifyingQuestions(params: {
   const preferences = params.preferences ?? {};
   const signals = params.signals ?? buildTripSignals(params);
   const questions: BuildTripClarifyingQuestion[] = [];
+  const leadDestination = signals.likely_destinations[0]?.destination ?? null;
+  const travelerMixRead = describeTravelerMix(signals.traveler_mix_signal);
+
+  if (
+    brief.start_mode === "inspiration_dump"
+    && leadDestination
+    && !brief.destination_in_mind.trim()
+    && !preferences.destination_flexibility
+  ) {
+    questions.push({
+      code: "destination_validation",
+      question: signals.likely_destinations.length > 1
+        ? `We think ${leadDestination} is one strong direction here. Do you want to keep that, or stay open to similar options?`
+        : `This looks like a ${leadDestination} trip. Is that the destination you have in mind?`,
+      why: "We picked this up from the destination clues in what you shared, so confirming it will sharpen everything else.",
+      target: "preferences",
+      field: "destination_flexibility",
+      options: [
+        { value: "fixed", label: `Yes, keep ${leadDestination}` },
+        { value: "open_to_similar", label: "Open to similar options" },
+        { value: "exploring", label: "Still exploring" },
+      ],
+    });
+  }
+
+  if (!brief.traveler_mix && signals.traveler_mix_signal && travelerMixRead) {
+    const travelerOptions = [
+      { value: signals.traveler_mix_signal, label: `Yes, ${travelerMixRead}` },
+      { value: "couple", label: "Couple" },
+      { value: "family", label: "Family" },
+      { value: "friends", label: "Friends" },
+      { value: "solo", label: "Solo" },
+    ].filter((option, index, list) => list.findIndex((item) => item.value === option.value) === index);
+
+    questions.push({
+      code: "traveler_mix_validation",
+      question: `This is reading more like a ${humanize(signals.traveler_mix_signal)} trip. Is that right?`,
+      why: "Traveler mix changes hotel fit, pace, and how we shape the next version of the trip.",
+      target: "brief",
+      field: "traveler_mix",
+      options: travelerOptions,
+    });
+  }
+
+  if (
+    !preferences.trip_focus
+    && (
+      (signals.stay_style_signals.length > 0 && signals.activity_signals.length > 0)
+      || signals.activity_signals.includes("thrill_activities")
+    )
+  ) {
+    questions.push({
+      code: "trip_focus_validation",
+      question: signals.activity_signals.includes("thrill_activities")
+        ? "We can see thrill or adventure cues here. Do you want to keep that, or should we optimise more for comfort?"
+        : "We can see both stay-comfort and activity cues here. Which should lead the trip?",
+      why: "This helps us decide whether to shape the next version around the stay, the experiences, or a balance of both.",
+      target: "preferences",
+      field: "trip_focus",
+      options: [
+        { value: "stay_experience", label: "Lean into the stay" },
+        { value: "activities", label: "Keep the experiences front and centre" },
+        { value: "balanced", label: "Keep it balanced" },
+      ],
+    });
+  }
+
+  if (
+    !preferences.improvement_goal
+    && (
+      signals.stay_style_signals.includes("resort_led")
+      || signals.stay_style_signals.includes("premium")
+      || signals.vibe_signals.includes("romantic")
+    )
+  ) {
+    questions.push({
+      code: "stay_vs_budget_validation",
+      question: "Would you like us to shape this around a stronger resort stay or a tighter budget?",
+      why: "The stay seems to matter a lot in what you shared, so this choice changes whether we lead with a realistic version or a stronger one.",
+      target: "preferences",
+      field: "improvement_goal",
+      options: [
+        { value: "better_hotel", label: "Stronger stay" },
+        { value: "lower_price", label: "Tighter budget" },
+        { value: "easier_payment", label: "Easier payment matters more" },
+      ],
+    });
+  }
 
   if (!brief.holiday_style && signals.likely_destinations.length === 0) {
     questions.push({
@@ -804,7 +955,9 @@ export function buildClarifyingQuestions(params: {
     });
   }
 
-  return questions.slice(0, 3);
+  return questions
+    .filter((question, index, list) => list.findIndex((item) => item.code === question.code) === index)
+    .slice(0, 3);
 }
 
 function buildTravelerContext(brief: BuildTripBrief, preferences: TravelerPreferences, signals: BuildTripSignalExtraction): TravelerPreferences {
@@ -1024,6 +1177,90 @@ function buildNextClarificationPrompt(
   return null;
 }
 
+function buildReadBack(params: {
+  brief: BuildTripBrief;
+  inspirationInputs: TravelerInspirationInput[];
+  signals: BuildTripSignalExtraction;
+  destinationShortlist: string[];
+}) {
+  const { inspirationInputs, signals, destinationShortlist } = params;
+  const primaryDestination = signals.likely_destinations[0];
+  const travelerMixRead = describeTravelerMix(signals.traveler_mix_signal);
+  const vibeRead = describeVibe(signals.vibe_signals);
+  const focusRead = describeFocus(signals);
+
+  const items: BuildTripReadBackItem[] = [];
+
+  if (primaryDestination) {
+    items.push({
+      label: "Likely destination",
+      value: primaryDestination.destination,
+      confidence: primaryDestination.confidence,
+    });
+  }
+
+  if (travelerMixRead) {
+    items.push({
+      label: "Likely trip type",
+      value: travelerMixRead,
+      confidence: signals.traveler_mix_signal ? "medium" : "low",
+    });
+  }
+
+  if (vibeRead) {
+    items.push({
+      label: "Vibe we are picking up",
+      value: titleCase(vibeRead),
+      confidence: signals.vibe_signals.length >= 2 ? "high" : "medium",
+    });
+  }
+
+  if (focusRead) {
+    items.push({
+      label: "What seems to matter most",
+      value: focusRead,
+      confidence: signals.stay_style_signals.length > 0 || signals.activity_signals.length > 0 ? "medium" : "low",
+    });
+  }
+
+  const sourceTraces = uniq([
+    ...inspirationInputs.slice(0, 5).map((item) => sourceTraceLabel(item)),
+    ...destinationShortlist.slice(0, 2),
+    ...signals.vibe_signals.slice(0, 2).map((value) => titleCase(humanize(value))),
+    ...signals.activity_signals.slice(0, 1).map((value) => titleCase(humanize(value))),
+    ...signals.stay_style_signals.slice(0, 1).map((value) => titleCase(humanize(value))),
+  ]).slice(0, 6);
+
+  const summaryParts: string[] = [];
+
+  if (primaryDestination && vibeRead) {
+    summaryParts.push(`We think this may be a ${primaryDestination.destination} direction with ${vibeRead} cues.`);
+  } else if (primaryDestination) {
+    summaryParts.push(`We think ${primaryDestination.destination} may be the strongest destination signal in what you shared.`);
+  } else if (vibeRead) {
+    summaryParts.push(`We are picking up ${vibeRead} cues from what you shared.`);
+  }
+
+  if (travelerMixRead) {
+    summaryParts.push(`It also feels more like a ${travelerMixRead.toLowerCase()}.`);
+  }
+
+  if (focusRead) {
+    summaryParts.push(`${focusRead}.`);
+  }
+
+  if (summaryParts.length === 0 && sourceTraces.length > 0) {
+    summaryParts.push(`We can already see useful travel cues in what you shared, including ${sourceTraces.slice(0, 3).join(", ")}.`);
+  }
+
+  return {
+    headline: "Our read of what you shared",
+    summary: summaryParts.join(" ").replace(/\.\s+\./g, "."),
+    items: items.slice(0, 4),
+    source_traces: sourceTraces,
+  } satisfies BuildTripReadBack;
+}
+
 function buildRenderContract(params: {
   brief: BuildTripBrief;
   inspirationInputs: TravelerInspirationInput[];
@@ -1032,6 +1269,7 @@ function buildRenderContract(params: {
   destinationShortlist: string[];
   bookableRead: BuildTripBookableRead;
   financeRead: BuildTripFinanceRead;
+  ourRead: BuildTripReadBack;
   versions: {
     realistic: BuildTripVersionOutput | null;
     upgraded: BuildTripVersionOutput | null;
@@ -1046,6 +1284,7 @@ function buildRenderContract(params: {
     destinationShortlist,
     bookableRead,
     financeRead,
+    ourRead,
     versions,
   } = params;
 
@@ -1071,6 +1310,7 @@ function buildRenderContract(params: {
       state: "capture_only",
       reason: "The engine does not have enough usable travel signal yet.",
       allow_save: false,
+      show_our_read: false,
       show_next_question: false,
       show_trip_direction: false,
       show_destination_shortlist: false,
@@ -1093,6 +1333,7 @@ function buildRenderContract(params: {
       state: "structured_recommendation",
       reason: "The engine has enough structure to show trip direction, price shape, and versioning.",
       allow_save: true,
+      show_our_read: ourRead.items.length > 0 || ourRead.source_traces.length > 0,
       show_next_question: Boolean(clarifyingQuestions[0]),
       show_trip_direction: true,
       show_destination_shortlist: destinationShortlist.length > 0,
@@ -1113,6 +1354,7 @@ function buildRenderContract(params: {
       state: "trip_direction",
       reason: "The engine has enough signal to shape the trip direction before asking for contact details.",
       allow_save: true,
+      show_our_read: ourRead.items.length > 0 || ourRead.source_traces.length > 0,
       show_next_question: Boolean(clarifyingQuestions[0]),
       show_trip_direction: true,
       show_destination_shortlist: destinationShortlist.length > 0,
@@ -1127,6 +1369,7 @@ function buildRenderContract(params: {
     state: "guided_question",
     reason: "The engine has a valid starting point, but one useful answer should come before stronger shaping.",
     allow_save: true,
+    show_our_read: ourRead.items.length > 0 || ourRead.source_traces.length > 0,
     show_next_question: true,
     show_trip_direction: true,
     show_destination_shortlist: false,
@@ -1206,6 +1449,12 @@ export function buildTripEngine(params: {
     budgetBand,
     destinationShortlist,
   });
+  const ourRead = buildReadBack({
+    brief,
+    inspirationInputs,
+    signals,
+    destinationShortlist,
+  });
   const financeRead = buildFinanceRead({
     brief,
     signals,
@@ -1276,12 +1525,14 @@ export function buildTripEngine(params: {
     destinationShortlist,
     bookableRead,
     financeRead,
+    ourRead,
     versions,
   });
 
   const synthesis: BuildTripSynthesisOutput = {
     headline,
     subtext,
+    our_read: ourRead,
     trip_direction: tripDirection,
     destination_shortlist: destinationShortlist,
     trip_structure: buildTripStructureSummary(signals, travelerContext),
