@@ -97,6 +97,23 @@ describe("build-my-trip engine", () => {
     expect(engine.synthesis.next_clarification_prompt?.toLowerCase()).toContain("when");
   });
 
+  it("keeps destination discovery focused on the missing narrowing anchor instead of rediscovering the whole trip", () => {
+    const brief = {
+      ...BUILD_TRIP_DEFAULTS,
+      start_mode: "destination_discovery" as const,
+      entry_mode: "no" as const,
+      holiday_style: "beach",
+      inspiration_dump_text: "family holiday, parents and kids, want comfort and a relaxed trip",
+    };
+
+    const engine = buildTripEngine({ brief });
+
+    expect(engine.render_contract.state).toBe("trip_direction");
+    expect(engine.synthesis.destination_shortlist.length).toBeGreaterThan(0);
+    expect(engine.clarifying_questions[0]?.code).toMatch(/traveler_mix_validation|travel_month|domestic_or_international/);
+    expect(engine.clarifying_questions[0]?.question.toLowerCase()).not.toContain("what kind of holiday do you want");
+  });
+
   it("returns versions and finance direction for strong structured input", () => {
     const brief = {
       ...BUILD_TRIP_DEFAULTS,

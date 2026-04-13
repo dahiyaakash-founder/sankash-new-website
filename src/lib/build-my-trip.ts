@@ -49,8 +49,16 @@ export interface BuildTripSignalExtraction {
   activity_signals: string[];
   stay_style_signals: string[];
   budget_signal: string | null;
+  budget_intent_signal: "value" | "balanced" | "premium" | null;
   duration_signal: string | null;
+  travel_month_signal: string | null;
   traveler_mix_signal: string | null;
+  departure_city_signal: string | null;
+  domestic_or_international_signal: "domestic" | "international" | null;
+  hotel_priority_signal: boolean;
+  emi_affordability_signal: boolean;
+  inferred_hotel_names: string[];
+  destination_signal_strength: "none" | "single_soft" | "single_strong" | "multiple_competing";
   aspiration_level: "grounded" | "balanced" | "aspirational" | "premium_aspirational";
   realism_assessment: "aligned" | "slightly_above_budget" | "aspirational_mismatch" | "unknown";
   destination_flexibility: "fixed" | "open_to_similar" | "exploring";
@@ -189,6 +197,7 @@ const DESTINATION_KEYWORDS: Array<{ destination: string; patterns: RegExp[]; tag
   { destination: "Bali", patterns: [/\bbali\b/, /\bseminyak\b/, /\bubud\b/, /\bnusa dua\b/], tags: ["beach", "romantic", "villa"] },
   { destination: "Phuket", patterns: [/\bphuket\b/, /\bpatong\b/, /\bkata\b/], tags: ["beach", "resort"] },
   { destination: "Krabi", patterns: [/\bkrabi\b/, /\bao nang\b/, /\brailey\b/], tags: ["beach", "adventure"] },
+  { destination: "Turkey", patterns: [/\bturkey\b/, /\bistanbul\b/, /\bcappadocia\b/, /\bantalya\b/, /\bbodrum\b/], tags: ["romantic", "adventure", "premium"] },
   { destination: "Vietnam", patterns: [/\bvietnam\b/, /\bhanoi\b/, /\bda nang\b/, /\bhalong\b/, /\bho chi minh\b/], tags: ["sightseeing", "food", "value"] },
   { destination: "Santorini", patterns: [/\bsantorini\b/, /\boia\b/, /\bfira\b/], tags: ["romantic", "premium", "relaxation"] },
   { destination: "Greece", patterns: [/\bgreece\b/, /\bmykonos\b/, /\bathens\b/], tags: ["romantic", "premium", "beach"] },
@@ -286,6 +295,38 @@ const BUDGET_BANDS: Record<string, { min: number; max: number; label: string }> 
   above_5l: { min: 500000, max: 800000, label: "above ₹5L" },
 };
 
+const MONTH_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
+  { label: "January", pattern: /\bjan(?:uary)?\b/ },
+  { label: "February", pattern: /\bfeb(?:ruary)?\b/ },
+  { label: "March", pattern: /\bmar(?:ch)?\b/ },
+  { label: "April", pattern: /\bapr(?:il)?\b/ },
+  { label: "May", pattern: /\bmay\b/ },
+  { label: "June", pattern: /\bjune?\b/ },
+  { label: "July", pattern: /\bjuly?\b/ },
+  { label: "August", pattern: /\baug(?:ust)?\b/ },
+  { label: "September", pattern: /\bsep(?:t|tember)?\b/ },
+  { label: "October", pattern: /\boct(?:ober)?\b/ },
+  { label: "November", pattern: /\bnov(?:ember)?\b/ },
+  { label: "December", pattern: /\bdec(?:ember)?\b/ },
+  { label: "Summer", pattern: /\bsummer\b/ },
+  { label: "Festive season", pattern: /\bfestive\b|\bdiwali\b|\bchristmas\b|\bnew year\b/ },
+  { label: "Long weekend", pattern: /\blong weekend\b/ },
+];
+
+const DEPARTURE_CITY_PATTERNS: Array<{ city: string; pattern: RegExp }> = [
+  { city: "Delhi", pattern: /\bdelhi\b|\bnew delhi\b/ },
+  { city: "Mumbai", pattern: /\bmumbai\b|\bbombay\b/ },
+  { city: "Bengaluru", pattern: /\bbangalore\b|\bbengaluru\b/ },
+  { city: "Chennai", pattern: /\bchennai\b/ },
+  { city: "Hyderabad", pattern: /\bhyderabad\b/ },
+  { city: "Kolkata", pattern: /\bkolkata\b|\bcalcutta\b/ },
+  { city: "Pune", pattern: /\bpune\b/ },
+  { city: "Ahmedabad", pattern: /\bahmedabad\b/ },
+  { city: "Chandigarh", pattern: /\bchandigarh\b/ },
+  { city: "Jaipur", pattern: /\bjaipur\b/ },
+  { city: "Kochi", pattern: /\bkochi\b|\bcochin\b/ },
+];
+
 function uniq(values: Array<string | null | undefined>) {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -354,6 +395,83 @@ function detectBudgetFromText(text: string) {
       ? raw * 100000
       : raw;
   return amount > 0 ? amount : null;
+}
+
+function detectBudgetIntent(text: string) {
+  if (/\bmanageable budget\b|\bbudget[-\s]?friendly\b|\bvalue\b|\baffordable\b|\blower price\b/.test(text)) {
+    return "value" as const;
+  }
+  if (/\bpremium\b|\bluxury\b|\bfive star\b|\b5 star\b|\bupgraded\b|\bstronger stay\b/.test(text)) {
+    return "premium" as const;
+  }
+  if (/\bmid-range\b|\bcomfort\b|\bbalanced budget\b|\bmanageable\b/.test(text)) {
+    return "balanced" as const;
+  }
+  return null;
+}
+
+function detectTravelMonth(brief: BuildTripBrief, corpus: string) {
+  if (brief.tentative_month_or_dates.trim()) return brief.tentative_month_or_dates.trim();
+  return MONTH_PATTERNS.find((entry) => entry.pattern.test(corpus))?.label ?? null;
+}
+
+function detectDepartureCity(brief: BuildTripBrief, corpus: string) {
+  if (brief.departure_city.trim()) return brief.departure_city.trim();
+  return DEPARTURE_CITY_PATTERNS.find((entry) => entry.pattern.test(corpus))?.city ?? null;
+}
+
+function detectDomesticInternational(brief: BuildTripBrief, destinations: BuildTripDestinationSignal[]) {
+  if (brief.domestic_or_international === "domestic" || brief.domestic_or_international === "international") {
+    return brief.domestic_or_international;
+  }
+
+  const domesticDestinations = new Set(["Goa", "Kashmir"]);
+  const internationalDestinations = new Set([
+    "Bali",
+    "Phuket",
+    "Krabi",
+    "Turkey",
+    "Vietnam",
+    "Santorini",
+    "Greece",
+    "Dubai",
+    "Maldives",
+    "Sri Lanka",
+    "Thailand",
+    "Japan",
+    "Europe",
+  ]);
+
+  const topDestination = destinations[0]?.destination;
+  if (!topDestination) return null;
+  if (domesticDestinations.has(topDestination)) return "domestic";
+  if (internationalDestinations.has(topDestination)) return "international";
+  return null;
+}
+
+function detectHotelNames(inputs: TravelerInspirationInput[], corpus: string) {
+  const inputHotelNames = inputs
+    .filter((item) => item.type === "hotel")
+    .map((item) => item.value.trim())
+    .filter((value) => value.length >= 4);
+
+  const corpusMatches = Array.from(
+    corpus.matchAll(/\b([a-z][a-z0-9&.'-]+(?:\s+[a-z][a-z0-9&.'-]+){0,4}\s+(?:resort|hotel|villa|retreat|palace))\b/gi),
+  ).map((match) => titleCase(match[1] ?? ""));
+
+  return uniq([...inputHotelNames, ...corpusMatches]).slice(0, 4);
+}
+
+function destinationSignalStrength(signals: BuildTripDestinationSignal[]) {
+  if (signals.length === 0) return "none" as const;
+  if (signals.length === 1) {
+    return signals[0].confidence === "high" ? "single_strong" as const : "single_soft" as const;
+  }
+  const topTwo = signals.slice(0, 2);
+  if (topTwo[0]?.confidence === "high" && topTwo[1]?.confidence !== "high") {
+    return "single_strong" as const;
+  }
+  return "multiple_competing" as const;
 }
 
 function estimateBudgetBand(brief: BuildTripBrief, inspirationInputs: TravelerInspirationInput[]) {
@@ -491,21 +609,35 @@ function detectDestinations(brief: BuildTripBrief, inspirationInputs: TravelerIn
     ...inspirationInputs.filter((item) => item.type === "place").map((item) => item.value),
   ]);
   const text = corpusFrom(brief, inspirationInputs);
-  const inferred = DESTINATION_KEYWORDS
-    .filter((entry) => entry.patterns.some((pattern) => pattern.test(text)))
-    .map((entry) => entry.destination);
 
-  const destinations = uniq([...explicit, ...inferred]);
-  return destinations.map((destination, index) => ({
-    destination,
-    confidence: explicit.some((value) => value.toLowerCase() === destination.toLowerCase())
+  const scored = DESTINATION_KEYWORDS.map((entry) => {
+    const explicitMatch = explicit.some((value) => value.toLowerCase() === entry.destination.toLowerCase());
+    const patternMatches = entry.patterns.reduce((count, pattern) => count + (pattern.test(text) ? 1 : 0), 0);
+    const placeMentions = inspirationInputs.filter((item) =>
+      item.type === "place" && item.value.toLowerCase().includes(entry.destination.toLowerCase()),
+    ).length;
+    const score = (explicitMatch ? 6 : 0) + patternMatches + placeMentions;
+    return {
+      destination: entry.destination,
+      score,
+      explicitMatch,
+    };
+  })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return scored.map((entry, index) => ({
+    destination: entry.destination,
+    confidence: entry.explicitMatch || entry.score >= 4
       ? "high"
-      : index === 0
+      : index === 0 && entry.score >= 2
         ? "medium"
         : "low",
-    reason: explicit.some((value) => value.toLowerCase() === destination.toLowerCase())
+    reason: entry.explicitMatch
       ? "You explicitly shared this destination."
-      : "This destination keeps showing up in the inspiration you shared.",
+      : entry.score >= 3
+        ? "This destination keeps showing up across the inspiration you shared."
+        : "There is an early destination hint in the inspiration you shared.",
   })) as BuildTripDestinationSignal[];
 }
 
@@ -535,30 +667,77 @@ function detectTravelerMix(brief: BuildTripBrief, corpus: string) {
 function buildMissingAnchors(params: {
   brief: BuildTripBrief;
   budgetBand: ReturnType<typeof estimateBudgetBand>;
+  budgetIntent: BuildTripSignalExtraction["budget_intent_signal"];
   destinationShortlist: string[];
   signals: {
     vibe_signals: string[];
     traveler_mix_signal: string | null;
     duration_signal: string | null;
+    destination_signal_strength: BuildTripSignalExtraction["destination_signal_strength"];
+    travel_month_signal: string | null;
+    departure_city_signal: string | null;
+    hotel_priority_signal: boolean;
   };
 }) {
-  const { brief, budgetBand, destinationShortlist, signals } = params;
-  const missing: string[] = [];
+  const { brief, budgetBand, budgetIntent, destinationShortlist, signals } = params;
+  const missing = new Map<string, number>();
 
-  if (destinationShortlist.length === 0 && !brief.holiday_style) missing.push("destination_or_trip_style");
-  if (!signals.traveler_mix_signal && !brief.traveler_mix) missing.push("traveler_mix");
-  if (!brief.tentative_month_or_dates.trim()) missing.push("travel_month");
-  if (!budgetBand) missing.push("budget_range");
-  if (!brief.departure_city.trim()) missing.push("departure_city");
-  if (!signals.duration_signal && !brief.trip_duration.trim()) missing.push("trip_length");
-  if (signals.vibe_signals.length === 0 && brief.start_mode === "inspiration_dump") missing.push("trip_vibe");
+  const addMissing = (key: string, score: number) => {
+    missing.set(key, Math.max(score, missing.get(key) ?? 0));
+  };
 
-  return missing;
+  if (destinationShortlist.length === 0 && !brief.holiday_style) {
+    addMissing("destination_or_trip_style", brief.start_mode === "destination_discovery" ? 100 : 96);
+  } else if (
+    signals.destination_signal_strength === "multiple_competing"
+    && (!brief.destination_in_mind.trim() || !destinationShortlist[0]?.trim().toLowerCase().includes(brief.destination_in_mind.trim().toLowerCase()))
+  ) {
+    addMissing("destination_choice", 92);
+  } else if (
+    brief.start_mode === "inspiration_dump"
+    && signals.destination_signal_strength === "single_strong"
+    && !brief.destination_in_mind.trim()
+  ) {
+    addMissing("destination_confirmation", 88);
+  }
+
+  if (!signals.travel_month_signal) addMissing("travel_month", destinationShortlist.length > 0 ? 90 : 70);
+
+  if (!signals.traveler_mix_signal && !brief.traveler_mix) {
+    addMissing("traveler_mix", signals.hotel_priority_signal ? 84 : 76);
+  } else if (!brief.traveler_mix && signals.traveler_mix_signal) {
+    addMissing("traveler_mix_validation", 82);
+  }
+
+  if (!budgetBand && !budgetIntent) {
+    addMissing("budget_range", signals.hotel_priority_signal || signals.vibe_signals.includes("luxury") ? 86 : 68);
+  }
+
+  if (!signals.departure_city_signal && (destinationShortlist.length > 0 || brief.domestic_or_international === "international")) {
+    addMissing("departure_city", destinationShortlist.length > 0 ? 74 : 58);
+  }
+
+  if (!signals.duration_signal && destinationShortlist.length > 0 && signals.travel_month_signal) {
+    addMissing("trip_length", 52);
+  }
+
+  if (
+    signals.vibe_signals.length === 0
+    && brief.start_mode === "inspiration_dump"
+    && destinationShortlist.length === 0
+  ) {
+    addMissing("trip_vibe", 82);
+  }
+
+  return Array.from(missing.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([key]) => key);
 }
 
 function assessInputStrength(params: {
   brief: BuildTripBrief;
   budgetBand: ReturnType<typeof estimateBudgetBand>;
+  budgetIntent: BuildTripSignalExtraction["budget_intent_signal"];
   destinationShortlist: string[];
   inspirationInputs: TravelerInspirationInput[];
   signals: {
@@ -566,26 +745,30 @@ function assessInputStrength(params: {
     stay_style_signals: string[];
     traveler_mix_signal: string | null;
     duration_signal: string | null;
+    destination_signal_strength: BuildTripSignalExtraction["destination_signal_strength"];
+    travel_month_signal: string | null;
+    departure_city_signal: string | null;
   };
 }) {
-  const { brief, budgetBand, destinationShortlist, inspirationInputs, signals } = params;
+  const { brief, budgetBand, budgetIntent, destinationShortlist, inspirationInputs, signals } = params;
   let score = 0;
 
-  if (destinationShortlist.length > 0) score += 2;
+  if (signals.destination_signal_strength === "single_strong") score += 3;
+  else if (destinationShortlist.length > 0) score += 2;
   if (brief.holiday_style || signals.vibe_signals.length > 0) score += 1;
   if (signals.vibe_signals.length >= 2 || signals.stay_style_signals.length > 0) score += 1;
-  if (budgetBand) score += 1;
-  if (brief.tentative_month_or_dates.trim()) score += 1;
-  if (brief.departure_city.trim()) score += 1;
+  if (budgetBand || budgetIntent) score += 1;
+  if (signals.travel_month_signal) score += 1;
+  if (signals.departure_city_signal) score += 1;
   if (signals.traveler_mix_signal || brief.traveler_mix) score += 1;
   if (signals.duration_signal || brief.trip_duration.trim()) score += 1;
   if (brief.priorities.length > 0) score += 1;
   if (inspirationInputs.length >= 2) score += 1;
 
   if (
-    destinationShortlist.length > 0 &&
-    budgetBand &&
-    brief.tentative_month_or_dates.trim() &&
+    (signals.destination_signal_strength === "single_strong" || destinationShortlist.length > 0) &&
+    (budgetBand || budgetIntent) &&
+    signals.travel_month_signal &&
     (signals.traveler_mix_signal || brief.traveler_mix)
   ) {
     return "strong" as const;
@@ -633,11 +816,11 @@ function deriveDestinationFlexibility(
 function buildInspirationRead(inputs: TravelerInspirationInput[], brief: BuildTripBrief, destinations: BuildTripDestinationSignal[]) {
   if (brief.start_mode === "inspiration_dump" && inputs.length > 0) {
     return destinations.length > 1
-      ? "This looks like a saved-ideas dump rather than one locked destination."
-      : "This looks like inspiration-led planning with one clear trip direction starting to emerge.";
+      ? "This looks like saved inspiration with a few competing trip directions, not random travel clutter."
+      : "This looks like inspiration-led planning with one trip direction starting to emerge from what you shared.";
   }
   if (brief.start_mode === "destination_discovery") {
-    return "This looks like destination discovery rather than final-booking intent.";
+    return "This looks like destination discovery, so the job is to narrow intelligently before pricing anything.";
   }
   return "This looks closer to shaping one trip than open-ended browsing.";
 }
@@ -652,6 +835,7 @@ export function buildTripSignals(params: {
   const normalizedInputs = normalizeInspirationInputs(params.inspirationInputs ?? buildInspirationInputsFromText(brief.inspiration_dump_text));
   const text = corpusFrom(brief, normalizedInputs);
   const likelyDestinations = detectDestinations(brief, normalizedInputs);
+  const destinationStrength = destinationSignalStrength(likelyDestinations);
   const vibeSignals = uniq([
     ...collectKeywordSignals(text, VIBE_KEYWORDS),
     ...brief.priorities.filter((value) => ["luxury", "family_time", "relaxation", "adventure", "sightseeing", "food"].includes(value)),
@@ -667,44 +851,80 @@ export function buildTripSignals(params: {
     ...brief.priorities.filter((value) => ["better_hotel", "luxury", "comfort"].includes(value)).map((value) => value === "better_hotel" ? "premium" : value),
   ]);
   const budgetBand = estimateBudgetBand(brief, normalizedInputs);
+  const budgetIntent = detectBudgetIntent(text);
   const travelerMix = detectTravelerMix(brief, text);
+  const travelMonth = detectTravelMonth(brief, text);
+  const departureCity = detectDepartureCity(brief, text);
+  const domesticOrInternational = detectDomesticInternational(brief, likelyDestinations);
+  const inferredHotelNames = detectHotelNames(normalizedInputs, text);
+  const hotelPrioritySignal = Boolean(
+    inferredHotelNames.length > 0
+      || stayStyleSignals.some((value) => ["premium", "resort_led", "villa", "beach_property"].includes(value))
+      || /\bhotel\b|\bresort\b|\bvilla\b|\bstay\b|\bsunset resort\b/.test(text)
+      || brief.priorities.includes("better_hotel")
+      || brief.priorities.includes("comfort"),
+  );
+  const emiAffordabilitySignal = Boolean(
+    /\bemi\b|\bmonthly\b|\bpay later\b|\binstallment\b|\bmanageable budget\b/.test(text)
+      || brief.priorities.includes("easy_payment"),
+  );
   const aspirationLevel = deriveAspirationLevel(vibeSignals, stayStyleSignals, brief.priorities);
   const realismAssessment = deriveRealismAssessment(aspirationLevel, budgetBand, brief.priorities);
   const destinationFlexibility = deriveDestinationFlexibility(brief, preferences, likelyDestinations);
   const destinationShortlist = likelyDestinations.map((item) => item.destination).slice(0, 4);
+  const durationSignal = detectDuration(brief, text);
   const missingAnchors = buildMissingAnchors({
     brief,
     budgetBand,
+    budgetIntent,
     destinationShortlist,
     signals: {
       vibe_signals: vibeSignals,
-      stay_style_signals: stayStyleSignals,
       traveler_mix_signal: travelerMix,
-      duration_signal: detectDuration(brief, text),
+      duration_signal: durationSignal,
+      destination_signal_strength: destinationStrength,
+      travel_month_signal: travelMonth,
+      departure_city_signal: departureCity,
+      hotel_priority_signal: hotelPrioritySignal,
     },
   });
   const inputStrength = assessInputStrength({
     brief,
     budgetBand,
+    budgetIntent,
     destinationShortlist,
     inspirationInputs: normalizedInputs,
     signals: {
       vibe_signals: vibeSignals,
       stay_style_signals: stayStyleSignals,
       traveler_mix_signal: travelerMix,
-      duration_signal: detectDuration(brief, text),
+      duration_signal: durationSignal,
+      destination_signal_strength: destinationStrength,
+      travel_month_signal: travelMonth,
+      departure_city_signal: departureCity,
     },
   });
 
   return {
     likely_destinations: likelyDestinations,
-    likely_trip_type: brief.trip_type || travelerMix,
+    likely_trip_type: brief.trip_type
+      || travelerMix
+      || (vibeSignals.includes("family") ? "family_holiday" : null)
+      || (vibeSignals.includes("romantic") ? "romantic_couple" : null),
     vibe_signals: vibeSignals.slice(0, 6),
     activity_signals: activitySignals.slice(0, 5),
     stay_style_signals: stayStyleSignals.slice(0, 5),
-    budget_signal: budgetBand?.label ?? null,
-    duration_signal: detectDuration(brief, text),
+    budget_signal: budgetBand?.label ?? (budgetIntent === "value" ? "value-leaning" : budgetIntent === "premium" ? "premium-leaning" : budgetIntent === "balanced" ? "balanced budget" : null),
+    budget_intent_signal: budgetIntent,
+    duration_signal: durationSignal,
+    travel_month_signal: travelMonth,
     traveler_mix_signal: travelerMix,
+    departure_city_signal: departureCity,
+    domestic_or_international_signal: domesticOrInternational,
+    hotel_priority_signal: hotelPrioritySignal,
+    emi_affordability_signal: emiAffordabilitySignal,
+    inferred_hotel_names: inferredHotelNames,
+    destination_signal_strength: destinationStrength,
     aspiration_level: aspirationLevel,
     realism_assessment: realismAssessment,
     destination_flexibility: destinationFlexibility,
@@ -723,101 +943,113 @@ export function buildClarifyingQuestions(params: {
   const { brief } = params;
   const preferences = params.preferences ?? {};
   const signals = params.signals ?? buildTripSignals(params);
-  const questions: BuildTripClarifyingQuestion[] = [];
+  type BuildTripQuestionCandidate = BuildTripClarifyingQuestion & { priority: number };
+
+  const candidates: BuildTripQuestionCandidate[] = [];
   const leadDestination = signals.likely_destinations[0]?.destination ?? null;
   const travelerMixRead = describeTravelerMix(signals.traveler_mix_signal);
+  const explicitDestination = brief.destination_in_mind.trim().length > 0;
+
+  const addCandidate = (candidate: BuildTripQuestionCandidate | null) => {
+    if (!candidate) return;
+    candidates.push(candidate);
+  };
 
   if (
-    brief.start_mode === "inspiration_dump"
+    signals.missing_anchors.includes("destination_confirmation")
     && leadDestination
-    && !brief.destination_in_mind.trim()
+    && !explicitDestination
     && !preferences.destination_flexibility
   ) {
-    questions.push({
+    addCandidate({
+      priority: 96,
       code: "destination_validation",
-      question: signals.likely_destinations.length > 1
-        ? `We think ${leadDestination} is one strong direction here. Do you want to keep that, or stay open to similar options?`
-        : `This looks like a ${leadDestination} trip. Is that the destination you have in mind?`,
-      why: "We picked this up from the destination clues in what you shared, so confirming it will sharpen everything else.",
+      question: `This looks more like a ${leadDestination} trip than a generic shortlist. Is that the destination you have in mind?`,
+      why: "Confirming the destination lets the engine stop treating this as open discovery and start shaping the trip properly.",
       target: "preferences",
       field: "destination_flexibility",
       options: [
         { value: "fixed", label: `Yes, keep ${leadDestination}` },
-        { value: "open_to_similar", label: "Open to similar options" },
+        { value: "open_to_similar", label: "Open to similar places" },
         { value: "exploring", label: "Still exploring" },
       ],
     });
   }
 
-  if (!brief.traveler_mix && signals.traveler_mix_signal && travelerMixRead) {
-    const travelerOptions = [
-      { value: signals.traveler_mix_signal, label: `Yes, ${travelerMixRead}` },
-      { value: "couple", label: "Couple" },
-      { value: "family", label: "Family" },
-      { value: "friends", label: "Friends" },
-      { value: "solo", label: "Solo" },
-    ].filter((option, index, list) => list.findIndex((item) => item.value === option.value) === index);
+  if (
+    (signals.missing_anchors.includes("destination_choice") || brief.start_mode === "destination_discovery")
+    && signals.likely_destinations.length >= 2
+    && !preferences.destination_flexibility
+  ) {
+    const first = signals.likely_destinations[0]?.destination;
+    const second = signals.likely_destinations[1]?.destination;
 
-    questions.push({
+    addCandidate({
+      priority: 94,
+      code: "destination_choice",
+      question: first && second
+        ? `We can see both ${first} and ${second} type cues here. Which direction feels closer to what you want?`
+        : "Are you fixed on one place, or open to similar destinations?",
+      why: "One destination decision will narrow the trip faster than asking you a full form.",
+      target: "preferences",
+      field: "destination_flexibility",
+      options: [
+        ...(first ? [{ value: "fixed", label: `Lean into ${first}` }] : []),
+        { value: "open_to_similar", label: "Keep a shortlist alive" },
+        { value: "exploring", label: "Still exploring" },
+      ],
+    });
+  }
+
+  if (
+    signals.missing_anchors.includes("traveler_mix_validation")
+    && !brief.traveler_mix
+    && signals.traveler_mix_signal
+    && travelerMixRead
+  ) {
+    addCandidate({
+      priority: 91,
       code: "traveler_mix_validation",
       question: `This is reading more like a ${humanize(signals.traveler_mix_signal)} trip. Is that right?`,
-      why: "Traveler mix changes hotel fit, pace, and how we shape the next version of the trip.",
+      why: "Traveler mix changes hotel fit, pacing, and what a realistic version should look like.",
       target: "brief",
       field: "traveler_mix",
-      options: travelerOptions,
-    });
-  }
-
-  if (
-    !preferences.trip_focus
-    && (
-      (signals.stay_style_signals.length > 0 && signals.activity_signals.length > 0)
-      || signals.activity_signals.includes("thrill_activities")
-    )
-  ) {
-    questions.push({
-      code: "trip_focus_validation",
-      question: signals.activity_signals.includes("thrill_activities")
-        ? "We can see thrill or adventure cues here. Do you want to keep that, or should we optimise more for comfort?"
-        : "We can see both stay-comfort and activity cues here. Which should lead the trip?",
-      why: "This helps us decide whether to shape the next version around the stay, the experiences, or a balance of both.",
-      target: "preferences",
-      field: "trip_focus",
       options: [
-        { value: "stay_experience", label: "Lean into the stay" },
-        { value: "activities", label: "Keep the experiences front and centre" },
-        { value: "balanced", label: "Keep it balanced" },
+        { value: signals.traveler_mix_signal, label: `Yes, ${travelerMixRead}` },
+        { value: "couple", label: "Couple" },
+        { value: "family", label: "Family" },
+        { value: "friends", label: "Friends" },
+        { value: "solo", label: "Solo" },
+      ].filter((option, index, list) => list.findIndex((item) => item.value === option.value) === index),
+    });
+  } else if (signals.missing_anchors.includes("traveler_mix")) {
+    addCandidate({
+      priority: 82,
+      code: "traveler_mix",
+      question: leadDestination
+        ? `Is this ${leadDestination} idea for a couple, family, friends, or a solo trip?`
+        : "Is this for a couple, family, friends, or a solo trip?",
+      why: "That one detail changes hotel fit, pace, and what we should optimize first.",
+      target: "brief",
+      field: "traveler_mix",
+      options: [
+        { value: "couple", label: "Couple" },
+        { value: "family", label: "Family" },
+        { value: "friends", label: "Friends" },
+        { value: "solo", label: "Solo" },
       ],
     });
   }
 
   if (
-    !preferences.improvement_goal
-    && (
-      signals.stay_style_signals.includes("resort_led")
-      || signals.stay_style_signals.includes("premium")
-      || signals.vibe_signals.includes("romantic")
-    )
+    signals.missing_anchors.includes("trip_vibe")
+    || (signals.missing_anchors.includes("destination_or_trip_style") && signals.vibe_signals.length === 0)
   ) {
-    questions.push({
-      code: "stay_vs_budget_validation",
-      question: "Would you like us to shape this around a stronger resort stay or a tighter budget?",
-      why: "The stay seems to matter a lot in what you shared, so this choice changes whether we lead with a realistic version or a stronger one.",
-      target: "preferences",
-      field: "improvement_goal",
-      options: [
-        { value: "better_hotel", label: "Stronger stay" },
-        { value: "lower_price", label: "Tighter budget" },
-        { value: "easier_payment", label: "Easier payment matters more" },
-      ],
-    });
-  }
-
-  if (!brief.holiday_style && signals.likely_destinations.length === 0) {
-    questions.push({
+    addCandidate({
+      priority: 89,
       code: "holiday_style",
-      question: "What kind of trip is this starting to look like?",
-      why: "One trip-style anchor helps us turn scattered inspiration into a sharper shortlist.",
+      question: "What kind of trip is this starting to look like to you?",
+      why: "One trip-style anchor is enough to turn scattered inspiration into a smarter shortlist.",
       target: "brief",
       field: "holiday_style",
       options: [
@@ -830,11 +1062,14 @@ export function buildClarifyingQuestions(params: {
     });
   }
 
-  if (!brief.tentative_month_or_dates.trim()) {
-    questions.push({
+  if (signals.missing_anchors.includes("travel_month")) {
+    addCandidate({
+      priority: leadDestination ? 90 : 72,
       code: "travel_month",
-      question: "When are you roughly hoping to travel?",
-      why: "A rough month is often the fastest way to turn a trip idea into a realistic shortlist.",
+      question: leadDestination
+        ? `When are you roughly hoping to do this ${leadDestination} trip?`
+        : "When are you roughly hoping to travel?",
+      why: "Timing is often the one anchor that turns a good trip direction into a realistic shortlist.",
       target: "brief",
       field: "tentative_month_or_dates",
       options: [
@@ -846,56 +1081,116 @@ export function buildClarifyingQuestions(params: {
     });
   }
 
-  if (!brief.approximate_budget_band) {
-    questions.push({
+  if (signals.missing_anchors.includes("budget_range")) {
+    addCandidate({
+      priority: signals.hotel_priority_signal || signals.emi_affordability_signal ? 86 : 68,
       code: "budget_range",
-      question: "Should we shape this for value, mid-range comfort, or a stronger stay?",
-      why: "A rough budget range tells us whether to lead with a realistic version, a better hotel, or an EMI-first option.",
+      question: signals.hotel_priority_signal
+        ? "Would you like us to shape this around a stronger stay, a balanced budget, or easier monthly payment?"
+        : "Should we shape this for value, mid-range comfort, or a stronger stay?",
+      why: "The budget anchor tells us whether to lead with a realistic version, a better stay, or a pay-smarter option.",
       target: "brief",
       field: "approximate_budget_band",
       options: [
         { value: "50k_1l", label: "Value-first" },
-        { value: "1l_2l", label: "Mid-range comfort" },
+        { value: "1l_2l", label: "Balanced comfort" },
         { value: "2l_5l", label: "Stronger stay" },
       ],
     });
   }
 
-  if ((signals.likely_destinations.length > 1 || brief.start_mode === "destination_discovery") && !preferences.destination_flexibility) {
-    questions.push({
-      code: "destination_flexibility",
-      question: "Are you fixed on one place, or open to similar destinations?",
-      why: "This tells us whether to price one trip direction or keep a shortlist alive.",
-      target: "preferences",
-      field: "destination_flexibility",
-      options: [
-        { value: "fixed", label: "Fixed on one place" },
-        { value: "open_to_similar", label: "Open to similar places" },
-        { value: "exploring", label: "Still exploring" },
-      ],
-    });
-  }
-
-  if (!preferences.trip_focus && (signals.stay_style_signals.length > 0 || signals.activity_signals.length > 0)) {
-    questions.push({
-      code: "trip_focus",
-      question: "Is this more about the stay experience or the activities?",
-      why: "That changes whether we shape this as a resort-led trip or a more experience-led trip.",
+  if (
+    !preferences.trip_focus
+    && (
+      (signals.stay_style_signals.length > 0 && signals.activity_signals.length > 0)
+      || signals.activity_signals.includes("thrill_activities")
+    )
+  ) {
+    addCandidate({
+      priority: signals.activity_signals.includes("thrill_activities") ? 84 : 74,
+      code: "trip_focus_validation",
+      question: signals.activity_signals.includes("thrill_activities")
+        ? "We can see adventure cues here. Do you want to keep that, or should we optimise more for comfort?"
+        : "This looks like both stay-comfort and experience cues are showing up. Which should lead the trip?",
+      why: "That choice changes whether we shape the next version around the stay, the experiences, or a balanced mix.",
       target: "preferences",
       field: "trip_focus",
       options: [
-        { value: "stay_experience", label: "The stay matters more" },
-        { value: "activities", label: "The experiences matter more" },
-        { value: "balanced", label: "I want both balanced" },
+        { value: "stay_experience", label: "Lean into the stay" },
+        { value: "activities", label: "Keep the experiences leading" },
+        { value: "balanced", label: "Keep it balanced" },
       ],
     });
   }
 
-  if (!preferences.budget_calibration && signals.realism_assessment !== "aligned" && signals.budget_signal) {
-    questions.push({
+  if (
+    !brief.domestic_or_international
+    && brief.start_mode === "destination_discovery"
+    && signals.likely_destinations.length === 0
+    && !leadDestination
+  ) {
+    addCandidate({
+      priority: 78,
+      code: "domestic_or_international",
+      question: "Should we keep this domestic, or are you open to international options too?",
+      why: "That one choice cuts the shortlist much faster than asking broad travel questions.",
+      target: "brief",
+      field: "domestic_or_international",
+      options: [
+        { value: "domestic", label: "Keep it domestic" },
+        { value: "international", label: "Open to international" },
+        { value: "either", label: "Either is fine" },
+      ],
+    });
+  }
+
+  if (signals.missing_anchors.includes("departure_city")) {
+    addCandidate({
+      priority: 74,
+      code: "departure_city",
+      question: leadDestination
+        ? `Which city would you likely start from for ${leadDestination}?`
+        : "Which city would you likely start from?",
+      why: "Starting city affects routing, value, and whether a trip is easy to shape or awkward to price.",
+      target: "brief",
+      field: "departure_city",
+      options: DEPARTURE_CITY_PATTERNS.slice(0, 5).map((entry) => ({
+        value: entry.city,
+        label: entry.city,
+      })),
+    });
+  }
+
+  if (
+    signals.missing_anchors.includes("trip_length")
+    && !brief.trip_duration
+    && signals.travel_month_signal
+  ) {
+    addCandidate({
+      priority: 54,
+      code: "trip_length",
+      question: "Are you thinking of a short escape, a 5 to 6 day trip, or something longer?",
+      why: "Trip length changes whether we should keep this destination tight or add more movement.",
+      target: "brief",
+      field: "trip_duration",
+      options: [
+        { value: "3 nights", label: "Short escape" },
+        { value: "5 nights", label: "5 to 6 days" },
+        { value: "7 nights", label: "A week or more" },
+      ],
+    });
+  }
+
+  if (
+    !preferences.budget_calibration
+    && signals.realism_assessment !== "aligned"
+    && signals.budget_signal
+  ) {
+    addCandidate({
+      priority: 58,
       code: "budget_calibration",
-      question: "Should we shape this to stay closer to the current budget, or stretch a little for a better version?",
-      why: "This helps us decide whether to show a realistic version, an upgraded version, or both.",
+      question: "Should we keep this close to the current budget, or stretch a bit for a meaningfully better version?",
+      why: "That tells us whether to lead with the realistic version, the stronger version, or both.",
       target: "preferences",
       field: "budget_calibration",
       options: [
@@ -906,63 +1201,47 @@ export function buildClarifyingQuestions(params: {
     });
   }
 
-  if (!brief.traveler_mix && !signals.traveler_mix_signal) {
-    questions.push({
-      code: "traveler_mix",
-      question: "Is this for a couple, family, friends, or a solo trip?",
-      why: "Trip shape, hotel choice, and pricing read differently for each traveler mix.",
-      target: "brief",
-      field: "traveler_mix",
-      options: [
-        { value: "couple", label: "Couple" },
-        { value: "family", label: "Family" },
-        { value: "friends", label: "Friends" },
-        { value: "solo", label: "Solo" },
-      ],
-    });
-  }
-
-  if (!preferences.date_flexibility && brief.tentative_month_or_dates.trim()) {
-    questions.push({
-      code: "date_flexibility",
-      question: "Are your dates fixed, or can they move a little?",
-      why: "A little flexibility can open up better value, smoother routing, or a stronger stay.",
-      target: "preferences",
-      field: "date_flexibility",
-      options: [
-        { value: "fixed", label: "Dates are fixed" },
-        { value: "a_bit_flexible", label: "A bit flexible" },
-        { value: "flexible", label: "Quite flexible" },
-      ],
-    });
-  }
-
-  if (!preferences.improvement_goal) {
-    questions.push({
+  if (
+    !preferences.improvement_goal
+    && (
+      signals.hotel_priority_signal
+      || signals.emi_affordability_signal
+      || signals.stay_style_signals.includes("premium")
+      || signals.vibe_signals.includes("romantic")
+    )
+  ) {
+    addCandidate({
+      priority: 56,
       code: "improvement_goal",
-      question: "What would you most like us to improve?",
-      why: "One clear goal helps us choose between payment comfort, hotel fit, price, and overall trip flow.",
+      question: signals.hotel_priority_signal
+        ? "Would you rather improve the stay, keep the budget tighter, or make payment easier?"
+        : "What would you most like us to improve first?",
+      why: "One clear goal helps the engine avoid showing you three competing versions at once.",
       target: "preferences",
       field: "improvement_goal",
       options: [
         { value: "lower_price", label: "Lower price" },
-        { value: "better_hotel", label: "Better hotel" },
+        { value: "better_hotel", label: "Better stay" },
         { value: "easier_payment", label: "Easier payment" },
-        { value: "more_activities", label: "More experiences" },
-        { value: "smoother_plan", label: "Smoother plan" },
+        { value: "more_activities", label: "Better experiences" },
       ],
     });
   }
 
-  return questions
+  const limit = signals.input_strength === "strong" ? 2 : 1;
+
+  return candidates
+    .sort((a, b) => b.priority - a.priority)
     .filter((question, index, list) => list.findIndex((item) => item.code === question.code) === index)
-    .slice(0, 3);
+    .slice(0, limit)
+    .map(({ priority: _priority, ...question }) => question);
 }
 
 function buildTravelerContext(brief: BuildTripBrief, preferences: TravelerPreferences, signals: BuildTripSignalExtraction): TravelerPreferences {
   const topPriority = brief.priorities[0] ?? "";
   const improvementGoal = preferences.improvement_goal
     ?? (brief.priorities.includes("easy_payment")
+      || signals.emi_affordability_signal
       ? "easier_payment"
       : brief.priorities.includes("better_hotel") || signals.stay_style_signals.includes("premium")
         ? "better_hotel"
@@ -1075,8 +1354,14 @@ function buildBookableRead(params: {
   const { brief, signals, budgetBand, destinationShortlist } = params;
   const missingSummary = signals.missing_anchors[0] === "travel_month"
     ? "We need your month of travel before pricing becomes meaningful."
+    : signals.missing_anchors[0] === "destination_confirmation"
+      ? "We have one destination direction emerging, but confirming it will make pricing more believable."
+      : signals.missing_anchors[0] === "destination_choice"
+        ? "We need one destination choice before pricing stops looking spread out."
     : signals.missing_anchors[0] === "traveler_mix"
       ? "We need to know whether this is for a couple, family, friends, or solo travel."
+      : signals.missing_anchors[0] === "traveler_mix_validation"
+        ? "We have a likely traveler mix, but confirming it will make the trip read more trustworthy."
       : signals.missing_anchors[0] === "budget_range"
         ? "We need a rough budget range before we decide between value, better stay, or EMI-first."
         : signals.missing_anchors[0] === "destination_or_trip_style"
@@ -1085,9 +1370,9 @@ function buildBookableRead(params: {
             ? "We need your starting city before routing and price direction get sharper."
             : "We need one more practical detail before this becomes a cleaner trip direction.";
   const hasDestination = destinationShortlist.length > 0;
-  const hasSingleStrongDirection = destinationShortlist.length === 1 || brief.start_mode === "known_destination";
-  const hasBudget = Boolean(budgetBand);
-  const hasTiming = Boolean(brief.tentative_month_or_dates.trim());
+  const hasSingleStrongDirection = signals.destination_signal_strength === "single_strong" || destinationShortlist.length === 1 || brief.start_mode === "known_destination";
+  const hasBudget = Boolean(budgetBand || signals.budget_intent_signal);
+  const hasTiming = Boolean(signals.travel_month_signal);
   const hasPassengers = Boolean(Number(brief.budget_for_count) > 0 || signals.traveler_mix_signal);
 
   if (!hasDestination && !hasBudget) {
@@ -1158,10 +1443,16 @@ function buildNextClarificationPrompt(
 ) {
   if (clarifyingQuestions[0]) return clarifyingQuestions[0].question;
 
+  if (signals.missing_anchors.includes("destination_confirmation")) {
+    return "We have one destination direction emerging strongly. Confirm that and the next version gets much sharper.";
+  }
+  if (signals.missing_anchors.includes("destination_choice")) {
+    return "A few destinations are still competing. One quick narrowing choice will sharpen everything else.";
+  }
   if (signals.missing_anchors.includes("travel_month")) {
     return "We need your month of travel to tighten the shortlist and price direction.";
   }
-  if (signals.missing_anchors.includes("traveler_mix")) {
+  if (signals.missing_anchors.includes("traveler_mix") || signals.missing_anchors.includes("traveler_mix_validation")) {
     return "Are you traveling as a couple, family, friends, or solo?";
   }
   if (signals.missing_anchors.includes("budget_range")) {
@@ -1222,12 +1513,35 @@ function buildReadBack(params: {
     });
   }
 
+  if (signals.inferred_hotel_names[0]) {
+    items.push({
+      label: "Stay clue we picked up",
+      value: signals.inferred_hotel_names[0],
+      confidence: "medium",
+    });
+  } else if (signals.hotel_priority_signal) {
+    items.push({
+      label: "Stay clue we picked up",
+      value: "Hotel or stay quality looks important in this trip idea",
+      confidence: "medium",
+    });
+  }
+
+  if (signals.travel_month_signal) {
+    items.push({
+      label: "Timing clue",
+      value: signals.travel_month_signal,
+      confidence: "medium",
+    });
+  }
+
   const sourceTraces = uniq([
     ...inspirationInputs.slice(0, 5).map((item) => sourceTraceLabel(item)),
     ...destinationShortlist.slice(0, 2),
     ...signals.vibe_signals.slice(0, 2).map((value) => titleCase(humanize(value))),
     ...signals.activity_signals.slice(0, 1).map((value) => titleCase(humanize(value))),
     ...signals.stay_style_signals.slice(0, 1).map((value) => titleCase(humanize(value))),
+    ...signals.inferred_hotel_names.slice(0, 1),
   ]).slice(0, 6);
 
   const summaryParts: string[] = [];
@@ -1323,9 +1637,12 @@ function buildRenderContract(params: {
     signals.input_strength === "strong"
     || bookableRead.status === "pricing_pending"
     || bookableRead.status === "partial_bookable_match"
-    || financeRead.no_cost_emi_relevant
-    || versions.realistic
-    || versions.upgraded
+    || (financeRead.no_cost_emi_relevant && signals.destination_signal_strength !== "none")
+    || (
+      versions.realistic
+      && signals.destination_signal_strength === "single_strong"
+      && Boolean(signals.travel_month_signal || signals.traveler_mix_signal)
+    )
   ) {
     return {
       source_of_truth: "build_trip_engine",
@@ -1397,6 +1714,7 @@ function buildFinanceRead(params: {
     (
       brief.priorities.includes("easy_payment") ||
       travelerContext.improvement_goal === "easier_payment" ||
+      signals.emi_affordability_signal ||
       signals.realism_assessment !== "aligned" ||
       signals.aspiration_level !== "grounded"
     )
