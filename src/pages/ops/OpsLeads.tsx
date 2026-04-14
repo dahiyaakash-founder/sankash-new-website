@@ -159,8 +159,8 @@ const OpsLeads = () => {
         assignedTo: specialFilter === "my_leads" ? user?.id : undefined,
         unassigned: specialFilter === "unassigned" ? true : undefined,
         overdueFollowUp: specialFilter === "overdue" ? true : undefined,
-        onlyAnonymousTraveler: isAnon ? true : undefined,
-        excludeAnonymousTraveler: !isAnon ? true : undefined,
+        onlyAnonymous: isAnon ? true : undefined,
+        excludeAnonymous: !isAnon ? true : undefined,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -176,8 +176,8 @@ const OpsLeads = () => {
   const loadCounts = useCallback(async () => {
     try {
       const [mainRes, anonRes] = await Promise.all([
-        fetchLeads({ excludeAnonymousTraveler: true, page: 1, pageSize: 1 }),
-        fetchLeads({ onlyAnonymousTraveler: true, page: 1, pageSize: 1 }),
+        fetchLeads({ excludeAnonymous: true, page: 1, pageSize: 1 }),
+        fetchLeads({ onlyAnonymous: true, page: 1, pageSize: 1 }),
       ]);
       setMainCount(mainRes.count);
       setAnonCount(anonRes.count);
@@ -242,7 +242,7 @@ const OpsLeads = () => {
           <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as "main" | "anon"); setPage(1); setSelected(new Set()); }} className="ml-4">
             <TabsList className="h-8">
               <TabsTrigger value="main" className="text-xs h-7 px-3">Main Leads <span className="ml-1.5 text-muted-foreground">{mainCount}</span></TabsTrigger>
-              <TabsTrigger value="anon" className="text-xs h-7 px-3">Traveler Anonymous <span className="ml-1.5 text-muted-foreground">{anonCount}</span></TabsTrigger>
+              <TabsTrigger value="anon" className="text-xs h-7 px-3">Anonymous <span className="ml-1.5 text-muted-foreground">{anonCount}</span></TabsTrigger>
             </TabsList>
           </Tabs>
            <div className="flex items-center gap-2">
@@ -382,22 +382,28 @@ const OpsLeads = () => {
                     <td className="px-3 py-2.5 font-medium whitespace-nowrap">
                       {(() => {
                         const name = lead.full_name?.trim();
-                        const isGeneric = !name || name.toLowerCase() === "traveler enquiry" || name.toLowerCase() === "traveller enquiry" || name.toLowerCase() === "anonymous";
-                        if (!isGeneric) return name;
-                        const srcMap: Record<string, string> = {
-                          traveler_emi_enquiry: "Anon EMI Enquiry",
-                          traveler_quote_unlock: "Anon Quote Unlock",
-                          traveler_quote_review: "Anon Quote Review",
-                          itinerary_upload: "Anon Itinerary Review",
-                          insurance_query: "Anon Insurance Query",
-                        };
-                        const label = srcMap[lead.lead_source_type ?? ""] ?? "Anon Traveler";
-                        const phone = lead.mobile_number?.trim();
-                        return (
-                          <span className="text-muted-foreground italic">
-                            {label}{phone ? <span className="not-italic font-mono ml-1.5 text-foreground/70">{phone}</span> : null}
-                          </span>
-                        );
+                        const PLACEHOLDER_NAMES = ["traveler enquiry", "traveller enquiry", "anonymous", "agent (anonymous)", "traveler (anonymous)", "unknown"];
+                        const isPlaceholder = !name || PLACEHOLDER_NAMES.includes(name.toLowerCase());
+                        if (!isPlaceholder) return name;
+                        // In anonymous tab, show source-based label; in main tab, show dash
+                        if (activeTab === "anon") {
+                          const srcMap: Record<string, string> = {
+                            traveler_emi_enquiry: "EMI Enquiry",
+                            traveler_quote_unlock: "Quote Unlock",
+                            traveler_quote_review: "Quote Review",
+                            itinerary_upload: "Itinerary Review",
+                            insurance_query: "Insurance Query",
+                            agent_quote_review: "Agent Quote Review",
+                          };
+                          const label = srcMap[lead.lead_source_type ?? ""] ?? (lead.audience_type ? `${lead.audience_type} lead` : "Unknown source");
+                          const phone = lead.mobile_number?.trim();
+                          return (
+                            <span className="text-muted-foreground italic text-xs">
+                              {label}{phone ? <span className="not-italic font-mono ml-1.5 text-foreground/70">{phone}</span> : null}
+                            </span>
+                          );
+                        }
+                        return <span className="text-muted-foreground">—</span>;
                       })()}
                     </td>
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
