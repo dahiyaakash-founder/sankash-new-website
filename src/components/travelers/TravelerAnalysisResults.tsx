@@ -629,8 +629,8 @@ export default function TravelerAnalysisResults({
               <p className="text-[11px] text-foreground">Detailed trip budget with hidden cost analysis</p>
             </div>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
 
       {/* ── Section: Flights ── */}
       {flightStatus !== "missing" && (
@@ -786,6 +786,7 @@ export default function TravelerAnalysisResults({
               Upload different files
             </Button>
           </div>
+        )}
         </div>
       </div>
 
