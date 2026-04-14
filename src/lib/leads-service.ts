@@ -44,6 +44,31 @@ export interface TeamMember {
   supervisor_id?: string | null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeLeadDedupResponse(result: unknown, lead: LeadInsert): { lead: LeadRow; isDuplicate: boolean } {
+  if (!isRecord(result)) {
+    throw new Error("Lead submission returned an unexpected response.");
+  }
+
+  const backendError = typeof result.error === "string" ? result.error.trim() : "";
+  if (backendError) {
+    throw new Error(backendError);
+  }
+
+  const leadId = typeof result.id === "string" ? result.id.trim() : "";
+  if (!leadId) {
+    throw new Error("Lead submission did not return a lead id.");
+  }
+
+  return {
+    lead: { ...lead, id: leadId, assigned_to: (typeof result.assigned_to === "string" ? result.assigned_to : null) ?? lead.assigned_to ?? null } as LeadRow,
+    isDuplicate: result.is_duplicate === true,
+  };
+}
+
 async function triggerTripIntelligenceRefresh(leadId: string, reason: string) {
   try {
     await supabase.functions.invoke("refresh-trip-intelligence", {
@@ -154,17 +179,7 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
 
   if (error) throw error;
 
-  const result = data as any;
-
-  // Backend validation can return an error field instead of throwing
-  if (result?.error) {
-    throw new Error(result.error);
-  }
-
-  return {
-    lead: { ...lead, id: result.id, assigned_to: result.assigned_to ?? lead.assigned_to ?? null } as LeadRow,
-    isDuplicate: result.is_duplicate === true,
-  };
+  return normalizeLeadDedupResponse(data, lead);
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */
