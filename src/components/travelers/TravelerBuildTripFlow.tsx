@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -338,7 +339,7 @@ export default function TravelerBuildTripFlow({
         full_name: "Build My Trip Traveler",
         audience_type: "traveler",
         lead_source_page: "for-travelers",
-        lead_source_type: "traveler_emi_enquiry" as any,
+        lead_source_type: "itinerary_upload",
         destination_type: brief.destination_in_mind || engine.synthesis.destination_shortlist[0] || humanize(brief.holiday_style || ""),
         detected_trip_type: brief.trip_type || brief.traveler_mix || "unknown",
         emi_flag: engine.synthesis.finance_read.no_cost_emi_relevant,
@@ -608,8 +609,10 @@ export default function TravelerBuildTripFlow({
           </Button>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button variant="ghost" className="gap-2 text-muted-foreground" onClick={() => {/* future: open contact */}}>
-            <MessageCircle size={15} /> Talk to us
+          <Button variant="ghost" className="gap-2 text-muted-foreground" asChild>
+            <Link to="/contact">
+              <MessageCircle size={15} /> Talk to us
+            </Link>
           </Button>
           <Button variant="ghost" className="gap-2 text-muted-foreground" onClick={resetFlow}>
             <RotateCcw size={15} /> Build another trip
