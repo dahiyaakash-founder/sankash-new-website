@@ -690,6 +690,35 @@ export default function TravelerAnalysisResults({
       <UnlockableModules modules={modules} />
       <CompletenessBar score={score} />
 
+      <div className="space-y-2 pt-1">
+        <div className="relative rounded-xl overflow-hidden">
+          <div className="space-y-1.5 select-none p-3" style={{ filter: "blur(4px)" }} aria-hidden>
+            <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+              <Shield size={13} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] text-foreground">Personalised savings estimate and EMI breakdown</p>
+            </div>
+            <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+              <Wallet size={13} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] text-foreground">Detailed trip budget with hidden cost analysis</p>
+            </div>
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] px-4">
+            <Lock size={16} className="text-primary mb-1.5" />
+            <p className="font-heading font-bold text-xs text-foreground mb-0.5 text-center">
+              Get your detailed review
+            </p>
+            <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
+              {customerConversion.unlock_reason
+                ? String(customerConversion.unlock_reason)
+                : "Verify your mobile to unlock savings estimate, EMI options, and personalised recommendations"}
+            </p>
+            <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+              <Phone size={13} /> {customerConversion.unlock_cta ? String(customerConversion.unlock_cta) : "Unlock full review"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* ── Section: Flights ── */}
       {flightStatus !== "missing" && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="border rounded-lg p-3 space-y-1">
