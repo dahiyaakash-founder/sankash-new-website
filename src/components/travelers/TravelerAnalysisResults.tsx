@@ -16,6 +16,8 @@ import type {
   AdvisoryInsight,
   NextInput,
   TravelerQuestion,
+  TravelerOptionalPrompt,
+  TravelerSignalCard,
   UnlockableModule,
 } from "@/lib/itinerary-analysis-service";
 
@@ -29,9 +31,6 @@ interface Props {
   isReanalyzing?: boolean;
 }
 
-type SignalCard = { code?: string; title?: string; detail?: string; strength?: string };
-type OptionalPrompt = { customer_prompt?: string; reason?: string; suggested_upload?: string };
-type TravelerQuestionLike = string | TravelerQuestion;
 type CustomerConversionPayload = {
   hero_type?: string;
   hero_headline?: string;
@@ -51,28 +50,6 @@ function asObject(value: unknown): Record<string, unknown> {
 
 function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? value as T[] : [];
-}
-
-function normalizeTravelerQuestions(value: unknown): TravelerQuestion[] {
-  return asArray<TravelerQuestionLike>(value)
-    .map((item, index) => {
-      if (typeof item === "string") {
-        const question = item.trim();
-        return question ? { code: `legacy-${index}`, question } : null;
-      }
-
-      if (!item || typeof item !== "object") return null;
-      const question = typeof item.question === "string" ? item.question.trim() : "";
-      if (!question) return null;
-
-      return {
-        code: typeof item.code === "string" ? item.code : `question-${index}`,
-        question,
-        why: typeof item.why === "string" ? item.why : undefined,
-        priority: typeof item.priority === "string" ? item.priority : undefined,
-      } satisfies TravelerQuestion;
-    })
-    .filter((item): item is TravelerQuestion => Boolean(item));
 }
 
 function fmt(n: number | null | undefined, currency?: string): string | null {
@@ -265,7 +242,7 @@ function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
   );
 }
 
-function SignalCards({ title, items, tone }: { title: string; items: SignalCard[]; tone: "good" | "check" }) {
+function SignalCards({ title, items, tone }: { title: string; items: TravelerSignalCard[]; tone: "good" | "check" }) {
   if (items.length === 0) return null;
   const toneClasses = tone === "good"
     ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-800/30"
@@ -307,7 +284,7 @@ function TravelerQuestions({ questions }: { questions: TravelerQuestion[] }) {
   );
 }
 
-function OptionalPromptCard({ prompt, inspiration }: { prompt: OptionalPrompt | null; inspiration: Record<string, unknown> }) {
+function OptionalPromptCard({ prompt, inspiration }: { prompt: TravelerOptionalPrompt | null; inspiration: Record<string, unknown> }) {
   if (!prompt && !inspiration.prompt) return null;
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.23 }}
@@ -495,29 +472,16 @@ export default function TravelerAnalysisResults({
 
   const score = a.extracted_completeness_score ?? 0;
   const insights = (a.advisory_insights_json ?? []) as AdvisoryInsight[];
-  const questions = normalizeTravelerQuestions(a.traveler_questions_json);
+  const questions = (a.traveler_questions_json ?? []) as TravelerQuestion[];
   const nextInputs = (a.next_inputs_needed_json ?? []) as NextInput[];
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
   const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
 
-  const travelerOutput = asObject(a.traveler_output_json);
-  const customerConversion = {
-    ...asObject(a.customer_conversion_json),
-    ...asObject(travelerOutput.customer_conversion),
-  } as CustomerConversionPayload;
-  const painSignals = (asArray<SignalCard>(travelerOutput.pain_signals).length > 0
-    ? asArray<SignalCard>(travelerOutput.pain_signals)
-    : asArray<SignalCard>(a.pain_signals_json)).slice(0, 3);
-  const pleasureSignals = (asArray<SignalCard>(travelerOutput.pleasure_signals).length > 0
-    ? asArray<SignalCard>(travelerOutput.pleasure_signals)
-    : asArray<SignalCard>(a.pleasure_signals_json)).slice(0, 3);
-  const optionalPrompt = (asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts).length > 0
-    ? asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts)
-    : asArray<OptionalPrompt>(a.optional_missing_prompts_json))[0] ?? null;
-  const inspirationCapture = {
-    ...asObject(a.inspiration_capture_json),
-    ...asObject(travelerOutput.inspiration_capture),
-  };
+  const customerConversion = asObject(a.customer_conversion_json) as CustomerConversionPayload;
+  const painSignals = ((a.pain_signals_json ?? []) as TravelerSignalCard[]).slice(0, 3);
+  const pleasureSignals = ((a.pleasure_signals_json ?? []) as TravelerSignalCard[]).slice(0, 3);
+  const optionalPrompt = ((a.optional_missing_prompts_json ?? []) as TravelerOptionalPrompt[])[0] ?? null;
+  const inspirationCapture = asObject(a.inspiration_capture_json);
 
   if (!hasAnyContent) {
     return (
