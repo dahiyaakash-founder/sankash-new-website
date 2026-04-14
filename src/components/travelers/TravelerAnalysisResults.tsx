@@ -9,7 +9,8 @@ import {
   MapPin, Calendar, Users, CreditCard, Plane, Building2,
   AlertTriangle, Upload, ImageIcon, FileText, Phone, Lock,
   ArrowRight, Loader2, X, Shield, Wallet, Eye, MessageCircle,
-  Lightbulb, ChevronRight, Sparkles, AlertCircle, Info,
+  Lightbulb, ChevronRight, Sparkles, AlertCircle, Info, Plus,
+  CheckCircle2, Circle,
 } from "lucide-react";
 import type {
   ItineraryAnalysis,
@@ -77,6 +78,42 @@ function heroTone(heroType: string | undefined) {
   if (heroType === "savings") return "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/30";
   if (heroType === "risk") return "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/30";
   return "bg-accent/30 border-border";
+}
+
+type SectionStatusType = "found" | "partial" | "missing";
+
+function sectionStatus(values: unknown[]): SectionStatusType {
+  const present = values.filter((v) => v != null && v !== "" && v !== false);
+  if (present.length === 0) return "missing";
+  if (present.length === values.length) return "found";
+  return "partial";
+}
+
+function StatusIcon({ status }: { status: SectionStatusType }) {
+  if (status === "found") return <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />;
+  if (status === "partial") return <AlertCircle size={12} className="text-amber-500 shrink-0" />;
+  return <Circle size={12} className="text-muted-foreground shrink-0" />;
+}
+
+function DataRow({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon: any }) {
+  if (value == null || value === "") return null;
+  return (
+    <div className="flex items-center gap-2 py-0.5">
+      <Icon size={11} className="text-muted-foreground shrink-0" />
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-[10px] font-medium text-foreground ml-auto text-right max-w-[60%] truncate">{String(value)}</span>
+    </div>
+  );
+}
+
+function MissingPrompt({ title, description, uploadHint }: { title: string; description: string; uploadHint?: string }) {
+  return (
+    <div className="border border-dashed rounded-lg p-3 bg-accent/10 space-y-1">
+      <p className="text-[11px] font-semibold text-foreground">{title}</p>
+      <p className="text-[10px] text-muted-foreground leading-relaxed">{description}</p>
+      {uploadHint && <p className="text-[10px] text-muted-foreground/70 italic">{uploadHint}</p>}
+    </div>
+  );
 }
 
 const SectionHeader = ({ icon: Icon, title, badge }: { icon: any; title: string; badge?: React.ReactNode }) => (
@@ -227,6 +264,21 @@ function InsightCard({ insight }: { insight: AdvisoryInsight }) {
   );
 }
 
+function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
+  if (!insights || insights.length === 0) return null;
+  const sorted = [...insights].sort((a, b) => {
+    const order = { critical: 0, warning: 1, info: 2 };
+    return (order[a.severity] ?? 2) - (order[b.severity] ?? 2);
+  });
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+      className="space-y-2">
+      <SectionHeader icon={Lightbulb} title="Key Things to Check" />
+      {sorted.map((insight, index) => <InsightCard key={index} insight={insight} />)}
+    </motion.div>
+  );
+}
+
 function clipText(value: string, max = 72) {
   const trimmed = value.trim().replace(/\s+/g, " ");
   if (!trimmed) return "";
@@ -275,11 +327,17 @@ function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: Fil
 function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-      className="space-y-2">
-      <SectionHeader icon={Lightbulb} title="Key Things to Check" />
-      {sorted.map((insight, index) => <InsightCard key={index} insight={insight} />)}
-    </motion.div>
+    <div className="relative flex items-center gap-1.5 bg-muted rounded px-2 py-1 pr-6 min-w-0">
+      {isImage ? <ImageIcon size={11} className="text-muted-foreground shrink-0" /> : <FileText size={11} className="text-muted-foreground shrink-0" />}
+      <span className="text-[10px] text-foreground truncate max-w-[100px]">{file.name}</span>
+      <button
+        onClick={(e) => { e.preventDefault(); onRemove(); }}
+        className="absolute right-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full hover:bg-destructive/20 flex items-center justify-center"
+        aria-label="Remove"
+      >
+        <X size={8} className="text-muted-foreground" />
+      </button>
+    </div>
   );
 }
 
@@ -490,12 +548,19 @@ export default function TravelerAnalysisResults({
   isReanalyzing,
 }: Props) {
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+  const [addMoreExpanded, setAddMoreExpanded] = useState(false);
   const addFileRef = useRef<HTMLInputElement>(null);
 
   const submitAdditional = () => {
     if (additionalFiles.length === 0) return;
     onAddMore(additionalFiles);
     setAdditionalFiles([]);
+  };
+
+  const handleAddFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(event.target.files ?? []);
+    if (selected.length > 0) setAdditionalFiles((prev) => [...prev, ...selected].slice(0, 5));
+    if (addFileRef.current) addFileRef.current.value = "";
   };
 
   if (!a) {
@@ -518,6 +583,11 @@ export default function TravelerAnalysisResults({
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
   const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
 
+  const customerConversion = asObject(a.customer_conversion_json) as CustomerConversionPayload;
+  const optionalPrompt = (a.optional_missing_prompts_json ?? [])[0] ?? null;
+  const inspirationCapture = asObject(a.inspiration_capture_json);
+  const destination = [a.destination_city, a.destination_country].filter(Boolean).join(", ");
+
   const priceStatus = sectionStatus([a?.total_price, a?.price_per_person]);
   const flightStatus = sectionStatus([a?.flight_departure_time, a?.flight_arrival_time, ...(a?.airline_names_json ?? []), ...(a?.sectors_json ?? [])]);
   const hotelStatus = sectionStatus([a?.hotel_check_in, a?.hotel_check_out, ...(a?.hotel_names_json ?? [])]);
@@ -525,6 +595,9 @@ export default function TravelerAnalysisResults({
   const confidence = a?.parsing_confidence ?? "low";
   const isLowConfidence = confidence === "low";
   const manualReviewSignals = buildManualReviewSignals(a, files);
+
+  const anyFound = priceStatus !== "missing" || flightStatus !== "missing" || hotelStatus !== "missing" || tripStatus !== "missing";
+  const allMissing = !anyFound && isLowConfidence;
 
   if (!hasAnyContent) {
     return (
