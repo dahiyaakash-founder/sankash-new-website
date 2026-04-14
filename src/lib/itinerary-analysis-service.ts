@@ -211,7 +211,7 @@ function normalizeQuestionArray(value: unknown): TravelerQuestion[] {
         priority: normalizeString(objectValue.priority) ?? undefined,
       } satisfies TravelerQuestion;
     })
-    .filter((item): item is TravelerQuestion => item != null);
+    .filter(Boolean) as TravelerQuestion[];
 }
 
 function normalizeAdvisoryInsights(value: unknown): AdvisoryInsight[] {
@@ -321,7 +321,7 @@ function normalizeSignalCards(value: unknown): TravelerSignalCard[] {
         strength: normalizeString(objectValue.strength ?? objectValue.severity) ?? undefined,
       } satisfies TravelerSignalCard;
     })
-    .filter((item): item is TravelerSignalCard => item != null);
+    .filter(Boolean) as TravelerSignalCard[];
 }
 
 function normalizeOptionalPrompts(value: unknown): TravelerOptionalPrompt[] {
@@ -344,7 +344,7 @@ function normalizeOptionalPrompts(value: unknown): TravelerOptionalPrompt[] {
         suggested_upload: suggestedUpload ?? undefined,
       } satisfies TravelerOptionalPrompt;
     })
-    .filter((item): item is TravelerOptionalPrompt => item != null);
+    .filter(Boolean) as TravelerOptionalPrompt[];
 }
 
 function normalizeInspirationCapture(value: unknown): Record<string, unknown> {
