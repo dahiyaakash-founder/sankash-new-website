@@ -787,7 +787,6 @@ export default function TravelerAnalysisResults({
             </Button>
           </div>
         )}
-        </div>
       </div>
 
       {asArray<string>(a.extraction_warnings_json).length > 0 && (
