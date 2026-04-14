@@ -227,12 +227,53 @@ function InsightCard({ insight }: { insight: AdvisoryInsight }) {
   );
 }
 
-function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
-  if (!insights || insights.length === 0) return null;
-  const sorted = [...insights].sort((a, b) => {
-    const order = { critical: 0, warning: 1, info: 2 };
-    return (order[a.severity] ?? 2) - (order[b.severity] ?? 2);
-  });
+function clipText(value: string, max = 72) {
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (!trimmed) return "";
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1).trimEnd()}…`;
+}
+
+function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: File[]) {
+  const signals: string[] = [];
+  const destination = [analysis?.destination_city, analysis?.destination_country].filter(Boolean).join(", ");
+
+  if (destination) signals.push(`Destination clue: ${destination}`);
+  if (analysis?.duration_nights || analysis?.duration_days) {
+    signals.push(`Duration clue: ${analysis.duration_nights ?? "?"}N / ${analysis.duration_days ?? "?"}D`);
+  }
+  if ((analysis?.hotel_names_json ?? []).length > 0) {
+    signals.push(`Stay clue: ${(analysis?.hotel_names_json ?? []).slice(0, 2).join(", ")}`);
+  }
+  if ((analysis?.airline_names_json ?? []).length > 0 || (analysis?.sectors_json ?? []).length > 0) {
+    const flightHint = [
+      ...(analysis?.airline_names_json ?? []).slice(0, 1),
+      ...(analysis?.sectors_json ?? []).slice(0, 1),
+    ].filter(Boolean).join(" · ");
+    if (flightHint) signals.push(`Flight clue: ${flightHint}`);
+  }
+  if (analysis?.total_price != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.total_price).toLocaleString("en-IN")}`);
+  } else if (analysis?.price_per_person != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.price_per_person).toLocaleString("en-IN")} per person`);
+  }
+  if (analysis?.inclusions_text) {
+    signals.push(`Visible in plan: ${clipText(analysis.inclusions_text)}`);
+  } else if ((analysis?.extracted_snippets_json ?? []).length > 0) {
+    const snippet = (analysis?.extracted_snippets_json ?? []).find((item) => typeof item === "string" && item.trim().length > 0);
+    if (snippet) signals.push(`Visible in plan: ${clipText(String(snippet))}`);
+  }
+
+  if (signals.length === 0 && files.length > 0) {
+    signals.push(files.length > 1 ? `${files.length} trip documents received` : "Trip document received");
+  }
+
+  return signals.slice(0, 4);
+}
+
+/** Small file thumbnail for add-more section */
+function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
       className="space-y-2">
@@ -477,11 +518,13 @@ export default function TravelerAnalysisResults({
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
   const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
 
-  const customerConversion = asObject(a.customer_conversion_json) as CustomerConversionPayload;
-  const painSignals = ((a.pain_signals_json ?? []) as TravelerSignalCard[]).slice(0, 3);
-  const pleasureSignals = ((a.pleasure_signals_json ?? []) as TravelerSignalCard[]).slice(0, 3);
-  const optionalPrompt = ((a.optional_missing_prompts_json ?? []) as TravelerOptionalPrompt[])[0] ?? null;
-  const inspirationCapture = asObject(a.inspiration_capture_json);
+  const priceStatus = sectionStatus([a?.total_price, a?.price_per_person]);
+  const flightStatus = sectionStatus([a?.flight_departure_time, a?.flight_arrival_time, ...(a?.airline_names_json ?? []), ...(a?.sectors_json ?? [])]);
+  const hotelStatus = sectionStatus([a?.hotel_check_in, a?.hotel_check_out, ...(a?.hotel_names_json ?? [])]);
+  const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total, a?.duration_nights, a?.duration_days]);
+  const confidence = a?.parsing_confidence ?? "low";
+  const isLowConfidence = confidence === "low";
+  const manualReviewSignals = buildManualReviewSignals(a, files);
 
   if (!hasAnyContent) {
     return (
@@ -529,10 +572,35 @@ export default function TravelerAnalysisResults({
       {a.advisory_summary && <OurRead summary={a.advisory_summary} />}
       <KeyInsights insights={insights} />
 
-      <div className="grid lg:grid-cols-2 gap-3">
-        <SignalCards title="What Looks Good" items={pleasureSignals} tone="good" />
-        <SignalCards title="Worth Checking" items={painSignals} tone="check" />
-      </div>
+      {/* All missing / weakly-structured — graceful manual fallback */}
+      {allMissing && (
+        <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Phone size={18} className="text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
+              </p>
+            </div>
+          </div>
+
+          {manualReviewSignals.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
+              <div className="flex flex-wrap gap-1.5">
+                {manualReviewSignals.map((signal) => (
+                  <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+                    {signal}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <TravelerQuestions questions={questions} />
       <OptionalPromptCard prompt={optionalPrompt} inspiration={inspirationCapture} />
@@ -561,18 +629,161 @@ export default function TravelerAnalysisResults({
               <p className="text-[11px] text-foreground">Detailed trip budget with hidden cost analysis</p>
             </div>
           </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] px-4">
-            <Lock size={16} className="text-primary mb-1.5" />
-            <p className="font-heading font-bold text-xs text-foreground mb-0.5 text-center">
-              Get your detailed review
-            </p>
-            <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
-              {customerConversion.unlock_reason
-                ? String(customerConversion.unlock_reason)
-                : "Verify your mobile to unlock savings estimate, EMI options, and personalised recommendations"}
-            </p>
+        </motion.div>
+      )}
+
+      {/* ── Section: Flights ── */}
+      {flightStatus !== "missing" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="border rounded-lg p-3 space-y-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            <StatusIcon status={flightStatus} />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Flights</span>
+          </div>
+          <DataRow label="Departure" value={a?.flight_departure_time} icon={Plane} />
+          <DataRow label="Arrival" value={a?.flight_arrival_time} icon={Plane} />
+          {(a?.airline_names_json ?? []).length > 0 && (
+            <DataRow label="Airlines" value={(a?.airline_names_json ?? []).join(", ")} icon={Plane} />
+          )}
+          {(a?.sectors_json ?? []).length > 0 && (
+            <DataRow label="Sectors" value={(a?.sectors_json ?? []).join(", ")} icon={Plane} />
+          )}
+        </motion.div>
+      )}
+
+      {/* ── Section: Hotels ── */}
+      {hotelStatus !== "missing" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="border rounded-lg p-3 space-y-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            <StatusIcon status={hotelStatus} />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hotels</span>
+          </div>
+          {(a?.hotel_names_json ?? []).length > 0 && (
+            <DataRow label="Hotels" value={(a?.hotel_names_json ?? []).join(", ")} icon={Building2} />
+          )}
+          <DataRow label="Check-in" value={a?.hotel_check_in} icon={Calendar} />
+          <DataRow label="Check-out" value={a?.hotel_check_out} icon={Calendar} />
+        </motion.div>
+      )}
+
+      {/* ── Missing section prompts ── */}
+      {priceStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Price not detected"
+          description="Upload a screenshot showing the trip price to unlock savings estimate and EMI options."
+          uploadHint="Tip: A screenshot of the price summary page works best"
+        />
+      )}
+      {flightStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Flight details missing"
+          description="Add a screenshot of your flight booking or itinerary to see departure/arrival times."
+          uploadHint="Tip: Share the flight confirmation or booking screenshot"
+        />
+      )}
+      {hotelStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Hotel details missing"
+          description="Upload hotel booking screenshots to complete your trip timeline."
+          uploadHint="Tip: Share hotel confirmation emails or OTA booking screenshots"
+        />
+      )}
+
+      {/* ── Add More Screenshots ── */}
+      {anyFound && (
+        <div className="border border-dashed rounded-lg p-3">
+          {!addMoreExpanded ? (
+            <button
+              onClick={() => setAddMoreExpanded(true)}
+              className="w-full flex items-center justify-center gap-2 py-1.5 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <Plus size={13} /> Add more screenshots to improve results
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Add More Files</p>
+              {additionalFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {additionalFiles.map((f, i) => (
+                    <SmallFileThumb
+                      key={`${f.name}-${i}`}
+                      file={f}
+                      onRemove={() => setAdditionalFiles(prev => prev.filter((_, j) => j !== i))}
+                    />
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs flex-1"
+                  onClick={() => addFileRef.current?.click()}
+                >
+                  <ImageIcon size={12} /> Choose files
+                </Button>
+                {additionalFiles.length > 0 && (
+                  <Button
+                    size="sm"
+                    className="gap-1 text-xs"
+                    onClick={submitAdditional}
+                    disabled={isReanalyzing}
+                  >
+                    {isReanalyzing ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+                    Re-analyze
+                  </Button>
+                )}
+              </div>
+              <input
+                ref={addFileRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.png,.jpg,.jpeg"
+                multiple
+                onChange={handleAddFiles}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Unlock CTA ── */}
+      <div className="space-y-2 pt-1">
+        {anyFound && (
+          <>
+            <div className="relative rounded-xl overflow-hidden">
+              <div className="space-y-1.5 select-none p-3" style={{ filter: "blur(4px)" }} aria-hidden>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+                  <Shield size={13} className="text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-foreground">Exact savings amount and EMI breakdown</p>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+                  <Wallet size={13} className="text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-foreground">Recommended travel protection with pricing</p>
+                </div>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] px-4">
+                <Lock size={16} className="text-primary mb-1.5" />
+                <p className="font-heading font-bold text-xs text-foreground mb-0.5 text-center">
+                  Unlock full review
+                </p>
+                <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
+                  Verify your mobile to see exact savings, EMI options, and trip recommendations
+                </p>
+                <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+                  <Phone size={13} /> Unlock full review
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {allMissing && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Button size="sm" className="gap-1.5" onClick={onUnlock}>
-              <Phone size={13} /> {customerConversion.unlock_cta ? String(customerConversion.unlock_cta) : "Unlock full review"}
+              <Phone size={13} /> Continue with our team
+            </Button>
+            <Button variant="outline" size="sm" onClick={onReset}>
+              Upload different files
             </Button>
           </div>
         </div>
