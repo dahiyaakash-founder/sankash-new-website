@@ -15,6 +15,7 @@ import type {
   ItineraryAnalysis,
   AdvisoryInsight,
   NextInput,
+  TravelerQuestion,
   UnlockableModule,
 } from "@/lib/itinerary-analysis-service";
 
@@ -30,6 +31,7 @@ interface Props {
 
 type SignalCard = { code?: string; title?: string; detail?: string; strength?: string };
 type OptionalPrompt = { customer_prompt?: string; reason?: string; suggested_upload?: string };
+type TravelerQuestionLike = string | TravelerQuestion;
 type CustomerConversionPayload = {
   hero_type?: string;
   hero_headline?: string;
@@ -49,6 +51,28 @@ function asObject(value: unknown): Record<string, unknown> {
 
 function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? value as T[] : [];
+}
+
+function normalizeTravelerQuestions(value: unknown): TravelerQuestion[] {
+  return asArray<TravelerQuestionLike>(value)
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const question = item.trim();
+        return question ? { code: `legacy-${index}`, question } : null;
+      }
+
+      if (!item || typeof item !== "object") return null;
+      const question = typeof item.question === "string" ? item.question.trim() : "";
+      if (!question) return null;
+
+      return {
+        code: typeof item.code === "string" ? item.code : `question-${index}`,
+        question,
+        why: typeof item.why === "string" ? item.why : undefined,
+        priority: typeof item.priority === "string" ? item.priority : undefined,
+      } satisfies TravelerQuestion;
+    })
+    .filter((item): item is TravelerQuestion => Boolean(item));
 }
 
 function fmt(n: number | null | undefined, currency?: string): string | null {
@@ -260,7 +284,7 @@ function SignalCards({ title, items, tone }: { title: string; items: SignalCard[
   );
 }
 
-function TravelerQuestions({ questions }: { questions: string[] }) {
+function TravelerQuestions({ questions }: { questions: TravelerQuestion[] }) {
   if (!questions || questions.length === 0) return null;
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -268,9 +292,14 @@ function TravelerQuestions({ questions }: { questions: string[] }) {
       <SectionHeader icon={MessageCircle} title="Ask Before Booking" />
       <div className="space-y-1.5">
         {questions.map((question, index) => (
-          <div key={index} className="flex items-start gap-2 py-0.5">
+          <div key={question.code ?? index} className="flex items-start gap-2 py-0.5">
             <ChevronRight size={11} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] text-foreground leading-relaxed">{question}</p>
+            <div>
+              <p className="text-[11px] text-foreground leading-relaxed">{question.question}</p>
+              {question.why && (
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{question.why}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -466,7 +495,7 @@ export default function TravelerAnalysisResults({
 
   const score = a.extracted_completeness_score ?? 0;
   const insights = (a.advisory_insights_json ?? []) as AdvisoryInsight[];
-  const questions = (a.traveler_questions_json ?? []) as string[];
+  const questions = normalizeTravelerQuestions(a.traveler_questions_json);
   const nextInputs = (a.next_inputs_needed_json ?? []) as NextInput[];
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
   const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
@@ -585,9 +614,9 @@ export default function TravelerAnalysisResults({
         </div>
       </div>
 
-      {(a.extraction_warnings_json ?? []).length > 0 && (
+      {asArray<string>(a.extraction_warnings_json).length > 0 && (
         <div className="space-y-0.5 px-1 pt-1">
-          {(a.extraction_warnings_json as string[]).map((warning, index) => (
+          {asArray<string>(a.extraction_warnings_json).map((warning, index) => (
             <p key={index} className="text-[10px] text-amber-600 italic">⚠️ {warning}</p>
           ))}
         </div>
