@@ -73,6 +73,50 @@ function MissingPrompt({ title, description, uploadHint }: {
   );
 }
 
+function clipText(value: string, max = 72) {
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (!trimmed) return "";
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1).trimEnd()}…`;
+}
+
+function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: File[]) {
+  const signals: string[] = [];
+  const destination = [analysis?.destination_city, analysis?.destination_country].filter(Boolean).join(", ");
+
+  if (destination) signals.push(`Destination clue: ${destination}`);
+  if (analysis?.duration_nights || analysis?.duration_days) {
+    signals.push(`Duration clue: ${analysis.duration_nights ?? "?"}N / ${analysis.duration_days ?? "?"}D`);
+  }
+  if ((analysis?.hotel_names_json ?? []).length > 0) {
+    signals.push(`Stay clue: ${(analysis?.hotel_names_json ?? []).slice(0, 2).join(", ")}`);
+  }
+  if ((analysis?.airline_names_json ?? []).length > 0 || (analysis?.sectors_json ?? []).length > 0) {
+    const flightHint = [
+      ...(analysis?.airline_names_json ?? []).slice(0, 1),
+      ...(analysis?.sectors_json ?? []).slice(0, 1),
+    ].filter(Boolean).join(" · ");
+    if (flightHint) signals.push(`Flight clue: ${flightHint}`);
+  }
+  if (analysis?.total_price != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.total_price).toLocaleString("en-IN")}`);
+  } else if (analysis?.price_per_person != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.price_per_person).toLocaleString("en-IN")} per person`);
+  }
+  if (analysis?.inclusions_text) {
+    signals.push(`Visible in plan: ${clipText(analysis.inclusions_text)}`);
+  } else if ((analysis?.extracted_snippets_json ?? []).length > 0) {
+    const snippet = (analysis?.extracted_snippets_json ?? []).find((item) => typeof item === "string" && item.trim().length > 0);
+    if (snippet) signals.push(`Visible in plan: ${clipText(String(snippet))}`);
+  }
+
+  if (signals.length === 0 && files.length > 0) {
+    signals.push(files.length > 1 ? `${files.length} trip documents received` : "Trip document received");
+  }
+
+  return signals.slice(0, 4);
+}
+
 /** Small file thumbnail for add-more section */
 function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
@@ -126,12 +170,13 @@ export default function TravelerAnalysisResults({
   const hasDates = !!(a?.travel_start_date || a?.travel_end_date);
   const hasTravellers = !!a?.traveller_count_total;
 
-  const priceStatus = sectionStatus([a?.total_price]);
-  const flightStatus = sectionStatus([a?.flight_departure_time, a?.flight_arrival_time, ...(a?.airline_names_json ?? [])]);
+  const priceStatus = sectionStatus([a?.total_price, a?.price_per_person]);
+  const flightStatus = sectionStatus([a?.flight_departure_time, a?.flight_arrival_time, ...(a?.airline_names_json ?? []), ...(a?.sectors_json ?? [])]);
   const hotelStatus = sectionStatus([a?.hotel_check_in, a?.hotel_check_out, ...(a?.hotel_names_json ?? [])]);
-  const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total]);
+  const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total, a?.duration_nights, a?.duration_days]);
   const confidence = a?.parsing_confidence ?? "low";
   const isLowConfidence = confidence === "low";
+  const manualReviewSignals = buildManualReviewSignals(a, files);
 
   const anyFound = priceStatus !== "missing" || flightStatus !== "missing" || hotelStatus !== "missing" || tripStatus !== "missing";
   const allMissing = !anyFound;
@@ -177,14 +222,33 @@ export default function TravelerAnalysisResults({
         </div>
       )}
 
-      {/* All missing — ask for better files */}
+      {/* All missing / weakly-structured — graceful manual fallback */}
       {allMissing && (
-        <div className="text-center py-4 space-y-3">
-          <AlertTriangle size={28} className="mx-auto text-amber-500" />
-          <p className="text-sm font-medium text-foreground">We couldn't extract trip details</p>
-          <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-            The uploaded files may not contain recognizable travel information. Try uploading clearer screenshots or PDF itineraries.
-          </p>
+        <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Phone size={18} className="text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
+              </p>
+            </div>
+          </div>
+
+          {manualReviewSignals.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
+              <div className="flex flex-wrap gap-1.5">
+                {manualReviewSignals.map((signal) => (
+                  <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+                    {signal}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -389,7 +453,10 @@ export default function TravelerAnalysisResults({
         )}
 
         {allMissing && (
-          <div className="flex items-center gap-3 justify-center pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+              <Phone size={13} /> Continue with our team
+            </Button>
             <Button variant="outline" size="sm" onClick={onReset}>
               Upload different files
             </Button>
