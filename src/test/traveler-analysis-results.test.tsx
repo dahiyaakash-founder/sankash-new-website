@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import TravelerAnalysisResults from "@/components/travelers/TravelerAnalysisResults";
-import type { ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
+import { normalizeItineraryAnalysis, type ItineraryAnalysis } from "@/lib/itinerary-analysis-service";
 
 function makeAnalysis(overrides: Partial<ItineraryAnalysis> = {}): ItineraryAnalysis {
   return {
@@ -102,5 +102,45 @@ describe("TravelerAnalysisResults", () => {
     expect(screen.getByText("Ask Before Booking")).toBeInTheDocument();
     expect(screen.getByText("Is travel insurance included or separate?")).toBeInTheDocument();
     expect(screen.getByText("That changes the real trip cost and protection coverage.")).toBeInTheDocument();
+  });
+
+  it("renders safely when backend traveler payloads arrive in mixed shapes", () => {
+    const analysis = normalizeItineraryAnalysis({
+      analysis: {
+        ...makeAnalysis(),
+        advisory_insights_json: "Insurance still needs a closer look",
+        traveler_questions_json: "Is airport transfer included?",
+        next_inputs_needed_json: { label: "Add exact dates", reason: "Dates are still unclear", priority: "high" },
+        unlockable_modules_json: { code: "emi_affordability", label: "EMI & affordability", reason: "Trip price is visible.", status: "ready" },
+        extraction_warnings_json: [{ message: "Hotel names are still vague." }],
+        pain_signals_json: null,
+        pleasure_signals_json: null,
+        optional_missing_prompts_json: null,
+        customer_conversion_json: null,
+        inspiration_capture_json: null,
+      },
+      traveler_output: {
+        pain_signals: "Meal plan still looks light",
+        optional_missing_prompts: { prompt: "Add your hotel page", reason: "We can judge the stay better." },
+        customer_conversion: { hero_headline: "One thing is still worth checking" },
+        inspiration_capture: "Share one more trip idea if you want us to improve this",
+      },
+    });
+
+    render(
+      <TravelerAnalysisResults
+        analysis={analysis}
+        files={[new File(["quote"], "quote.pdf", { type: "application/pdf" })]}
+        onUnlock={vi.fn()}
+        onAddMore={vi.fn()}
+        onReanalyze={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Quote Review")).toBeInTheDocument();
+    expect(screen.getByText("Is airport transfer included?")).toBeInTheDocument();
+    expect(screen.getByText("Add your hotel page")).toBeInTheDocument();
+    expect(screen.getByText("Meal plan still looks light")).toBeInTheDocument();
   });
 });
