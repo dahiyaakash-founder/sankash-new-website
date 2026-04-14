@@ -28,6 +28,7 @@ import {
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
 import { buildTravelerIntentSnapshot, markTravelerIntentSignal } from "@/lib/traveler-intent-session";
+import { captureTravelerContact } from "@/lib/traveler-contact-service";
 
 import {
   Dialog,
@@ -383,25 +384,19 @@ const TravelerQuoteUploader = () => {
       const { createLeadWithDedup, uploadQuoteFile } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { logLeadCreated } = await import("@/lib/activity-service");
-      const { supabase } = await import("@/integrations/supabase/client");
 
       if (currentLeadId) {
-        const { data, error } = await supabase.functions.invoke("capture-traveler-contact", {
-          body: {
-            lead_id: currentLeadId,
-            full_name: leadName.trim(),
-            mobile_number: phoneValidation.normalized,
-            email: leadEmail.trim() || null,
-            intent_snapshot: buildTravelerIntentSnapshot({
-              context: "contact_capture",
-              current_lead_id: currentLeadId,
-              file_count: files.length,
-            }),
-          },
+        await captureTravelerContact({
+          lead_id: currentLeadId,
+          full_name: leadName.trim(),
+          mobile_number: phoneValidation.normalized,
+          email: leadEmail.trim() || null,
+          intent_snapshot: buildTravelerIntentSnapshot({
+            context: "contact_capture",
+            current_lead_id: currentLeadId,
+            file_count: files.length,
+          }),
         });
-
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
 
         trackTravelerUnlockSubmit({});
         setLeadSubmitted(true);

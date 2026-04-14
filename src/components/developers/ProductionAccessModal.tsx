@@ -49,11 +49,13 @@ async function submitProductionLead(payload: ProductionLeadPayload): Promise<voi
 const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [apiGoingLive, setApiGoingLive] = useState("");
   const [sandboxStatus, setSandboxStatus] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     const form = e.currentTarget;
     const data = new FormData(form);
 
@@ -77,7 +79,7 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
       trackProductionRequestSubmit();
       setSubmitted(true);
     } catch {
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -85,6 +87,7 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
 
   const handleClose = () => {
     setSubmitted(false);
+    setError(null);
     setApiGoingLive("");
     setSandboxStatus("");
     onOpenChange(false);
@@ -163,6 +166,7 @@ const ProductionAccessModal = ({ open, onOpenChange }: ProductionAccessModalProp
                 <Label htmlFor="prod-timeline" className="text-xs">Expected Timeline <span className="text-muted-foreground font-normal">(optional)</span></Label>
                 <Input id="prod-timeline" name="timeline" placeholder="e.g. Q1 2026" className="h-9 text-sm" />
               </div>
+              {error && <p className="text-sm text-destructive font-medium">{error}</p>}
               <Button type="submit" className="w-full h-9 text-sm" disabled={submitting}>
                 {submitting ? "Submitting…" : "Request production access"}
               </Button>

@@ -48,10 +48,12 @@ async function submitSandboxLead(payload: SandboxLeadPayload): Promise<void> {
 const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [apiNeeded, setApiNeeded] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     const form = e.currentTarget;
     const data = new FormData(form);
 
@@ -73,8 +75,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
       trackSandboxRequestSubmit();
       setSubmitted(true);
     } catch {
-      // Show error instead of silent success
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -82,6 +83,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
 
   const handleClose = () => {
     setSubmitted(false);
+    setError(null);
     setApiNeeded("");
     onOpenChange(false);
   };
@@ -150,6 +152,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
                 <Label htmlFor="sb-usecase" className="text-xs">Use Case</Label>
                 <Textarea id="sb-usecase" name="useCase" required placeholder="What you plan to build or test" rows={2} className="text-sm min-h-[60px]" />
               </div>
+              {error && <p className="text-sm text-destructive font-medium">{error}</p>}
               <Button type="submit" className="w-full h-9 text-sm" disabled={submitting}>
                 {submitting ? "Submitting…" : "Request access"}
               </Button>
