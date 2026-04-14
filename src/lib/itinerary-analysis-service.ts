@@ -10,6 +10,13 @@ export interface AdvisoryInsight {
   category: "pricing" | "logistics" | "coverage" | "inclusions" | "timing" | "quality";
 }
 
+export interface TravelerQuestion {
+  code?: string;
+  question: string;
+  why?: string;
+  priority?: string;
+}
+
 export interface NextInput {
   label: string;
   reason: string;
@@ -86,8 +93,8 @@ export interface ItineraryAnalysis {
   extracted_completeness_score: number;
   advisory_summary: string | null;
   advisory_insights_json: AdvisoryInsight[];
-  traveler_questions_json: string[];
-  seller_questions_json: string[];
+  traveler_questions_json: TravelerQuestion[];
+  seller_questions_json: TravelerQuestion[];
   next_inputs_needed_json: NextInput[];
   unlockable_modules_json: UnlockableModule[];
   enrichment_status_json: Record<string, string>;
