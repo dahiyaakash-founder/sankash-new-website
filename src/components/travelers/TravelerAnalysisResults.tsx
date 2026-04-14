@@ -629,8 +629,22 @@ export default function TravelerAnalysisResults({
               <p className="text-[11px] text-foreground">Detailed trip budget with hidden cost analysis</p>
             </div>
           </div>
-        </motion.div>
-      )}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] px-4">
+            <Lock size={16} className="text-primary mb-1.5" />
+            <p className="font-heading font-bold text-xs text-foreground mb-0.5 text-center">
+              Get your detailed review
+            </p>
+            <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
+              {customerConversion.unlock_reason
+                ? String(customerConversion.unlock_reason)
+                : "Verify your mobile to unlock savings estimate, EMI options, and personalised recommendations"}
+            </p>
+            <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+              <Phone size={13} /> {customerConversion.unlock_cta ? String(customerConversion.unlock_cta) : "Unlock full review"}
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* ── Section: Flights ── */}
       {flightStatus !== "missing" && (
@@ -786,7 +800,7 @@ export default function TravelerAnalysisResults({
               Upload different files
             </Button>
           </div>
-        </div>
+        )}
       </div>
 
       {asArray<string>(a.extraction_warnings_json).length > 0 && (
