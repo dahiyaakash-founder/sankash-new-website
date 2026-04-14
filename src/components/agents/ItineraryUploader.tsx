@@ -30,6 +30,7 @@ import {
 } from "@/lib/upload-validation";
 import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import { trackAgentQuoteUpload, trackQuoteAnalysisRequested } from "@/lib/analytics";
+import { saveAgentQuoteReviewLead } from "@/lib/agent-quote-review-service";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
@@ -74,6 +75,10 @@ const gatedInsights = [
 
 const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const ItineraryUploader = () => {
   const [stage, setStage] = useState<Stage>("upload");
   const [fileName, setFileName] = useState("");
@@ -99,7 +104,7 @@ const ItineraryUploader = () => {
     trackAgentQuoteUpload({ file_uploaded: true });
     setStage("validating");
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const result = assessTravelConfidence(file.name);
 
       if (result.confidence === "invalid") {
@@ -115,48 +120,21 @@ const ItineraryUploader = () => {
       setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
       trackQuoteAnalysisRequested({ audience_type: "agent" });
-      setTimeout(() => {
+      try {
+        await Promise.all([
+          wait(2200),
+          saveAgentQuoteReviewLead(file, result.confidence === "high" ? "high" : "medium"),
+        ]);
+
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);
-        // Save agent_quote_review lead to database with file upload
-        import("@/lib/leads-service").then(async ({ createLeadWithDedup, uploadQuoteFile }) => {
-          try {
-            let quoteFileUrl: string | null = null;
-            const uploaded = await uploadQuoteFile(file);
-            quoteFileUrl = uploaded.url;
-
-            const { lead } = await createLeadWithDedup({
-              full_name: "Agent (anonymous)",
-              lead_source_page: "for-travel-agents",
-              lead_source_type: "agent_quote_review",
-              audience_type: "agent",
-              quote_file_name: file.name,
-              quote_file_url: quoteFileUrl,
-              metadata_json: { confidence: result.confidence },
-            });
-
-            // Attach file, log activity, and trigger AI analysis
-            if (lead?.id) {
-              const { uploadLeadAttachment } = await import("@/lib/attachments-service");
-              const { logLeadCreated } = await import("@/lib/activity-service");
-              const attachment = await uploadLeadAttachment(file, lead.id, { sourceType: "agent_quote_review" }).catch(() => null);
-              await logLeadCreated(lead.id, "for-travel-agents").catch(() => {});
-
-              // Trigger AI analysis for structured data extraction
-              if (attachment && quoteFileUrl) {
-                const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
-                await triggerItineraryAnalysis({
-                  lead_id: lead.id,
-                  attachment_id: attachment.id,
-                  file_url: quoteFileUrl,
-                  file_name: file.name,
-                  audience_type: "agent",
-                }).catch((err) => console.warn("Itinerary analysis failed (non-blocking):", err));
-              }
-            }
-          } catch { /* silent */ }
-        });
-      }, 2200);
+      } catch (error) {
+        console.error("Agent itinerary save failed:", error);
+        setErrorTitle("We couldn't save this itinerary");
+        setErrorBody("The quote did not reach our review system. Please upload it again.");
+        setErrorType(null);
+        setStage("error");
+      }
     }, 800);
   }, []);
 

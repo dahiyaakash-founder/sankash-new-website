@@ -3,7 +3,7 @@
  * All files are processed together as one itinerary session via the unified vision pipeline.
  * Results are shown via TravelerAnalysisResults with partial extraction support.
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,8 @@ import {
   type ValidationErrorType,
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
+import { buildTravelerIntentSnapshot, markTravelerIntentSignal } from "@/lib/traveler-intent-session";
+import { captureTravelerContact } from "@/lib/traveler-contact-service";
 
 import {
   Dialog,
@@ -42,6 +44,60 @@ import TravelerAnalysisResults from "./TravelerAnalysisResults";
 const MAX_FILES = 5;
 
 type Stage = "upload" | "analyzing" | "results" | "error";
+
+function buildAnalysisMessages(files: File[]) {
+  const isMultiFile = files.length > 1;
+  const hasPdf = files.some((file) => /\.pdf$/i.test(file.name));
+  const hasScreenshots = files.some((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name));
+  const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
+
+  const messages = [
+    {
+      title: "Getting to know your holiday",
+      detail: isMultiFile ? `Piecing together the full picture from ${files.length} parts of your trip plan.` : "Taking a close look at your travel plan to understand what's been offered.",
+    },
+    {
+      title: "Mapping your destination and travel dates",
+      detail: "Understanding where you're headed, when you plan to go, and who's travelling.",
+    },
+    {
+      title: "Reviewing stays, flights, and what's included",
+      detail: hasPdf || brochureLike
+        ? "Going through the itinerary to check hotel quality, flight details, and what's covered in the price."
+        : "Looking at the hotels, flights, meals, transfers, and everything else that shapes this trip.",
+    },
+    {
+      title: "Looking for hidden costs and surprises",
+      detail: "Checking for anything that might not be included — like visa fees, insurance, airport transfers, or taxes.",
+    },
+    {
+      title: isMultiFile ? "Building one clear picture from all your trip details" : "Putting the full trip together",
+      detail: isMultiFile
+        ? "Connecting the dots across your itineraries to spot anything that doesn't line up."
+        : "Making sure everything adds up before we share our thoughts.",
+    },
+    {
+      title: "Shaping your personalised trip review",
+      detail: hasScreenshots ? "Turning every detail into a clear, useful summary of your holiday plan." : "Preparing a clear review with insights, tips, and next steps for your trip.",
+    },
+  ];
+
+  return messages;
+}
+
+function buildAnalysisContextBadges(files: File[]) {
+  const badges: string[] = [];
+  const hasPdf = files.some((file) => /\.pdf$/i.test(file.name));
+  const imageCount = files.filter((file) => /\.(png|jpg|jpeg|webp)$/i.test(file.name)).length;
+  const brochureLike = files.some((file) => /brochure|package|itinerary|quote/i.test(file.name));
+
+  if (files.length > 1) badges.push(`${files.length} items`);
+  if (hasPdf) badges.push("Itinerary PDF");
+  if (imageCount > 0) badges.push(imageCount > 1 ? "Screenshots" : "Screenshot");
+  if (brochureLike) badges.push("Travel package");
+
+  return badges.slice(0, 4);
+}
 
 
 
@@ -72,7 +128,7 @@ function FileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
         className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/10 hover:bg-destructive/20 flex items-center justify-center transition-colors"
-        aria-label="Remove file"
+        aria-label="Remove"
       >
         <X size={10} className="text-muted-foreground" />
       </button>
@@ -95,9 +151,25 @@ const TravelerQuoteUploader = () => {
   const [leadEmail, setLeadEmail] = useState("");
   const [analysisResult, setAnalysisResult] = useState<ItineraryAnalysis | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
+  const [analysisStepIndex, setAnalysisStepIndex] = useState(0);
   const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const analysisMessages = useMemo(() => buildAnalysisMessages(files), [files]);
+  const analysisContextBadges = useMemo(() => buildAnalysisContextBadges(files), [files]);
+
+  useEffect(() => {
+    if (stage !== "analyzing") {
+      setAnalysisStepIndex(0);
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setAnalysisStepIndex((current) => (current + 1) % analysisMessages.length);
+    }, 1800);
+
+    return () => window.clearInterval(timer);
+  }, [stage, analysisMessages.length]);
 
   const addFiles = useCallback((newFiles: File[]) => {
     const validated: File[] = [];
@@ -126,7 +198,8 @@ const TravelerQuoteUploader = () => {
   const startAnalysis = useCallback(async () => {
     if (files.length === 0) return;
     setStage("analyzing");
-    setAnalysisProgress("Uploading files…");
+    setAnalysisProgress("Preparing your trip details…");
+    markTravelerIntentSignal("started_quote_upload");
     trackTravelerQuoteUpload({ file_uploaded: true });
     trackQuoteAnalysisRequested({ audience_type: "traveler" });
 
@@ -137,7 +210,7 @@ const TravelerQuoteUploader = () => {
       const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
 
       // Upload first file as the quote file
-      setAnalysisProgress("Uploading files…");
+      setAnalysisProgress("Securing your trip details…");
       const uploaded = await uploadQuoteFile(files[0]);
 
       // Create lead
@@ -148,14 +221,21 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: uploaded.url,
-        metadata_json: { upload_only: true, file_count: files.length },
+        metadata_json: {
+          upload_only: true,
+          file_count: files.length,
+          traveler_intent_session: buildTravelerIntentSnapshot({
+            context: "initial_upload",
+            file_count: files.length,
+          }),
+        },
       });
 
       if (!lead?.id) throw new Error("Lead creation failed");
       setCurrentLeadId(lead.id);
 
       // Upload all files as attachments and collect URLs
-      setAnalysisProgress("Processing files…");
+      setAnalysisProgress("Organising your holiday details…");
       const fileInputs: { file_url: string; file_name: string }[] = [];
 
       for (let i = 0; i < files.length; i++) {
@@ -179,7 +259,7 @@ const TravelerQuoteUploader = () => {
       await logLeadCreated(lead.id, "for-travelers").catch(() => {});
 
       // Trigger unified AI analysis
-      setAnalysisProgress("Analyzing your trip details…");
+      setAnalysisProgress("Reviewing your holiday plan…");
       const analysis = await triggerItineraryAnalysis({
         lead_id: lead.id,
         files: fileInputs,
@@ -232,12 +312,14 @@ const TravelerQuoteUploader = () => {
     setAnalysisProgress("");
     setCurrentLeadId(null);
     setIsReanalyzing(false);
+    sessionStorage.removeItem("traveler_quote_session");
   };
 
   /** Add more files to existing analysis and re-trigger */
   const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
     if (!currentLeadId) return;
     setIsReanalyzing(true);
+    markTravelerIntentSignal("added_more_files");
     try {
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { triggerItineraryAnalysis } = await import("@/lib/itinerary-analysis-service");
@@ -297,10 +379,29 @@ const TravelerQuoteUploader = () => {
     setPhoneError(null);
     setLeadSubmitting(true);
     setLeadError(null);
+    markTravelerIntentSignal("submitted_contact_details");
     try {
       const { createLeadWithDedup, uploadQuoteFile } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { logLeadCreated } = await import("@/lib/activity-service");
+
+      if (currentLeadId) {
+        await captureTravelerContact({
+          lead_id: currentLeadId,
+          full_name: leadName.trim(),
+          mobile_number: phoneValidation.normalized,
+          email: leadEmail.trim() || null,
+          intent_snapshot: buildTravelerIntentSnapshot({
+            context: "contact_capture",
+            current_lead_id: currentLeadId,
+            file_count: files.length,
+          }),
+        });
+
+        trackTravelerUnlockSubmit({});
+        setLeadSubmitted(true);
+        return;
+      }
 
       let quoteFileUrl: string | null = null;
       if (files.length > 0) {
@@ -317,7 +418,14 @@ const TravelerQuoteUploader = () => {
         audience_type: "traveler",
         quote_file_name: files.map(f => f.name).join(", "),
         quote_file_url: quoteFileUrl,
-        metadata_json: { confidence: analysisResult?.parsing_confidence ?? "medium", file_count: files.length },
+        metadata_json: {
+          confidence: analysisResult?.parsing_confidence ?? "medium",
+          file_count: files.length,
+          traveler_intent_session: buildTravelerIntentSnapshot({
+            context: "contact_capture",
+            file_count: files.length,
+          }),
+        },
       });
 
       if (files.length > 0 && lead?.id) {
@@ -337,7 +445,7 @@ const TravelerQuoteUploader = () => {
     }
   };
 
-  const fileNames = files.map(f => f.name).join(", ");
+  const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
 
   return (
     <>
@@ -355,7 +463,7 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 <FileText size={14} className="text-primary" />
-                Quote Review
+                Holiday Quote Review
               </div>
               <label
                 onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -372,10 +480,10 @@ const TravelerQuoteUploader = () => {
                 </div>
                 <div className="text-center">
                   <p className="font-heading font-bold text-sm text-foreground">
-                    Drop quotes, itineraries, or screenshots
+                    Drop your travel quote, itinerary, or screenshots
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Upload up to {MAX_FILES} files — we'll merge them into one review
+                    Share up to {MAX_FILES} items — we'll build one clear review of your trip
                   </p>
                 </div>
                 <input
@@ -386,8 +494,8 @@ const TravelerQuoteUploader = () => {
                   multiple
                   onChange={handleInputChange}
                 />
-                <Button variant="outline" size="sm" className="mt-1 pointer-events-none">
-                  Browse Files
+               <Button variant="outline" size="sm" className="mt-1 pointer-events-none">
+                  Choose from device
                 </Button>
               </label>
 
@@ -396,7 +504,7 @@ const TravelerQuoteUploader = () => {
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      {files.length} file{files.length > 1 ? "s" : ""} selected
+                      {files.length} {files.length > 1 ? "items" : "item"} ready for review
                     </p>
                     {files.length < MAX_FILES && (
                       <button
@@ -413,7 +521,7 @@ const TravelerQuoteUploader = () => {
                     ))}
                   </div>
                   <Button size="sm" className="w-full gap-1.5 mt-2" onClick={startAnalysis}>
-                    <ArrowRight size={14} /> Analyze {files.length > 1 ? `${files.length} files` : "file"}
+                    <ArrowRight size={14} /> Review my trip
                   </Button>
                 </div>
               )}
@@ -421,7 +529,7 @@ const TravelerQuoteUploader = () => {
               <div className="flex items-start gap-2 mt-3 px-1">
                 <Info size={11} className="text-muted-foreground/50 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
-                  PDF, JPG, PNG, DOC · Up to {MAX_FILES} files · Screenshots from WhatsApp or OTA apps work too · Max 10 MB each
+                  PDF, JPG, PNG, DOC · Up to {MAX_FILES} items · Screenshots from WhatsApp or travel apps work too · Max 10 MB each
                 </p>
               </div>
             </motion.div>
@@ -439,27 +547,54 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-6">
                 <FileText size={14} className="text-primary" />
-                Reviewing {files.length > 1 ? `${files.length} Files` : "Quote"}
+                Reviewing Your Holiday
               </div>
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <Loader2 size={32} className="text-primary animate-spin" />
-                <div className="text-center">
-                  <p className="font-heading font-bold text-foreground">
-                    {analysisProgress || "Processing…"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {files.length > 1
-                      ? `Merging data from ${files.length} files into one review`
-                      : files[0]?.name}
-                  </p>
+                <div className="text-center space-y-2 max-w-sm">
+                  <div className="inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
+                    {analysisContextBadges.length > 0 && analysisContextBadges.map((badge) => (
+                      <span key={badge}>{badge}</span>
+                    ))}
+                    {analysisContextBadges.length === 0 && <span>Reviewing your trip plan</span>}
+                  </div>
+                  <div>
+                    <p className="font-heading font-bold text-foreground">
+                      {activeAnalysisMessage?.title || analysisProgress || "Getting to know your trip…"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {activeAnalysisMessage?.detail ?? (
+                        files.length > 1
+                          ? `Building one clear picture from your ${files.length} trip details`
+                          : "Taking a close look at your holiday plan"
+                      )}
+                    </p>
+                  </div>
                 </div>
+                {analysisContextBadges.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 max-w-md">
+                    {analysisContextBadges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="rounded-full border bg-muted/30 px-2.5 py-1 text-[11px] text-muted-foreground"
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-1.5 mt-2">
-                  {[0, 1, 2, 3].map((i) => (
+                  {analysisMessages.map((_, i) => (
                     <motion.div
                       key={i}
-                      className="w-8 h-1 rounded-full bg-primary/20"
-                      animate={{ backgroundColor: ["hsl(189 99% 35% / 0.2)", "hsl(189 99% 35% / 0.7)", "hsl(189 99% 35% / 0.2)"] }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.25 }}
+                      className="w-7 h-1 rounded-full bg-primary/20"
+                      animate={{
+                        opacity: i === analysisStepIndex ? 1 : 0.35,
+                        backgroundColor: i === analysisStepIndex
+                          ? "hsl(189 99% 35% / 0.75)"
+                          : "hsl(189 99% 35% / 0.2)",
+                      }}
+                      transition={{ duration: 0.3 }}
                     />
                   ))}
                 </div>
@@ -479,7 +614,7 @@ const TravelerQuoteUploader = () => {
             >
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 <FileText size={14} className="text-primary" />
-                Upload Issue
+                We Hit a Snag
               </div>
               <div className="flex flex-col items-center justify-center py-5 space-y-4 text-center">
                 <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
@@ -493,7 +628,7 @@ const TravelerQuoteUploader = () => {
                   <div className="flex items-start gap-2 bg-accent/50 rounded-lg px-3 py-2 max-w-[320px]">
                     <AlertCircle size={12} className="text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed text-left">
-                      <span className="font-semibold">Why this failed:</span> We could not detect enough travel details.
+                      <span className="font-semibold">What happened:</span> We couldn't find enough trip information to work with.
                     </p>
                   </div>
                 )}
@@ -510,7 +645,7 @@ const TravelerQuoteUploader = () => {
                     onClick={() => setShowSamples(!showSamples)}
                     className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 transition-colors font-medium"
                   >
-                    <HelpCircle size={11} /> See accepted files
+                    <HelpCircle size={11} /> What can I share?
                   </button>
                 </div>
                 <AnimatePresence>

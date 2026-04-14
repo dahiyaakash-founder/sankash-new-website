@@ -90,9 +90,9 @@ export function validateFile(file: File): ValidationResult {
     return {
       valid: false,
       errorType: "unsupported",
-      errorTitle: "Unsupported file type",
+      errorTitle: "We don't recognise this format",
       errorBody:
-        "Upload a PDF, JPG, PNG, or DOC file containing your holiday quote, itinerary, or booking summary.",
+        "Please share a PDF, JPG, PNG, or DOC with your holiday quote, itinerary, or booking summary.",
     };
   }
 
@@ -100,8 +100,8 @@ export function validateFile(file: File): ValidationResult {
     return {
       valid: false,
       errorType: "too-large",
-      errorTitle: "File is too large",
-      errorBody: "Please upload a file under 10 MB.",
+      errorTitle: "This is too large to review",
+      errorBody: "Please share something under 10 MB — a screenshot or smaller PDF works best.",
     };
   }
 
@@ -109,9 +109,9 @@ export function validateFile(file: File): ValidationResult {
     return {
       valid: false,
       errorType: "unreadable",
-      errorTitle: "We could not read travel details from this file",
+      errorTitle: "We couldn't find trip details here",
       errorBody:
-        "Please upload a clearer PDF or image with trip details such as destination, dates, traveller count, or package pricing.",
+        "Please share a clearer quote or screenshot with details like destination, dates, traveller count, or pricing.",
     };
   }
 

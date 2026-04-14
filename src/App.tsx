@@ -97,8 +97,24 @@ const App = () => (
               <Route path="/lending.html" element={<Navigate to="/solutions/lending" replace />} />
               <Route path="/payments.html" element={<Navigate to="/solutions/payments" replace />} />
               {/* Legacy app paths — redirect to old app or homepage */}
+              <Route path="/customer_check_eligibility/*" element={<LinkRedirect />} />
               <Route path="/cce/*" element={<LinkRedirect />} />
               <Route path="/link/*" element={<LinkRedirect />} />
+              <Route path="/qr/*" element={<LinkRedirect />} />
+              <Route path="/uat/customer_check_eligibility/*" element={<LinkRedirect />} />
+              <Route path="/uat/cce/*" element={<LinkRedirect />} />
+              <Route path="/uat/link" element={<LinkRedirect />} />
+              <Route path="/uat/link/*" element={<LinkRedirect />} />
+              <Route path="/uat/qr/*" element={<LinkRedirect />} />
+              <Route path="/dev/customer_check_eligibility/*" element={<LinkRedirect />} />
+              <Route path="/dev/cce/*" element={<LinkRedirect />} />
+              <Route path="/dev/link" element={<LinkRedirect />} />
+              <Route path="/dev/link/*" element={<LinkRedirect />} />
+              <Route path="/dev/qr/*" element={<LinkRedirect />} />
+              <Route path="/traveler" element={<Navigate to="/for-travelers" replace />} />
+              <Route path="/travelers" element={<Navigate to="/for-travelers" replace />} />
+              <Route path="/traveler.html" element={<Navigate to="/for-travelers" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/ops/login" replace />} />
               <Route path="/agent/*" element={<Navigate to="/" replace />} />
               <Route path="/customer/*" element={<Navigate to="/for-travelers" replace />} />
               <Route path="/ops" element={<Navigate to="/ops/dashboard" replace />} />

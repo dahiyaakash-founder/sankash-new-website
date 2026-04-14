@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Download, Search, ChevronLeft, ChevronRight, Inbox, Upload, FileDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -101,6 +102,9 @@ const OpsLeads = () => {
   const [searchParams] = useSearchParams();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [anonCount, setAnonCount] = useState(0);
+  const [mainCount, setMainCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<"main" | "anon">("main");
   const [loading, setLoading] = useState(true);
   const [teamEmails, setTeamEmails] = useState<Record<string, string>>({});
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -145,6 +149,7 @@ const OpsLeads = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const isAnon = activeTab === "anon";
       const res = await fetchLeads({
         search: search || undefined,
         status: (statusFilter || undefined) as LeadStatus | undefined,
@@ -154,6 +159,8 @@ const OpsLeads = () => {
         assignedTo: specialFilter === "my_leads" ? user?.id : undefined,
         unassigned: specialFilter === "unassigned" ? true : undefined,
         overdueFollowUp: specialFilter === "overdue" ? true : undefined,
+        onlyAnonymous: isAnon ? true : undefined,
+        excludeAnonymous: !isAnon ? true : undefined,
         page,
         pageSize: PAGE_SIZE,
       });
@@ -163,9 +170,22 @@ const OpsLeads = () => {
       // fail silently
     }
     setLoading(false);
-  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id]);
+  }, [search, statusFilter, sourceFilter, audienceFilter, priorityFilter, specialFilter, page, user?.id, activeTab]);
+
+  // Fetch tab counts (lightweight head-only queries)
+  const loadCounts = useCallback(async () => {
+    try {
+      const [mainRes, anonRes] = await Promise.all([
+        fetchLeads({ excludeAnonymous: true, page: 1, pageSize: 1 }),
+        fetchLeads({ onlyAnonymous: true, page: 1, pageSize: 1 }),
+      ]);
+      setMainCount(mainRes.count);
+      setAnonCount(anonRes.count);
+    } catch {}
+  }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
 
   // Load team members for owner display
   useEffect(() => {
@@ -218,7 +238,13 @@ const OpsLeads = () => {
     <OpsLayout>
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-xl font-heading font-bold">Leads <span className="text-sm font-normal text-muted-foreground ml-1">({total})</span></h1>
+          <h1 className="text-xl font-heading font-bold">Leads</h1>
+          <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as "main" | "anon"); setPage(1); setSelected(new Set()); }} className="ml-4">
+            <TabsList className="h-8">
+              <TabsTrigger value="main" className="text-xs h-7 px-3">Main Leads <span className="ml-1.5 text-muted-foreground">{mainCount}</span></TabsTrigger>
+              <TabsTrigger value="anon" className="text-xs h-7 px-3">Anonymous <span className="ml-1.5 text-muted-foreground">{anonCount}</span></TabsTrigger>
+            </TabsList>
+          </Tabs>
            <div className="flex items-center gap-2">
             {selected.size > 0 && canDelete && (
               <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)} className="gap-1.5 text-xs">
@@ -309,7 +335,8 @@ const OpsLeads = () => {
                   <th className="px-3 py-2.5 w-8">
                     <input type="checkbox" checked={selected.size === leads.length && leads.length > 0} onChange={toggleSelectAll} className="rounded" />
                   </th>
-                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Last Activity</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground whitespace-nowrap">Received On</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground whitespace-nowrap">Updated On</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden md:table-cell">Company</th>
                   <th className="text-left px-3 py-2.5 text-xs font-medium text-muted-foreground hidden lg:table-cell">Phone</th>
@@ -322,11 +349,11 @@ const OpsLeads = () => {
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={10} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
+                  <tr><td colSpan={11} className="px-4 py-12 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={20} /></td></tr>
                 )}
                 {!loading && leads.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="px-4 py-16 text-center">
+                    <td colSpan={11} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <Inbox size={28} className="text-muted-foreground/50" />
                         <p className="text-sm font-medium text-muted-foreground">No leads yet</p>
@@ -345,12 +372,40 @@ const OpsLeads = () => {
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleSelect(lead.id)} className="rounded" />
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="text-xs text-foreground">{format(new Date(lead.updated_at), "dd MMM")}</span>
-                      {lead.updated_at !== lead.created_at && (
-                        <span className="block text-[10px] text-muted-foreground/60">Est. {format(new Date(lead.created_at), "dd MMM")}</span>
-                      )}
+                      <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                      <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.created_at), "HH:mm")}</span>
                     </td>
-                    <td className="px-3 py-2.5 font-medium whitespace-nowrap">{lead.full_name}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <span className="text-xs text-foreground">{format(new Date(lead.updated_at), "dd MMM yy")}</span>
+                      <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.updated_at), "HH:mm")}</span>
+                    </td>
+                    <td className="px-3 py-2.5 font-medium whitespace-nowrap">
+                      {(() => {
+                        const name = lead.full_name?.trim();
+                        const PLACEHOLDER_NAMES = ["traveler enquiry", "traveller enquiry", "anonymous", "agent (anonymous)", "traveler (anonymous)", "unknown"];
+                        const isPlaceholder = !name || PLACEHOLDER_NAMES.includes(name.toLowerCase());
+                        if (!isPlaceholder) return name;
+                        // In anonymous tab, show source-based label; in main tab, show dash
+                        if (activeTab === "anon") {
+                          const srcMap: Record<string, string> = {
+                            traveler_emi_enquiry: "EMI Enquiry",
+                            traveler_quote_unlock: "Quote Unlock",
+                            traveler_quote_review: "Quote Review",
+                            itinerary_upload: "Itinerary Review",
+                            insurance_query: "Insurance Query",
+                            agent_quote_review: "Agent Quote Review",
+                          };
+                          const label = srcMap[lead.lead_source_type ?? ""] ?? (lead.audience_type ? `${lead.audience_type} lead` : "Unknown source");
+                          const phone = lead.mobile_number?.trim();
+                          return (
+                            <span className="text-muted-foreground italic text-xs">
+                              {label}{phone ? <span className="not-italic font-mono ml-1.5 text-foreground/70">{phone}</span> : null}
+                            </span>
+                          );
+                        }
+                        return <span className="text-muted-foreground">—</span>;
+                      })()}
+                    </td>
                     <td className="px-3 py-2.5 text-xs hidden md:table-cell">{lead.company_name ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs hidden lg:table-cell font-mono">{lead.mobile_number ?? "—"}</td>
                     <td className="px-3 py-2.5 text-xs capitalize whitespace-nowrap">{lead.lead_source_type?.replace(/_/g, " ") ?? "—"}</td>

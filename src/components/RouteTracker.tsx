@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { trackPageView } from "@/lib/analytics";
+import { recordTravelerPageVisit } from "@/lib/traveler-intent-session";
 
 const CLARITY_PROJECT_ID = "w582zyv5xn";
 
@@ -44,6 +45,7 @@ const RouteTracker = () => {
         window.scrollTo({ top: 0, left: 0 });
       }
       trackPageView(location.pathname);
+      recordTravelerPageVisit(location.pathname);
       prevPath.current = location.pathname;
     }
   }, [location.pathname]);
