@@ -192,23 +192,31 @@ export async function fetchLeads(opts: {
   assignedTo?: string;
   unassigned?: boolean;
   overdueFollowUp?: boolean;
+  onlyAnonymous?: boolean;
+  excludeAnonymous?: boolean;
+  /** @deprecated use onlyAnonymous instead */
   onlyAnonymousTraveler?: boolean;
+  /** @deprecated use excludeAnonymous instead */
   excludeAnonymousTraveler?: boolean;
   page?: number;
   pageSize?: number;
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, onlyAnonymousTraveler, excludeAnonymousTraveler, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
+
+  // Resolve new broad flags, falling back to legacy traveler-only flags
+  const onlyAnon = opts.onlyAnonymous ?? opts.onlyAnonymousTraveler ?? false;
+  const excludeAnon = opts.excludeAnonymous ?? opts.excludeAnonymousTraveler ?? false;
 
   let query = supabase.from("leads").select("*", { count: "exact" });
 
-  // Anonymous traveler filter: itinerary_upload + traveler + no contact info
-  if (onlyAnonymousTraveler) {
-    query = query.eq("lead_source_type", "itinerary_upload").eq("audience_type", "traveler").is("email", null).is("mobile_number", null);
-  } else if (excludeAnonymousTraveler) {
-    // Exclude rows matching all 4 conditions. Equivalent to: at least one condition is false.
-    query = query.or("lead_source_type.neq.itinerary_upload,audience_type.neq.traveler,email.not.is.null,mobile_number.not.is.null");
+  // Anonymous = no email AND no mobile number (any audience/source)
+  if (onlyAnon) {
+    query = query.is("email", null).is("mobile_number", null);
+  } else if (excludeAnon) {
+    // At least one contact method present
+    query = query.or("email.not.is.null,mobile_number.not.is.null");
   }
 
   if (search) {

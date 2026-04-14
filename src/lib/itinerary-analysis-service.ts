@@ -211,7 +211,7 @@ function normalizeQuestionArray(value: unknown): TravelerQuestion[] {
         priority: normalizeString(objectValue.priority) ?? undefined,
       } satisfies TravelerQuestion;
     })
-    .filter((item): item is TravelerQuestion => Boolean(item));
+    .filter(Boolean) as TravelerQuestion[];
 }
 
 function normalizeAdvisoryInsights(value: unknown): AdvisoryInsight[] {
@@ -321,7 +321,7 @@ function normalizeSignalCards(value: unknown): TravelerSignalCard[] {
         strength: normalizeString(objectValue.strength ?? objectValue.severity) ?? undefined,
       } satisfies TravelerSignalCard;
     })
-    .filter((item): item is TravelerSignalCard => Boolean(item));
+    .filter(Boolean) as TravelerSignalCard[];
 }
 
 function normalizeOptionalPrompts(value: unknown): TravelerOptionalPrompt[] {
@@ -344,7 +344,7 @@ function normalizeOptionalPrompts(value: unknown): TravelerOptionalPrompt[] {
         suggested_upload: suggestedUpload ?? undefined,
       } satisfies TravelerOptionalPrompt;
     })
-    .filter((item): item is TravelerOptionalPrompt => Boolean(item));
+    .filter(Boolean) as TravelerOptionalPrompt[];
 }
 
 function normalizeInspirationCapture(value: unknown): Record<string, unknown> {
@@ -376,7 +376,7 @@ export function normalizeItineraryAnalysis(input: {
   const optionalPromptsFromAnalysis = normalizeOptionalPrompts(analysis.optional_missing_prompts_json);
 
   return {
-    ...(analysis as ItineraryAnalysis),
+    ...(analysis as unknown as ItineraryAnalysis),
     hotel_names_json: normalizeStringArray(analysis.hotel_names_json),
     airline_names_json: normalizeStringArray(analysis.airline_names_json),
     sectors_json: normalizeStringArray(analysis.sectors_json),
