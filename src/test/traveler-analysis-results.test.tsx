@@ -103,7 +103,7 @@ describe("TravelerAnalysisResults", () => {
     expect(screen.queryByText("We couldn't read your trip details")).not.toBeInTheDocument();
   });
 
-  it("keeps sparse Maldives-style travel content in the manual-review fallback with visible clues", () => {
+  it("shows the partial-readable recovery state for Maldives-style travel clues", () => {
     render(
       <TravelerAnalysisResults
         analysis={makeAnalysis({
@@ -115,11 +115,16 @@ describe("TravelerAnalysisResults", () => {
           travel_end_date: null,
           duration_nights: 4,
           duration_days: 5,
+          traveller_count_total: null,
+          adults_count: null,
           airline_names_json: [],
           sectors_json: ["MLE"],
+          hotel_names_json: [],
           inclusions_text: "Water villa stay, speedboat transfers, snorkelling, sunset cruise",
-          extracted_completeness_score: 12,
+          extracted_completeness_score: 18,
           parsing_confidence: "low",
+          advisory_summary: null,
+          traveler_questions_json: [],
         })}
         files={[new File(["quote"], "maldives.pdf", { type: "application/pdf" })]}
         onUnlock={vi.fn()}
@@ -129,10 +134,12 @@ describe("TravelerAnalysisResults", () => {
       />,
     );
 
-    expect(screen.getByText("We understood you're planning a trip")).toBeInTheDocument();
+    expect(screen.getByText("Here’s what we already understood")).toBeInTheDocument();
     expect(screen.getByText(/Duration clue: 4N \/ 5D/i)).toBeInTheDocument();
-    expect(screen.getByText(/Visible in plan:/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /continue with our team/i })).toBeInTheDocument();
+    expect(screen.getByText(/Flight clue: MLE/i)).toBeInTheDocument();
+    expect(screen.getByText(/Which month are you hoping to travel\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/Is this for a couple, family, or group trip\?/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /skip this and continue with our team/i })).toBeInTheDocument();
     expect(screen.queryByText("We couldn't read your trip details")).not.toBeInTheDocument();
   });
 

@@ -203,7 +203,7 @@ describe("traveler quote review fallback", () => {
     expect(screen.getByText("Trip document received")).toBeInTheDocument();
   });
 
-  it("treats duration and visible plan text as usable trip context instead of unreadable input", () => {
+  it("uses the partial-readable recovery state when the itinerary has meaningful travel clues", () => {
     render(
       <TravelerAnalysisResults
         analysis={makeAnalysis({
@@ -220,9 +220,10 @@ describe("traveler quote review fallback", () => {
       />,
     );
 
-    expect(screen.getByText("Trip Overview")).toBeInTheDocument();
-    expect(screen.getByText("4N / 5D")).toBeInTheDocument();
-    expect(screen.queryByText("We understood you're planning a trip")).not.toBeInTheDocument();
+    expect(screen.getByText("Here’s what we already understood")).toBeInTheDocument();
+    expect(screen.getByText(/Duration clue: 4N \/ 5D/i)).toBeInTheDocument();
+    expect(screen.getByText(/Which month are you hoping to travel\?/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /skip this and continue with our team/i })).toBeInTheDocument();
   });
 
   it("keeps the traveler in a recoverable review flow when itinerary analysis fails", async () => {
@@ -236,7 +237,7 @@ describe("traveler quote review fallback", () => {
       target: { files: [file] },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /analyze file/i }));
+    fireEvent.click(screen.getByRole("button", { name: /review my trip/i }));
 
     expect(await screen.findByText("We understood you're planning a trip")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Continue with our team/i })).toBeInTheDocument();
