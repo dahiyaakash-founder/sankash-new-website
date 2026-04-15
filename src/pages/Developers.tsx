@@ -110,11 +110,11 @@ const Developers = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {gettingStartedSteps.map((step, i) => {
-              const handleClick = () => {
-                if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
-                else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
-                else if (step.action === "production") setProductionOpen(true);
-              };
+            const handleClick = () => {
+              if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
+              else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
+              else if (step.action === "production") setProductionOpen(true);
+            };
               return (
                 <motion.div key={step.num} {...fade} transition={{ delay: i * 0.08, duration: 0.4 }} className="relative">
                   <button onClick={handleClick} className="bg-card border rounded-xl p-6 shadow-card h-full text-left w-full hover:border-primary/30 transition-colors group">
@@ -296,10 +296,13 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group">
+              <button 
+                onClick={() => { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }}
+                className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group"
+              >
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Full API reference, request and response examples, and integration guides</p>
-              </a>
+              </button>
               <button onClick={() => setSandboxOpen(true)} className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group">
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Sandbox credentials</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Test your integration safely with sample data before going live</p>
