@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -48,31 +48,159 @@ const paymentsEndpoints = [
   "Reconciliation and reporting",
 ];
 
-const docsQuickActions = [
-  {
-    title: "See API overview",
-    description: "Start with the lending, insurance, and payments surfaces we support today.",
-    href: "#developer-api-overview",
+type DeveloperDocsKey = "overview" | "lending" | "insurance" | "payments";
+
+const docsHashes: Record<DeveloperDocsKey, string> = {
+  overview: "#developer-docs",
+  lending: "#developer-docs-lending",
+  insurance: "#developer-docs-insurance",
+  payments: "#developer-docs-payments",
+};
+
+const developerDocsContent: Record<Exclude<DeveloperDocsKey, "overview">, {
+  label: string;
+  title: string;
+  description: string;
+  authNote: string;
+  useCases: string[];
+  capabilities: string[];
+  sampleRequest: string;
+  sampleResponse: string;
+}> = {
+  lending: {
+    label: "Lending & Checkout API",
+    title: "Offer No Cost EMI inside your booking journey",
+    description: "Use this API when you want to check finance eligibility, show EMI plans, and move the traveler into a SanKash-enabled checkout flow.",
+    authNote: "Basic auth with your KEY ID and KEY SECRET. Sandbox access is needed before real checkout testing.",
+    useCases: [
+      "Show EMI or No Cost EMI on package, flight, or holiday checkout",
+      "Check whether a quote amount is financeable before checkout",
+      "Pass a traveler into a hosted or embedded lending step",
+    ],
+    capabilities: [
+      "Eligibility and affordability checks",
+      "Tenure and monthly EMI options",
+      "Checkout-linked financing handoff",
+      "Hosted or integrated flow depending on your stack",
+    ],
+    sampleRequest: `POST /v1/lending/eligibility
+Authorization: Basic {KEY_ID:KEY_SECRET}
+Content-Type: application/json
+
+{
+  "trip_amount": 125000,
+  "currency": "INR",
+  "destination": "Bali",
+  "traveler_count": 2
+}`,
+    sampleResponse: `{
+  "eligible": true,
+  "max_finance_amount": 125000,
+  "emi_options": [
+    { "tenure_months": 3, "monthly_emi": 41667, "no_cost_emi": true },
+    { "tenure_months": 6, "monthly_emi": 20834, "no_cost_emi": false }
+  ]
+}`,
   },
-  {
-    title: "Open authentication",
-    description: "Use the auth example and request format before you wire your first endpoint.",
-    href: "#developer-auth",
+  insurance: {
+    label: "Travel Insurance API",
+    title: "Quote, attach, and issue travel protection in the same flow",
+    description: "Use this API when you want to generate protection options, capture traveler details, and issue policies alongside the booking.",
+    authNote: "Basic auth with sandbox credentials first. Production issuance should only begin after SanKash approves your integration.",
+    useCases: [
+      "Show insurance at checkout or after itinerary selection",
+      "Generate quote options against trip value and destination",
+      "Issue policy after traveler details are confirmed",
+    ],
+    capabilities: [
+      "Quote generation and plan selection",
+      "Traveler detail capture",
+      "Policy issuance and booking linkage",
+      "Status confirmation for ops and customer support",
+    ],
+    sampleRequest: `POST /v1/insurance/quote
+Authorization: Basic {KEY_ID:KEY_SECRET}
+Content-Type: application/json
+
+{
+  "trip_value": 85000,
+  "destination": "Thailand",
+  "travel_start_date": "2026-11-12",
+  "travel_end_date": "2026-11-18"
+}`,
+    sampleResponse: `{
+  "plans": [
+    {
+      "plan_id": "travel-secure",
+      "premium": 1499,
+      "coverage_summary": ["medical", "baggage", "trip_delay"]
+    }
+  ]
+}`,
   },
-];
+  payments: {
+    label: "Payments API",
+    title: "Collect and reconcile travel payments cleanly",
+    description: "Use this API when you need to collect trip payments, generate payment links, and keep payment status aligned with your travel workflow.",
+    authNote: "Basic auth works here too. Use sandbox mode to test link generation and status callbacks before going live.",
+    useCases: [
+      "Generate payment links for holidays or balances",
+      "Collect staged payments tied to a lead or booking",
+      "Track settlement and reconciliation state for ops",
+    ],
+    capabilities: [
+      "Payment link generation",
+      "Payment status and callback handling",
+      "Settlement visibility",
+      "Reconciliation-ready transaction references",
+    ],
+    sampleRequest: `POST /v1/payments/link
+Authorization: Basic {KEY_ID:KEY_SECRET}
+Content-Type: application/json
+
+{
+  "booking_reference": "BK-1027",
+  "amount": 45000,
+  "currency": "INR",
+  "customer_name": "Riya Mehta"
+}`,
+    sampleResponse: `{
+  "payment_link": "https://pay.sankash.in/link/abc123",
+  "status": "created",
+  "expires_at": "2026-11-01T18:30:00Z"
+}`,
+  },
+};
+
+function resolveDeveloperDocsKey(hash: string): DeveloperDocsKey | null {
+  switch (hash) {
+    case "#developer-docs":
+      return "overview";
+    case "#developer-docs-lending":
+      return "lending";
+    case "#developer-docs-insurance":
+      return "insurance";
+    case "#developer-docs-payments":
+      return "payments";
+    default:
+      return null;
+  }
+}
 
 const Developers = () => {
   const [sandboxOpen, setSandboxOpen] = useState(false);
   const [productionOpen, setProductionOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
-  const [docsPanelOpen, setDocsPanelOpen] = useState(() =>
-    typeof window !== "undefined" && window.location.hash === "#developer-docs"
-  );
+  const initialDocsKey = typeof window !== "undefined" ? resolveDeveloperDocsKey(window.location.hash) : null;
+  const [activeDocsKey, setActiveDocsKey] = useState<DeveloperDocsKey>(initialDocsKey ?? "overview");
+  const [docsPanelOpen, setDocsPanelOpen] = useState(() => initialDocsKey !== null);
 
   useEffect(() => {
     const syncHashState = () => {
-      setDocsPanelOpen(window.location.hash === "#developer-docs");
+      const nextKey = resolveDeveloperDocsKey(window.location.hash);
+      setDocsPanelOpen(nextKey !== null);
+      if (nextKey) setActiveDocsKey(nextKey);
     };
 
     syncHashState();
@@ -80,11 +208,16 @@ const Developers = () => {
     return () => window.removeEventListener("hashchange", syncHashState);
   }, []);
 
-  const openDeveloperDocs = (sourceCta: string) => {
+  const openDeveloperDocs = (sourceCta: string, docsKey: DeveloperDocsKey = "overview") => {
     trackDocsClick({ source_page: "developers", source_cta: sourceCta });
     setDocsPanelOpen(true);
-    window.location.assign(SANKASH_DEVELOPERS_DOCS_URL);
+    setActiveDocsKey(docsKey);
+    window.location.assign(docsHashes[docsKey]);
   };
+  const activeDocsContent = useMemo(
+    () => (activeDocsKey === "overview" ? null : developerDocsContent[activeDocsKey]),
+    [activeDocsKey]
+  );
 
   return (
     <SiteLayout>
@@ -205,7 +338,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "lending_api_docs" })}>View Docs</a>
+                  <button type="button" onClick={() => openDeveloperDocs("lending_api_docs", "lending")}>View Docs</button>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -232,7 +365,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "insurance_api_docs" })}>View Docs</a>
+                  <button type="button" onClick={() => openDeveloperDocs("insurance_api_docs", "insurance")}>View Docs</button>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -259,7 +392,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "payments_api_docs" })}>View Docs</a>
+                  <button type="button" onClick={() => openDeveloperDocs("payments_api_docs", "payments")}>View Docs</button>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -309,6 +442,9 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       {/* Docs & Sandbox */}
       <section id="developer-docs" className="py-10 md:py-28 bg-section-alt scroll-mt-24">
         <div className="container max-w-3xl">
+          <div id="developer-docs-lending" className="scroll-mt-24" />
+          <div id="developer-docs-insurance" className="scroll-mt-24" />
+          <div id="developer-docs-payments" className="scroll-mt-24" />
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
@@ -349,9 +485,13 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-heading font-bold text-primary-deep">Docs quickstart</p>
+                    <p className="text-sm font-heading font-bold text-primary-deep">
+                      {activeDocsKey === "overview" ? "Docs quickstart" : activeDocsContent?.label}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      Start with the right section instead of hunting through the page.
+                      {activeDocsKey === "overview"
+                        ? "Choose an API area and land directly in a useful internal docs state."
+                        : activeDocsContent?.description}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -364,27 +504,96 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {docsQuickActions.map((action) => (
-                    <a
-                      key={action.href}
-                      href={action.href}
-                      className="rounded-xl border bg-accent/20 p-4 hover:border-primary/30 transition-colors group"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-primary-deep group-hover:text-primary transition-colors">
-                            {action.title}
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                            {action.description}
-                          </p>
-                        </div>
-                        <ArrowRight size={15} className="text-primary/50 shrink-0 mt-0.5" />
-                      </div>
-                    </a>
-                  ))}
+                <div className="flex flex-wrap gap-2">
+                  {(["overview", "lending", "insurance", "payments"] as DeveloperDocsKey[]).map((key) => {
+                    const label = key === "overview"
+                      ? "Overview"
+                      : developerDocsContent[key].label.replace(" API", "");
+                    const active = activeDocsKey === key;
+                    return (
+                      <Button
+                        key={key}
+                        size="sm"
+                        variant={active ? "default" : "outline"}
+                        onClick={() => openDeveloperDocs(`docs_tab_${key}`, key)}
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
                 </div>
+
+                {activeDocsKey === "overview" ? (
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    {(["lending", "insurance", "payments"] as const).map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => openDeveloperDocs(`docs_overview_${key}`, key)}
+                        className="rounded-xl border bg-accent/20 p-4 text-left hover:border-primary/30 transition-colors group"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-primary-deep group-hover:text-primary transition-colors">
+                              {developerDocsContent[key].label}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                              {developerDocsContent[key].useCases[0]}
+                            </p>
+                          </div>
+                          <ArrowRight size={15} className="text-primary/50 shrink-0 mt-0.5" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : activeDocsContent && (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border bg-accent/20 p-4 space-y-2">
+                      <p className="text-sm font-semibold text-primary-deep">{activeDocsContent.title}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{activeDocsContent.authNote}</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <p className="text-sm font-semibold text-primary-deep">Core use cases</p>
+                        <ul className="space-y-2">
+                          {activeDocsContent.useCases.map((item) => (
+                            <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 size={14} className="text-primary mt-0.5 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <p className="text-sm font-semibold text-primary-deep">Key capabilities</p>
+                        <ul className="space-y-2">
+                          {activeDocsContent.capabilities.map((item) => (
+                            <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 size={14} className="text-primary mt-0.5 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <p className="text-sm font-semibold text-primary-deep">Sample request</p>
+                        <pre className="text-xs leading-relaxed text-foreground whitespace-pre-wrap break-words font-mono bg-muted rounded-lg p-3">
+                          {activeDocsContent.sampleRequest}
+                        </pre>
+                      </div>
+                      <div className="rounded-xl border p-4 space-y-3">
+                        <p className="text-sm font-semibold text-primary-deep">Sample response</p>
+                        <pre className="text-xs leading-relaxed text-foreground whitespace-pre-wrap break-words font-mono bg-muted rounded-lg p-3">
+                          {activeDocsContent.sampleResponse}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </motion.div>
