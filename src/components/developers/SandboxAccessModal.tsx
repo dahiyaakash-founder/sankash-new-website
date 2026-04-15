@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
-import { SANKASH_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
 import { trackSandboxRequestSubmit } from "@/lib/analytics";
 
 interface SandboxAccessModalProps {
@@ -104,7 +104,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
             </DialogHeader>
             <p className="text-xs text-muted-foreground">
               You can also{" "}
-              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              <a href={SANKASH_DEVELOPERS_DOCS_URL} className="underline hover:text-foreground transition-colors">
                 explore the public docs
               </a>{" "}
               while we review your request.

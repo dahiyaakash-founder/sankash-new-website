@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Banknote, ShieldCheck, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
-import { SANKASH_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
 
 const useCases = [
   { id: "emi", label: "Offer No Cost EMI", apis: ["Lending & Checkout API"], icon: Banknote },
@@ -68,7 +68,7 @@ const ApiFinderModal = ({ open, onOpenChange, onOpenSandbox }: ApiFinderModalPro
             </div>
             <div className="flex gap-2">
               <Button size="default" className="flex-1" asChild>
-                <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                <a href={SANKASH_DEVELOPERS_DOCS_URL}>
                   View Docs <ExternalLink size={14} />
                 </a>
               </Button>
