@@ -323,7 +323,6 @@ function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: Fil
   return signals.slice(0, 4);
 }
 
-<<<<<<< codex/traveler-partial-readable-state
 type QuoteReviewRecoveryMode = "manual" | "partial" | "full";
 
 type QuoteReviewRecoveryState = {
@@ -514,8 +513,6 @@ function buildQuoteReviewRecoveryState(
   };
 }
 
-=======
->>>>>>> main
 function ManualReviewFallback({
   signals,
   onUnlock,
@@ -570,7 +567,6 @@ function ManualReviewFallback({
   );
 }
 
-<<<<<<< codex/traveler-partial-readable-state
 function PartialReadableRecovery({
   files,
   signals,
@@ -719,8 +715,6 @@ function PartialReadableRecovery({
   );
 }
 
-=======
->>>>>>> main
 /** Small file thumbnail for add-more section */
 function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
@@ -961,21 +955,12 @@ export default function TravelerAnalysisResults({
     if (addFileRef.current) addFileRef.current.value = "";
   };
 
-<<<<<<< codex/traveler-partial-readable-state
   const recoveryState = buildQuoteReviewRecoveryState(a, files);
 
   if (recoveryState.mode === "manual") {
     return (
       <ManualReviewFallback
         signals={recoveryState.signals}
-=======
-  const manualReviewSignals = buildManualReviewSignals(a, files);
-
-  if (!a) {
-    return (
-      <ManualReviewFallback
-        signals={manualReviewSignals}
->>>>>>> main
         onUnlock={onUnlock}
         onReset={onReset}
       />
@@ -1005,7 +990,6 @@ export default function TravelerAnalysisResults({
 
   if (recoveryState.mode === "partial") {
     return (
-<<<<<<< codex/traveler-partial-readable-state
       <PartialReadableRecovery
         files={files}
         signals={recoveryState.signals}
@@ -1017,12 +1001,6 @@ export default function TravelerAnalysisResults({
         setAdditionalFiles={setAdditionalFiles}
         isReanalyzing={isReanalyzing}
         submitAdditional={submitAdditional}
-=======
-      <ManualReviewFallback
-        signals={manualReviewSignals}
-        onUnlock={onUnlock}
-        onReset={onReset}
->>>>>>> main
       />
     );
   }
@@ -1063,11 +1041,7 @@ export default function TravelerAnalysisResults({
       {/* All missing / weakly-structured — graceful manual fallback */}
       {allMissing && (
         <ManualReviewFallback
-<<<<<<< codex/traveler-partial-readable-state
           signals={recoveryState.signals}
-=======
-          signals={manualReviewSignals}
->>>>>>> main
           onUnlock={onUnlock}
           onReset={onReset}
         />
