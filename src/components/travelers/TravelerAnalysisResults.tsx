@@ -323,6 +323,60 @@ function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: Fil
   return signals.slice(0, 4);
 }
 
+function ManualReviewFallback({
+  signals,
+  onUnlock,
+  onReset,
+}: {
+  signals: string[];
+  onUnlock: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 sm:p-5 space-y-3.5"
+    >
+      <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Phone size={18} className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
+            </p>
+          </div>
+        </div>
+
+        {signals.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
+            <div className="flex flex-wrap gap-1.5">
+              {signals.map((signal) => (
+                <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+                  {signal}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+          <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+            <Phone size={13} /> Continue with our team
+          </Button>
+          <Button variant="outline" size="sm" onClick={onReset}>
+            Try with different details
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 /** Small file thumbnail for add-more section */
 function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
@@ -563,16 +617,15 @@ export default function TravelerAnalysisResults({
     if (addFileRef.current) addFileRef.current.value = "";
   };
 
+  const manualReviewSignals = buildManualReviewSignals(a, files);
+
   if (!a) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          Try sharing clearer screenshots or a PDF itinerary from your travel agent.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <ManualReviewFallback
+        signals={manualReviewSignals}
+        onUnlock={onUnlock}
+        onReset={onReset}
+      />
     );
   }
 
@@ -594,21 +647,17 @@ export default function TravelerAnalysisResults({
   const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total, a?.duration_nights, a?.duration_days]);
   const confidence = a?.parsing_confidence ?? "low";
   const isLowConfidence = confidence === "low";
-  const manualReviewSignals = buildManualReviewSignals(a, files);
 
   const anyFound = priceStatus !== "missing" || flightStatus !== "missing" || hotelStatus !== "missing" || tripStatus !== "missing";
   const allMissing = !anyFound && isLowConfidence;
 
   if (!hasAnyContent) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          The items you shared may not contain recognisable travel information.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <ManualReviewFallback
+        signals={manualReviewSignals}
+        onUnlock={onUnlock}
+        onReset={onReset}
+      />
     );
   }
 
@@ -647,32 +696,11 @@ export default function TravelerAnalysisResults({
 
       {/* All missing / weakly-structured — graceful manual fallback */}
       {allMissing && (
-        <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Phone size={18} className="text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
-              </p>
-            </div>
-          </div>
-
-          {manualReviewSignals.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
-              <div className="flex flex-wrap gap-1.5">
-                {manualReviewSignals.map((signal) => (
-                  <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
-                    {signal}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <ManualReviewFallback
+          signals={manualReviewSignals}
+          onUnlock={onUnlock}
+          onReset={onReset}
+        />
       )}
 
       <TravelerQuestions questions={questions} />
