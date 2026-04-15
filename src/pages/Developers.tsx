@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,41 @@ const paymentsEndpoints = [
   "Reconciliation and reporting",
 ];
 
+const docsQuickActions = [
+  {
+    title: "See API overview",
+    description: "Start with the lending, insurance, and payments surfaces we support today.",
+    href: "#developer-api-overview",
+  },
+  {
+    title: "Open authentication",
+    description: "Use the auth example and request format before you wire your first endpoint.",
+    href: "#developer-auth",
+  },
+];
+
 const Developers = () => {
   const [sandboxOpen, setSandboxOpen] = useState(false);
   const [productionOpen, setProductionOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
+  const [docsPanelOpen, setDocsPanelOpen] = useState(() =>
+    typeof window !== "undefined" && window.location.hash === "#developer-docs"
+  );
+
+  useEffect(() => {
+    const syncHashState = () => {
+      setDocsPanelOpen(window.location.hash === "#developer-docs");
+    };
+
+    syncHashState();
+    window.addEventListener("hashchange", syncHashState);
+    return () => window.removeEventListener("hashchange", syncHashState);
+  }, []);
+
   const openDeveloperDocs = (sourceCta: string) => {
     trackDocsClick({ source_page: "developers", source_cta: sourceCta });
+    setDocsPanelOpen(true);
     window.location.assign(SANKASH_DEVELOPERS_DOCS_URL);
   };
 
@@ -143,7 +171,7 @@ const Developers = () => {
       </section>
 
       {/* API Overview */}
-      <section className="py-10 md:py-28 bg-section-alt">
+      <section id="developer-api-overview" className="py-10 md:py-28 bg-section-alt scroll-mt-24">
         <div className="container">
           <motion.div {...fade} className="max-w-2xl mb-8 md:mb-14">
             <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.12em] mb-3">API overview</p>
@@ -241,7 +269,7 @@ const Developers = () => {
       </section>
 
       {/* Authentication */}
-      <section className="py-10 md:py-28">
+      <section id="developer-auth" className="py-10 md:py-28 scroll-mt-24">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
@@ -312,6 +340,53 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Our team supports you from first API call to production launch</p>
               </Link>
             </div>
+
+            {docsPanelOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border bg-card p-5 sm:p-6 space-y-4 shadow-card"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-heading font-bold text-primary-deep">Docs quickstart</p>
+                    <p className="text-sm text-muted-foreground">
+                      Start with the right section instead of hunting through the page.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => setFinderOpen(true)}>
+                      Find the right API
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>
+                      Get Sandbox Access
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {docsQuickActions.map((action) => (
+                    <a
+                      key={action.href}
+                      href={action.href}
+                      className="rounded-xl border bg-accent/20 p-4 hover:border-primary/30 transition-colors group"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-primary-deep group-hover:text-primary transition-colors">
+                            {action.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                            {action.description}
+                          </p>
+                        </div>
+                        <ArrowRight size={15} className="text-primary/50 shrink-0 mt-0.5" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
