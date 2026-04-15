@@ -217,7 +217,7 @@ export const trackEmiCalculatorView = () =>
 export const trackEmiAmountChange = (params: { trip_amount: number; tenure?: number; emi_type?: string }) =>
   trackEvent("emi_amount_change", params);
 
-export const trackDocsClick = (params?: { source_page?: string }) =>
+export const trackDocsClick = (params?: { source_page?: string; source_cta?: string }) =>
   trackEvent("docs_click", { source_type: "docs", ...params });
 
 export const trackSupportClick = (params?: { source_page?: string }) =>

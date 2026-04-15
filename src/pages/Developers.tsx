@@ -10,7 +10,7 @@ import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
-import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL, SANKASH_DOCS_URL } from "@/lib/constants";
 import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
@@ -292,10 +292,12 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              <a
-                href={SANKASH_DEVELOPERS_DOCS_URL}
-                onClick={() => trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" })}
-                className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group"
+              <button
+                onClick={() => {
+                  trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" });
+                  window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer");
+                }}
+                className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group"
               >
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Full API reference, request and response examples, and integration guides</p>
