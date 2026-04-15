@@ -10,7 +10,7 @@ import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
-import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL, SANKASH_DOCS_URL } from "@/lib/constants";
 import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
