@@ -183,7 +183,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Insurance API */}
-            <motion.div {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
+            <motion.div id="api-insurance" {...fade} transition={{ delay: 0.08, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5 scroll-mt-24">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <ShieldCheck size={20} className="text-primary" />
@@ -210,7 +210,7 @@ const Developers = () => {
             </motion.div>
 
             {/* Payments API */}
-            <motion.div {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5">
+            <motion.div id="api-payments" {...fade} transition={{ delay: 0.16, duration: 0.45 }} className="rounded-2xl border bg-card p-5 sm:p-8 md:p-10 space-y-4 sm:space-y-5 scroll-mt-24">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
                   <CreditCard size={20} className="text-primary" />
