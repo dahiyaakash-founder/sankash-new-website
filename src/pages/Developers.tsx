@@ -79,10 +79,11 @@ const Developers = () => {
               Simple APIs and checkout flows for lending, insurance, and payments — built for real travel workflows.
             </p>
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
-              <Button size="xl" asChild>
-                <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
-                  View Docs <ExternalLink size={16} />
-                </a>
+              <Button 
+                size="xl" 
+                onClick={() => { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }}
+              >
+                View Docs <ExternalLink size={16} />
               </Button>
               <Button size="xl" variant="outline" onClick={() => { trackGetSandboxAccessClick(); setSandboxOpen(true); }}>
                 Get Sandbox Access
@@ -167,8 +168,11 @@ const Developers = () => {
                 ))}
               </ul>
               <div className="flex gap-2 pt-2">
-                <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                <Button 
+                  size="sm" 
+                  onClick={() => { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }}
+                >
+                  View Docs
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -194,8 +198,11 @@ const Developers = () => {
                 ))}
               </ul>
               <div className="flex gap-2 pt-2">
-                <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                <Button 
+                  size="sm" 
+                  onClick={() => { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }}
+                >
+                  View Docs
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -221,8 +228,11 @@ const Developers = () => {
                 ))}
               </ul>
               <div className="flex gap-2 pt-2">
-                <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                <Button 
+                  size="sm" 
+                  onClick={() => { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }}
+                >
+                  View Docs
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
