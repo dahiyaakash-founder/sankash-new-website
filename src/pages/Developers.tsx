@@ -10,7 +10,7 @@ import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
-import { SANKASH_DEVELOPERS_DOCS_URL, SANKASH_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
 import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
@@ -295,7 +295,7 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               <button
                 onClick={() => {
                   trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" });
-                  window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer");
+                  window.location.assign(SANKASH_DEVELOPERS_DOCS_URL);
                 }}
                 className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group"
               >
