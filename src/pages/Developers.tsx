@@ -10,7 +10,7 @@ import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
-import { SANKASH_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
 import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
@@ -80,7 +80,10 @@ const Developers = () => {
             </p>
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
               <Button size="xl" asChild>
-                <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={SANKASH_DEVELOPERS_DOCS_URL}
+                  onClick={() => trackDocsClick({ source_page: "developers", source_cta: "hero_view_docs" })}
+                >
                   View Docs <ExternalLink size={16} />
                 </a>
               </Button>
@@ -110,7 +113,10 @@ const Developers = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {gettingStartedSteps.map((step, i) => {
               const handleClick = () => {
-                if (step.action === "docs") { trackDocsClick({ source_page: "developers" }); window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer"); }
+                if (step.action === "docs") {
+                  trackDocsClick({ source_page: "developers", source_cta: `getting_started_${step.num}` });
+                  window.location.assign(SANKASH_DEVELOPERS_DOCS_URL);
+                }
                 else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
                 else if (step.action === "production") setProductionOpen(true);
               };
@@ -168,7 +174,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "lending_api_docs" })}>View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -195,7 +201,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "insurance_api_docs" })}>View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -222,7 +228,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={SANKASH_DEVELOPERS_DOCS_URL} onClick={() => trackDocsClick({ source_page: "developers", source_cta: "payments_api_docs" })}>View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -270,7 +276,7 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
       </section>
 
       {/* Docs & Sandbox */}
-      <section className="py-10 md:py-28 bg-section-alt">
+      <section id="developer-docs" className="py-10 md:py-28 bg-section-alt scroll-mt-24">
         <div className="container max-w-3xl">
           <motion.div {...fade} className="space-y-5">
             <div className="flex items-center gap-3">
@@ -286,7 +292,11 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group">
+              <a
+                href={SANKASH_DEVELOPERS_DOCS_URL}
+                onClick={() => trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" })}
+                className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group"
+              >
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Full API reference, request and response examples, and integration guides</p>
               </a>
