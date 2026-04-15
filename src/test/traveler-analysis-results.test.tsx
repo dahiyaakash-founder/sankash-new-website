@@ -86,6 +86,63 @@ function makeAnalysis(overrides: Partial<ItineraryAnalysis> = {}): ItineraryAnal
 }
 
 describe("TravelerAnalysisResults", () => {
+  it("routes null analysis into the manual-review fallback instead of a dead unreadable wall", () => {
+    render(
+      <TravelerAnalysisResults
+        analysis={null}
+        files={[new File(["quote"], "maldives.pdf", { type: "application/pdf" })]}
+        onUnlock={vi.fn()}
+        onAddMore={vi.fn()}
+        onReanalyze={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("We understood you're planning a trip")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with our team/i })).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't read your trip details")).not.toBeInTheDocument();
+  });
+
+  it("shows the partial-readable recovery state for Maldives-style travel clues", () => {
+    render(
+      <TravelerAnalysisResults
+        analysis={makeAnalysis({
+          destination_city: null,
+          destination_country: null,
+          total_price: null,
+          price_per_person: null,
+          travel_start_date: null,
+          travel_end_date: null,
+          duration_nights: 4,
+          duration_days: 5,
+          traveller_count_total: null,
+          adults_count: null,
+          airline_names_json: [],
+          sectors_json: ["MLE"],
+          hotel_names_json: [],
+          inclusions_text: "Water villa stay, speedboat transfers, snorkelling, sunset cruise",
+          extracted_completeness_score: 18,
+          parsing_confidence: "low",
+          advisory_summary: null,
+          traveler_questions_json: [],
+        })}
+        files={[new File(["quote"], "maldives.pdf", { type: "application/pdf" })]}
+        onUnlock={vi.fn()}
+        onAddMore={vi.fn()}
+        onReanalyze={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Here’s what we already understood")).toBeInTheDocument();
+    expect(screen.getByText(/Duration clue: 4N \/ 5D/i)).toBeInTheDocument();
+    expect(screen.getByText(/Flight clue: MLE/i)).toBeInTheDocument();
+    expect(screen.getByText(/Which month are you hoping to travel\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/Is this for a couple, family, or group trip\?/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /skip this and continue with our team/i })).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't read your trip details")).not.toBeInTheDocument();
+  });
+
   it("renders backend-shaped traveler question objects without crashing the success view", () => {
     render(
       <TravelerAnalysisResults
@@ -141,6 +198,6 @@ describe("TravelerAnalysisResults", () => {
     expect(screen.getByText("Quote Review")).toBeInTheDocument();
     expect(screen.getByText("Is airport transfer included?")).toBeInTheDocument();
     expect(screen.getByText("Add your hotel page")).toBeInTheDocument();
-    expect(screen.getByText("Meal plan still looks light")).toBeInTheDocument();
+    expect(screen.getByText("One thing is still worth checking")).toBeInTheDocument();
   });
 });

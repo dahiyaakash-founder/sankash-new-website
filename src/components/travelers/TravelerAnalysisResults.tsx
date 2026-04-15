@@ -323,6 +323,398 @@ function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: Fil
   return signals.slice(0, 4);
 }
 
+type QuoteReviewRecoveryMode = "manual" | "partial" | "full";
+
+type QuoteReviewRecoveryState = {
+  mode: QuoteReviewRecoveryMode;
+  signals: string[];
+  questions: TravelerQuestion[];
+};
+
+function buildPartialReadableQuestions(analysis: ItineraryAnalysis): TravelerQuestion[] {
+  const hasDestination = !!(analysis.destination_city || analysis.destination_country);
+  const hasTravelDate = !!(analysis.travel_start_date || analysis.travel_end_date);
+  const hasDuration = !!(analysis.duration_nights || analysis.duration_days);
+  const hasPrice = analysis.total_price != null || analysis.price_per_person != null;
+  const hasTravellerMix = !!(
+    analysis.traveller_count_total ||
+    analysis.adults_count ||
+    analysis.children_count ||
+    analysis.infants_count
+  );
+  const hasFlightClue = !!(
+    analysis.flight_departure_time ||
+    analysis.flight_arrival_time ||
+    (analysis.airline_names_json ?? []).length > 0 ||
+    (analysis.sectors_json ?? []).length > 0
+  );
+  const hasHotelClue = !!(
+    analysis.hotel_check_in ||
+    analysis.hotel_check_out ||
+    (analysis.hotel_names_json ?? []).length > 0
+  );
+  const hasActivityClue = !!(
+    analysis.inclusions_text ||
+    (analysis.extracted_snippets_json ?? []).length > 0
+  );
+
+  const questions: TravelerQuestion[] = [];
+  const pushQuestion = (question: TravelerQuestion) => {
+    if (questions.some((existing) => existing.code === question.code)) return;
+    questions.push(question);
+  };
+
+  if (!hasTravelDate) {
+    pushQuestion({
+      code: "travel_month",
+      question: hasDuration
+        ? "Which month are you hoping to travel?"
+        : "When are you roughly hoping to travel?",
+      why: "That changes flight timing, hotel pricing, and whether this quote still fits well.",
+      priority: "high",
+    });
+  }
+
+  if (!hasTravellerMix) {
+    pushQuestion({
+      code: "traveller_mix",
+      question: "Is this for a couple, family, or group trip?",
+      why: "That helps us judge whether the stay, activities, and budget still make sense.",
+      priority: "high",
+    });
+  }
+
+  if (!hasFlightClue && (hasDestination || hasDuration || hasActivityClue)) {
+    pushQuestion({
+      code: "flights_booked",
+      question: "Are your flights already booked, or should we include them in the review?",
+      why: "That changes the real trip cost and what we should optimise first.",
+      priority: "high",
+    });
+  }
+
+  if ((!hasHotelClue || !hasPrice) && (hasDestination || hasActivityClue || hasDuration)) {
+    pushQuestion({
+      code: "budget_vs_resort",
+      question: "Should we optimise this more for better resort quality or keeping the budget tighter?",
+      why: "That tells us whether to sharpen the stay or protect the overall spend.",
+      priority: "medium",
+    });
+  }
+
+  if (!hasDestination && (hasFlightClue || hasActivityClue)) {
+    pushQuestion({
+      code: "destination_fixed",
+      question: "Is this destination fixed, or are you comparing a few similar options?",
+      why: "That helps us decide whether to review this plan as-is or shape a better-fit option.",
+      priority: "medium",
+    });
+  }
+
+  if (questions.length === 0) {
+    pushQuestion({
+      code: "priority_focus",
+      question: hasPrice
+        ? "What matters more here: keeping the cost tighter or improving the stay?"
+        : "What should we sharpen first: timing, stay quality, or budget fit?",
+      why: "One clear preference is enough for us to take the next useful step.",
+      priority: "medium",
+    });
+  }
+
+  return questions.slice(0, 2);
+}
+
+function buildQuoteReviewRecoveryState(
+  analysis: ItineraryAnalysis | null,
+  files: File[],
+): QuoteReviewRecoveryState {
+  const signals = buildManualReviewSignals(analysis, files);
+
+  if (!analysis) {
+    return {
+      mode: "manual",
+      signals,
+      questions: [],
+    };
+  }
+
+  const hasDestination = !!(analysis.destination_city || analysis.destination_country);
+  const hasTravelDate = !!(analysis.travel_start_date || analysis.travel_end_date);
+  const hasDuration = !!(analysis.duration_nights || analysis.duration_days);
+  const hasPrice = analysis.total_price != null || analysis.price_per_person != null;
+  const hasFlightClue = !!(
+    analysis.flight_departure_time ||
+    analysis.flight_arrival_time ||
+    (analysis.airline_names_json ?? []).length > 0 ||
+    (analysis.sectors_json ?? []).length > 0
+  );
+  const hasHotelClue = !!(
+    analysis.hotel_check_in ||
+    analysis.hotel_check_out ||
+    (analysis.hotel_names_json ?? []).length > 0
+  );
+  const hasTravellerMix = !!(
+    analysis.traveller_count_total ||
+    analysis.adults_count ||
+    analysis.children_count ||
+    analysis.infants_count
+  );
+  const hasActivityClue = !!(
+    analysis.inclusions_text ||
+    (analysis.extracted_snippets_json ?? []).length > 0
+  );
+
+  const strongAnchorCount = [
+    hasDestination,
+    hasTravelDate,
+    hasPrice,
+    hasFlightClue,
+    hasHotelClue,
+  ].filter(Boolean).length;
+
+  const contextScore = [
+    hasDestination ? 2 : 0,
+    hasTravelDate ? 2 : 0,
+    !hasTravelDate && hasDuration ? 1 : 0,
+    hasPrice ? 2 : 0,
+    hasFlightClue ? 2 : 0,
+    hasHotelClue ? 2 : 0,
+    hasTravellerMix ? 1 : 0,
+    hasActivityClue ? 1 : 0,
+  ].reduce((sum, value) => sum + value, 0);
+
+  const questions = buildPartialReadableQuestions(analysis);
+
+  if (
+    analysis.extracted_completeness_score >= 60 ||
+    strongAnchorCount >= 3 ||
+    (hasDestination && (hasTravelDate || hasDuration) && (hasPrice || hasFlightClue || hasHotelClue))
+  ) {
+    return {
+      mode: "full",
+      signals,
+      questions,
+    };
+  }
+
+  if ((contextScore >= 3 || signals.length >= 2) && questions.length > 0) {
+    return {
+      mode: "partial",
+      signals,
+      questions,
+    };
+  }
+
+  return {
+    mode: "manual",
+    signals,
+    questions: [],
+  };
+}
+
+function ManualReviewFallback({
+  signals,
+  onUnlock,
+  onReset,
+}: {
+  signals: string[];
+  onUnlock: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 sm:p-5 space-y-3.5"
+    >
+      <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Phone size={18} className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
+            </p>
+          </div>
+        </div>
+
+        {signals.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
+            <div className="flex flex-wrap gap-1.5">
+              {signals.map((signal) => (
+                <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+                  {signal}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+          <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+            <Phone size={13} /> Continue with our team
+          </Button>
+          <Button variant="outline" size="sm" onClick={onReset}>
+            Try with different details
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function PartialReadableRecovery({
+  files,
+  signals,
+  questions,
+  onUnlock,
+  onReset,
+  addFileRef,
+  additionalFiles,
+  setAdditionalFiles,
+  isReanalyzing,
+  submitAdditional,
+}: {
+  files: File[];
+  signals: string[];
+  questions: TravelerQuestion[];
+  onUnlock: () => void;
+  onReset: () => void;
+  addFileRef: React.RefObject<HTMLInputElement>;
+  additionalFiles: File[];
+  setAdditionalFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  isReanalyzing?: boolean;
+  submitAdditional: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 sm:p-5 space-y-3.5"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles size={15} className="text-primary" />
+          <span className="text-xs font-bold text-foreground uppercase tracking-wider">Quote Review</span>
+          <Pill className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            Partial read
+          </Pill>
+        </div>
+        <button onClick={onReset} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline">
+          Start over
+        </button>
+      </div>
+
+      <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
+        <FileText size={13} className="text-muted-foreground shrink-0" />
+        <span className="text-[11px] text-foreground font-medium truncate">
+          {files.length > 1 ? `${files.length} trip details reviewed` : "We could already read part of your travel quote"}
+        </span>
+      </div>
+
+      <div className="rounded-xl border bg-primary/5 p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Eye size={18} className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">Here’s what we already understood</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              We picked up enough trip context to sharpen this review. One more useful detail can help us make the next read much smarter.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          {signals.map((signal) => (
+            <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+              {signal}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+        className="border rounded-xl p-3.5 space-y-2">
+        <SectionHeader
+          icon={MessageCircle}
+          title={questions.length > 1 ? "Two quick things to sharpen this" : "One quick thing to sharpen this"}
+        />
+        <div className="space-y-1.5">
+          {questions.map((question, index) => (
+            <div key={question.code ?? index} className="flex items-start gap-2 py-0.5">
+              <ChevronRight size={11} className="text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] text-foreground leading-relaxed">{question.question}</p>
+                {question.why && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{question.why}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="border border-dashed rounded-xl p-3.5 space-y-2">
+        <p className="text-[11px] font-semibold text-foreground">Sharpen this review with one more detail</p>
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          Add one more screenshot, quote page, or itinerary detail if you have it. Or skip this and let our team continue with you on WhatsApp or call.
+        </p>
+
+        {additionalFiles.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {additionalFiles.map((file, index) => (
+              <SmallFileThumb
+                key={`${file.name}-${index}`}
+                file={file}
+                onRemove={() => setAdditionalFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" size="sm" className="gap-1 text-xs flex-1" onClick={() => addFileRef.current?.click()}>
+            <Upload size={12} /> Add one more trip detail
+          </Button>
+          {additionalFiles.length > 0 && (
+            <Button size="sm" className="gap-1 text-xs" onClick={submitAdditional} disabled={isReanalyzing}>
+              {isReanalyzing ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+              Re-analyze
+            </Button>
+          )}
+        </div>
+
+        <input
+          ref={addFileRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          multiple
+          onChange={(event) => {
+            const selected = Array.from(event.target.files ?? []);
+            if (selected.length > 0) setAdditionalFiles((prev) => [...prev, ...selected].slice(0, 5));
+            if (addFileRef.current) addFileRef.current.value = "";
+          }}
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+        <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+          <Phone size={13} /> Skip this and continue with our team
+        </Button>
+        <Button variant="outline" size="sm" onClick={onReset}>
+          Try with different details
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
 /** Small file thumbnail for add-more section */
 function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
   const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
@@ -563,16 +955,15 @@ export default function TravelerAnalysisResults({
     if (addFileRef.current) addFileRef.current.value = "";
   };
 
-  if (!a) {
+  const recoveryState = buildQuoteReviewRecoveryState(a, files);
+
+  if (recoveryState.mode === "manual") {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          Try sharing clearer screenshots or a PDF itinerary from your travel agent.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <ManualReviewFallback
+        signals={recoveryState.signals}
+        onUnlock={onUnlock}
+        onReset={onReset}
+      />
     );
   }
 
@@ -581,7 +972,6 @@ export default function TravelerAnalysisResults({
   const questions = (a.traveler_questions_json ?? []) as TravelerQuestion[];
   const nextInputs = (a.next_inputs_needed_json ?? []) as NextInput[];
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
-  const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
 
   const customerConversion = asObject(a.customer_conversion_json) as CustomerConversionPayload;
   const optionalPrompt = (a.optional_missing_prompts_json ?? [])[0] ?? null;
@@ -594,21 +984,24 @@ export default function TravelerAnalysisResults({
   const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total, a?.duration_nights, a?.duration_days]);
   const confidence = a?.parsing_confidence ?? "low";
   const isLowConfidence = confidence === "low";
-  const manualReviewSignals = buildManualReviewSignals(a, files);
 
   const anyFound = priceStatus !== "missing" || flightStatus !== "missing" || hotelStatus !== "missing" || tripStatus !== "missing";
   const allMissing = !anyFound && isLowConfidence;
 
-  if (!hasAnyContent) {
+  if (recoveryState.mode === "partial") {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          The items you shared may not contain recognisable travel information.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <PartialReadableRecovery
+        files={files}
+        signals={recoveryState.signals}
+        questions={recoveryState.questions}
+        onUnlock={onUnlock}
+        onReset={onReset}
+        addFileRef={addFileRef}
+        additionalFiles={additionalFiles}
+        setAdditionalFiles={setAdditionalFiles}
+        isReanalyzing={isReanalyzing}
+        submitAdditional={submitAdditional}
+      />
     );
   }
 
@@ -647,32 +1040,11 @@ export default function TravelerAnalysisResults({
 
       {/* All missing / weakly-structured — graceful manual fallback */}
       {allMissing && (
-        <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Phone size={18} className="text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
-              </p>
-            </div>
-          </div>
-
-          {manualReviewSignals.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
-              <div className="flex flex-wrap gap-1.5">
-                {manualReviewSignals.map((signal) => (
-                  <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
-                    {signal}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <ManualReviewFallback
+          signals={recoveryState.signals}
+          onUnlock={onUnlock}
+          onReset={onReset}
+        />
       )}
 
       <TravelerQuestions questions={questions} />
