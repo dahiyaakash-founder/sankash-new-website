@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import SiteLayout from "@/components/SiteLayout";
 import { createLeadWithDedup } from "@/lib/leads-service";
 import { trackContactFormSubmit, trackDemoRequestSubmit, trackSupportClick } from "@/lib/analytics";
+import { SANKASH_DOCS_URL } from "@/lib/constants";
 import SEOHead, { contactPageSchema } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -71,7 +72,7 @@ const escalationPaths = [
     title: "Integrations",
     description: "Technical guidance for API and checkout setup",
     cta: "View docs",
-    link: "/developers",
+    href: SANKASH_DOCS_URL,
   },
   {
     title: "Existing partners",

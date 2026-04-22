@@ -10,7 +10,12 @@ import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
-import { SANKASH_DOCS_URL } from "@/lib/constants";
+import {
+  SANKASH_DOCS_URL,
+  SANKASH_INSURANCE_DOCS_URL,
+  SANKASH_LENDING_DOCS_URL,
+  SANKASH_PAYMENTS_DOCS_URL,
+} from "@/lib/constants";
 import { trackDocsClick, trackGetSandboxAccessClick } from "@/lib/analytics";
 
 const fade = {
@@ -47,6 +52,12 @@ const paymentsEndpoints = [
   "Settlement tracking and status",
   "Reconciliation and reporting",
 ];
+
+const docsByApi = {
+  lending: SANKASH_LENDING_DOCS_URL,
+  insurance: SANKASH_INSURANCE_DOCS_URL,
+  payments: SANKASH_PAYMENTS_DOCS_URL,
+} as const;
 
 const Developers = () => {
   const [sandboxOpen, setSandboxOpen] = useState(false);
@@ -168,7 +179,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={docsByApi.lending} target="_blank" rel="noopener noreferrer">View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -195,7 +206,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={docsByApi.insurance} target="_blank" rel="noopener noreferrer">View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
@@ -222,7 +233,7 @@ const Developers = () => {
               </ul>
               <div className="flex gap-2 pt-2">
                 <Button size="sm" asChild>
-                  <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">View Docs</a>
+                  <a href={docsByApi.payments} target="_blank" rel="noopener noreferrer">View Docs</a>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
               </div>
