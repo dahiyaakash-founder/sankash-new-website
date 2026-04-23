@@ -1,18 +1,17 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import SiteLayout from "@/components/SiteLayout";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import AssistantEntryPoint from "@/components/AssistantEntryPoint";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, Terminal, CheckCircle2, ExternalLink, ChevronDown } from "lucide-react";
+import { ArrowRight, ShieldCheck, CreditCard, Banknote, Lock, Terminal, CheckCircle2, ExternalLink } from "lucide-react";
 import SandboxAccessModal from "@/components/developers/SandboxAccessModal";
 import ProductionAccessModal from "@/components/developers/ProductionAccessModal";
 import IntegrationQuestionModal from "@/components/developers/IntegrationQuestionModal";
 import ApiFinderModal from "@/components/developers/ApiFinderModal";
 import {
   SANKASH_DOCS_URL,
-  SANKASH_DEVELOPERS_DOCS_URL,
   SANKASH_INSURANCE_DOCS_URL,
   SANKASH_LENDING_DOCS_URL,
   SANKASH_PAYMENTS_DOCS_URL,
@@ -65,8 +64,6 @@ const Developers = () => {
   const [productionOpen, setProductionOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
-  const [docsExpanded, setDocsExpanded] = useState(false);
-  const docsLinksRef = useRef<HTMLDivElement>(null);
 
   return (
     <SiteLayout>
@@ -95,7 +92,9 @@ const Developers = () => {
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1">
               <Button size="xl" asChild>
                 <a
-                  href={SANKASH_DEVELOPERS_DOCS_URL}
+                  href={SANKASH_DOCS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => trackDocsClick({ source_page: "developers", source_cta: "hero_view_docs" })}
                 >
                   View Docs <ExternalLink size={16} />
@@ -129,7 +128,7 @@ const Developers = () => {
               const handleClick = () => {
                 if (step.action === "docs") {
                   trackDocsClick({ source_page: "developers", source_cta: `getting_started_${step.num}` });
-                  window.location.assign(SANKASH_DEVELOPERS_DOCS_URL);
+                  window.open(SANKASH_DOCS_URL, "_blank", "noopener,noreferrer");
                 }
                 else if (step.action === "sandbox") { trackGetSandboxAccessClick(); setSandboxOpen(true); }
                 else if (step.action === "production") setProductionOpen(true);
@@ -306,19 +305,16 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
               Full API documentation, sandbox environment for testing, and integration support from our team.
             </p>
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
-              <button
-                onClick={() => {
-                  trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" });
-                  setDocsExpanded((prev) => !prev);
-                }}
-                className={`bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group ${docsExpanded ? "border-primary/30 ring-1 ring-primary/10" : ""}`}
+              <a
+                href={SANKASH_DOCS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackDocsClick({ source_page: "developers", source_cta: "docs_section_card" })}
+                className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors group"
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
-                  <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 ${docsExpanded ? "rotate-180" : ""}`} />
-                </div>
+                <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Documentation</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Full API reference, request and response examples, and integration guides</p>
-              </button>
+              </a>
               <button onClick={() => setSandboxOpen(true)} className="bg-card border rounded-xl p-5 shadow-card hover:border-primary/30 transition-colors text-left group">
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Sandbox credentials</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Test your integration safely with sample data before going live</p>
@@ -327,43 +323,6 @@ curl -X POST https://api.sankash.in/v1/insurance/quote \\
                 <h3 className="text-sm font-heading font-bold text-primary-deep group-hover:text-primary transition-colors">Integration support</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Our team supports you from first API call to production launch</p>
               </Link>
-            </div>
-
-            {/* Expanded docs links panel */}
-            <div
-              ref={docsLinksRef}
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${docsExpanded ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"}`}
-            >
-              <div className="bg-card border rounded-xl p-5 space-y-3">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wide">Jump to API reference</p>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  <a href="#api-lending" onClick={() => document.getElementById("api-lending")?.scrollIntoView({ behavior: "smooth" })} className="flex items-center gap-2.5 rounded-lg border p-3 hover:border-primary/30 hover:bg-accent/50 transition-colors group/link">
-                    <Banknote size={16} className="text-primary shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-primary-deep group-hover/link:text-primary transition-colors">Lending & Checkout</p>
-                      <p className="text-xs text-muted-foreground">EMI, financing, checkout</p>
-                    </div>
-                  </a>
-                  <a href="#api-insurance" onClick={() => document.getElementById("api-insurance")?.scrollIntoView({ behavior: "smooth" })} className="flex items-center gap-2.5 rounded-lg border p-3 hover:border-primary/30 hover:bg-accent/50 transition-colors group/link">
-                    <ShieldCheck size={16} className="text-primary shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-primary-deep group-hover/link:text-primary transition-colors">Travel Insurance</p>
-                      <p className="text-xs text-muted-foreground">Quotes, policies, issuance</p>
-                    </div>
-                  </a>
-                  <a href="#api-payments" onClick={() => document.getElementById("api-payments")?.scrollIntoView({ behavior: "smooth" })} className="flex items-center gap-2.5 rounded-lg border p-3 hover:border-primary/30 hover:bg-accent/50 transition-colors group/link">
-                    <CreditCard size={16} className="text-primary shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-primary-deep group-hover/link:text-primary transition-colors">Payments</p>
-                      <p className="text-xs text-muted-foreground">Collection, links, settlements</p>
-                    </div>
-                  </a>
-                </div>
-                <div className="flex items-center gap-3 pt-1">
-                  <Button size="sm" variant="outline" onClick={() => setSandboxOpen(true)}>Get Sandbox Access</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setQuestionOpen(true)}>Ask a question</Button>
-                </div>
-              </div>
             </div>
           </motion.div>
         </div>
