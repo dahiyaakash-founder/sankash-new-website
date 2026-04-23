@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
-import { SANKASH_DOCS_URL } from "@/lib/constants";
+import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
 import { trackSandboxRequestSubmit } from "@/lib/analytics";
 
 interface SandboxAccessModalProps {
@@ -48,10 +48,12 @@ async function submitSandboxLead(payload: SandboxLeadPayload): Promise<void> {
 const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [apiNeeded, setApiNeeded] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     const form = e.currentTarget;
     const data = new FormData(form);
 
@@ -73,8 +75,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
       trackSandboxRequestSubmit();
       setSubmitted(true);
     } catch {
-      // Show error instead of silent success
-      alert("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -82,6 +83,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
 
   const handleClose = () => {
     setSubmitted(false);
+    setError(null);
     setApiNeeded("");
     onOpenChange(false);
   };
@@ -102,7 +104,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
             </DialogHeader>
             <p className="text-xs text-muted-foreground">
               You can also{" "}
-              <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              <a href={SANKASH_DEVELOPERS_DOCS_URL} className="underline hover:text-foreground transition-colors">
                 explore the public docs
               </a>{" "}
               while we review your request.
@@ -150,6 +152,7 @@ const SandboxAccessModal = ({ open, onOpenChange }: SandboxAccessModalProps) => 
                 <Label htmlFor="sb-usecase" className="text-xs">Use Case</Label>
                 <Textarea id="sb-usecase" name="useCase" required placeholder="What you plan to build or test" rows={2} className="text-sm min-h-[60px]" />
               </div>
+              {error && <p className="text-sm text-destructive font-medium">{error}</p>}
               <Button type="submit" className="w-full h-9 text-sm" disabled={submitting}>
                 {submitting ? "Submitting…" : "Request access"}
               </Button>

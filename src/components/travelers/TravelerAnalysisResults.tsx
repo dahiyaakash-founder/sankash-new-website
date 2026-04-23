@@ -9,12 +9,16 @@ import {
   MapPin, Calendar, Users, CreditCard, Plane, Building2,
   AlertTriangle, Upload, ImageIcon, FileText, Phone, Lock,
   ArrowRight, Loader2, X, Shield, Wallet, Eye, MessageCircle,
-  Lightbulb, ChevronRight, Sparkles, AlertCircle, Info,
+  Lightbulb, ChevronRight, Sparkles, AlertCircle, Info, Plus,
+  CheckCircle2, Circle,
 } from "lucide-react";
 import type {
   ItineraryAnalysis,
   AdvisoryInsight,
   NextInput,
+  TravelerQuestion,
+  TravelerOptionalPrompt,
+  TravelerSignalCard,
   UnlockableModule,
 } from "@/lib/itinerary-analysis-service";
 
@@ -28,8 +32,6 @@ interface Props {
   isReanalyzing?: boolean;
 }
 
-type SignalCard = { code?: string; title?: string; detail?: string; strength?: string };
-type OptionalPrompt = { customer_prompt?: string; reason?: string; suggested_upload?: string };
 type CustomerConversionPayload = {
   hero_type?: string;
   hero_headline?: string;
@@ -76,6 +78,42 @@ function heroTone(heroType: string | undefined) {
   if (heroType === "savings") return "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/30";
   if (heroType === "risk") return "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/30";
   return "bg-accent/30 border-border";
+}
+
+type SectionStatusType = "found" | "partial" | "missing";
+
+function sectionStatus(values: unknown[]): SectionStatusType {
+  const present = values.filter((v) => v != null && v !== "" && v !== false);
+  if (present.length === 0) return "missing";
+  if (present.length === values.length) return "found";
+  return "partial";
+}
+
+function StatusIcon({ status }: { status: SectionStatusType }) {
+  if (status === "found") return <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />;
+  if (status === "partial") return <AlertCircle size={12} className="text-amber-500 shrink-0" />;
+  return <Circle size={12} className="text-muted-foreground shrink-0" />;
+}
+
+function DataRow({ label, value, icon: Icon }: { label: string; value: string | number | null | undefined; icon: any }) {
+  if (value == null || value === "") return null;
+  return (
+    <div className="flex items-center gap-2 py-0.5">
+      <Icon size={11} className="text-muted-foreground shrink-0" />
+      <span className="text-[10px] text-muted-foreground">{label}</span>
+      <span className="text-[10px] font-medium text-foreground ml-auto text-right max-w-[60%] truncate">{String(value)}</span>
+    </div>
+  );
+}
+
+function MissingPrompt({ title, description, uploadHint }: { title: string; description: string; uploadHint?: string }) {
+  return (
+    <div className="border border-dashed rounded-lg p-3 bg-accent/10 space-y-1">
+      <p className="text-[11px] font-semibold text-foreground">{title}</p>
+      <p className="text-[10px] text-muted-foreground leading-relaxed">{description}</p>
+      {uploadHint && <p className="text-[10px] text-muted-foreground/70 italic">{uploadHint}</p>}
+    </div>
+  );
 }
 
 const SectionHeader = ({ icon: Icon, title, badge }: { icon: any; title: string; badge?: React.ReactNode }) => (
@@ -241,7 +279,461 @@ function KeyInsights({ insights }: { insights: AdvisoryInsight[] }) {
   );
 }
 
-function SignalCards({ title, items, tone }: { title: string; items: SignalCard[]; tone: "good" | "check" }) {
+function clipText(value: string, max = 72) {
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (!trimmed) return "";
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1).trimEnd()}…`;
+}
+
+function buildManualReviewSignals(analysis: ItineraryAnalysis | null, files: File[]) {
+  const signals: string[] = [];
+  const destination = [analysis?.destination_city, analysis?.destination_country].filter(Boolean).join(", ");
+
+  if (destination) signals.push(`Destination clue: ${destination}`);
+  if (analysis?.duration_nights || analysis?.duration_days) {
+    signals.push(`Duration clue: ${analysis.duration_nights ?? "?"}N / ${analysis.duration_days ?? "?"}D`);
+  }
+  if ((analysis?.hotel_names_json ?? []).length > 0) {
+    signals.push(`Stay clue: ${(analysis?.hotel_names_json ?? []).slice(0, 2).join(", ")}`);
+  }
+  if ((analysis?.airline_names_json ?? []).length > 0 || (analysis?.sectors_json ?? []).length > 0) {
+    const flightHint = [
+      ...(analysis?.airline_names_json ?? []).slice(0, 1),
+      ...(analysis?.sectors_json ?? []).slice(0, 1),
+    ].filter(Boolean).join(" · ");
+    if (flightHint) signals.push(`Flight clue: ${flightHint}`);
+  }
+  if (analysis?.total_price != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.total_price).toLocaleString("en-IN")}`);
+  } else if (analysis?.price_per_person != null) {
+    signals.push(`Price clue: ${analysis.currency ?? "INR"} ${Number(analysis.price_per_person).toLocaleString("en-IN")} per person`);
+  }
+  if (analysis?.inclusions_text) {
+    signals.push(`Visible in plan: ${clipText(analysis.inclusions_text)}`);
+  } else if ((analysis?.extracted_snippets_json ?? []).length > 0) {
+    const snippet = (analysis?.extracted_snippets_json ?? []).find((item) => typeof item === "string" && item.trim().length > 0);
+    if (snippet) signals.push(`Visible in plan: ${clipText(String(snippet))}`);
+  }
+
+  if (signals.length === 0 && files.length > 0) {
+    signals.push(files.length > 1 ? `${files.length} trip documents received` : "Trip document received");
+  }
+
+  return signals.slice(0, 4);
+}
+
+type QuoteReviewRecoveryMode = "manual" | "partial" | "full";
+
+type QuoteReviewRecoveryState = {
+  mode: QuoteReviewRecoveryMode;
+  signals: string[];
+  questions: TravelerQuestion[];
+};
+
+function buildPartialReadableQuestions(analysis: ItineraryAnalysis): TravelerQuestion[] {
+  const hasDestination = !!(analysis.destination_city || analysis.destination_country);
+  const hasTravelDate = !!(analysis.travel_start_date || analysis.travel_end_date);
+  const hasDuration = !!(analysis.duration_nights || analysis.duration_days);
+  const hasPrice = analysis.total_price != null || analysis.price_per_person != null;
+  const hasTravellerMix = !!(
+    analysis.traveller_count_total ||
+    analysis.adults_count ||
+    analysis.children_count ||
+    analysis.infants_count
+  );
+  const hasFlightClue = !!(
+    analysis.flight_departure_time ||
+    analysis.flight_arrival_time ||
+    (analysis.airline_names_json ?? []).length > 0 ||
+    (analysis.sectors_json ?? []).length > 0
+  );
+  const hasHotelClue = !!(
+    analysis.hotel_check_in ||
+    analysis.hotel_check_out ||
+    (analysis.hotel_names_json ?? []).length > 0
+  );
+  const hasActivityClue = !!(
+    analysis.inclusions_text ||
+    (analysis.extracted_snippets_json ?? []).length > 0
+  );
+
+  const questions: TravelerQuestion[] = [];
+  const pushQuestion = (question: TravelerQuestion) => {
+    if (questions.some((existing) => existing.code === question.code)) return;
+    questions.push(question);
+  };
+
+  if (!hasTravelDate) {
+    pushQuestion({
+      code: "travel_month",
+      question: hasDuration
+        ? "Which month are you hoping to travel?"
+        : "When are you roughly hoping to travel?",
+      why: "That changes flight timing, hotel pricing, and whether this quote still fits well.",
+      priority: "high",
+    });
+  }
+
+  if (!hasTravellerMix) {
+    pushQuestion({
+      code: "traveller_mix",
+      question: "Is this for a couple, family, or group trip?",
+      why: "That helps us judge whether the stay, activities, and budget still make sense.",
+      priority: "high",
+    });
+  }
+
+  if (!hasFlightClue && (hasDestination || hasDuration || hasActivityClue)) {
+    pushQuestion({
+      code: "flights_booked",
+      question: "Are your flights already booked, or should we include them in the review?",
+      why: "That changes the real trip cost and what we should optimise first.",
+      priority: "high",
+    });
+  }
+
+  if ((!hasHotelClue || !hasPrice) && (hasDestination || hasActivityClue || hasDuration)) {
+    pushQuestion({
+      code: "budget_vs_resort",
+      question: "Should we optimise this more for better resort quality or keeping the budget tighter?",
+      why: "That tells us whether to sharpen the stay or protect the overall spend.",
+      priority: "medium",
+    });
+  }
+
+  if (!hasDestination && (hasFlightClue || hasActivityClue)) {
+    pushQuestion({
+      code: "destination_fixed",
+      question: "Is this destination fixed, or are you comparing a few similar options?",
+      why: "That helps us decide whether to review this plan as-is or shape a better-fit option.",
+      priority: "medium",
+    });
+  }
+
+  if (questions.length === 0) {
+    pushQuestion({
+      code: "priority_focus",
+      question: hasPrice
+        ? "What matters more here: keeping the cost tighter or improving the stay?"
+        : "What should we sharpen first: timing, stay quality, or budget fit?",
+      why: "One clear preference is enough for us to take the next useful step.",
+      priority: "medium",
+    });
+  }
+
+  return questions.slice(0, 2);
+}
+
+function buildQuoteReviewRecoveryState(
+  analysis: ItineraryAnalysis | null,
+  files: File[],
+): QuoteReviewRecoveryState {
+  const signals = buildManualReviewSignals(analysis, files);
+
+  if (!analysis) {
+    return {
+      mode: "manual",
+      signals,
+      questions: [],
+    };
+  }
+
+  const hasDestination = !!(analysis.destination_city || analysis.destination_country);
+  const hasTravelDate = !!(analysis.travel_start_date || analysis.travel_end_date);
+  const hasDuration = !!(analysis.duration_nights || analysis.duration_days);
+  const hasPrice = analysis.total_price != null || analysis.price_per_person != null;
+  const hasFlightClue = !!(
+    analysis.flight_departure_time ||
+    analysis.flight_arrival_time ||
+    (analysis.airline_names_json ?? []).length > 0 ||
+    (analysis.sectors_json ?? []).length > 0
+  );
+  const hasHotelClue = !!(
+    analysis.hotel_check_in ||
+    analysis.hotel_check_out ||
+    (analysis.hotel_names_json ?? []).length > 0
+  );
+  const hasTravellerMix = !!(
+    analysis.traveller_count_total ||
+    analysis.adults_count ||
+    analysis.children_count ||
+    analysis.infants_count
+  );
+  const hasActivityClue = !!(
+    analysis.inclusions_text ||
+    (analysis.extracted_snippets_json ?? []).length > 0
+  );
+
+  const strongAnchorCount = [
+    hasDestination,
+    hasTravelDate,
+    hasPrice,
+    hasFlightClue,
+    hasHotelClue,
+  ].filter(Boolean).length;
+
+  const contextScore = [
+    hasDestination ? 2 : 0,
+    hasTravelDate ? 2 : 0,
+    !hasTravelDate && hasDuration ? 1 : 0,
+    hasPrice ? 2 : 0,
+    hasFlightClue ? 2 : 0,
+    hasHotelClue ? 2 : 0,
+    hasTravellerMix ? 1 : 0,
+    hasActivityClue ? 1 : 0,
+  ].reduce((sum, value) => sum + value, 0);
+
+  const questions = buildPartialReadableQuestions(analysis);
+
+  if (
+    analysis.extracted_completeness_score >= 60 ||
+    strongAnchorCount >= 3 ||
+    (hasDestination && (hasTravelDate || hasDuration) && (hasPrice || hasFlightClue || hasHotelClue))
+  ) {
+    return {
+      mode: "full",
+      signals,
+      questions,
+    };
+  }
+
+  if ((contextScore >= 3 || signals.length >= 2) && questions.length > 0) {
+    return {
+      mode: "partial",
+      signals,
+      questions,
+    };
+  }
+
+  return {
+    mode: "manual",
+    signals,
+    questions: [],
+  };
+}
+
+function ManualReviewFallback({
+  signals,
+  onUnlock,
+  onReset,
+}: {
+  signals: string[];
+  onUnlock: () => void;
+  onReset: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 sm:p-5 space-y-3.5"
+    >
+      <div className="rounded-xl border bg-accent/20 p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Phone size={18} className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">We understood you're planning a trip</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Our automatic review could not fully identify all the trip details from this file or format. Share your mobile number and our team will review it and continue with you on WhatsApp or call.
+            </p>
+          </div>
+        </div>
+
+        {signals.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">What we could still pick up</p>
+            <div className="flex flex-wrap gap-1.5">
+              {signals.map((signal) => (
+                <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+                  {signal}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+          <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+            <Phone size={13} /> Continue with our team
+          </Button>
+          <Button variant="outline" size="sm" onClick={onReset}>
+            Try with different details
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function PartialReadableRecovery({
+  files,
+  signals,
+  questions,
+  onUnlock,
+  onReset,
+  addFileRef,
+  additionalFiles,
+  setAdditionalFiles,
+  isReanalyzing,
+  submitAdditional,
+}: {
+  files: File[];
+  signals: string[];
+  questions: TravelerQuestion[];
+  onUnlock: () => void;
+  onReset: () => void;
+  addFileRef: React.RefObject<HTMLInputElement>;
+  additionalFiles: File[];
+  setAdditionalFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  isReanalyzing?: boolean;
+  submitAdditional: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-4 sm:p-5 space-y-3.5"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles size={15} className="text-primary" />
+          <span className="text-xs font-bold text-foreground uppercase tracking-wider">Quote Review</span>
+          <Pill className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            Partial read
+          </Pill>
+        </div>
+        <button onClick={onReset} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline">
+          Start over
+        </button>
+      </div>
+
+      <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
+        <FileText size={13} className="text-muted-foreground shrink-0" />
+        <span className="text-[11px] text-foreground font-medium truncate">
+          {files.length > 1 ? `${files.length} trip details reviewed` : "We could already read part of your travel quote"}
+        </span>
+      </div>
+
+      <div className="rounded-xl border bg-primary/5 p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Eye size={18} className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">Here’s what we already understood</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              We picked up enough trip context to sharpen this review. One more useful detail can help us make the next read much smarter.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          {signals.map((signal) => (
+            <span key={signal} className="rounded-full border bg-background px-2.5 py-1 text-[10px] text-foreground">
+              {signal}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+        className="border rounded-xl p-3.5 space-y-2">
+        <SectionHeader
+          icon={MessageCircle}
+          title={questions.length > 1 ? "Two quick things to sharpen this" : "One quick thing to sharpen this"}
+        />
+        <div className="space-y-1.5">
+          {questions.map((question, index) => (
+            <div key={question.code ?? index} className="flex items-start gap-2 py-0.5">
+              <ChevronRight size={11} className="text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] text-foreground leading-relaxed">{question.question}</p>
+                {question.why && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{question.why}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="border border-dashed rounded-xl p-3.5 space-y-2">
+        <p className="text-[11px] font-semibold text-foreground">Sharpen this review with one more detail</p>
+        <p className="text-[10px] text-muted-foreground leading-relaxed">
+          Add one more screenshot, quote page, or itinerary detail if you have it. Or skip this and let our team continue with you on WhatsApp or call.
+        </p>
+
+        {additionalFiles.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {additionalFiles.map((file, index) => (
+              <SmallFileThumb
+                key={`${file.name}-${index}`}
+                file={file}
+                onRemove={() => setAdditionalFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" size="sm" className="gap-1 text-xs flex-1" onClick={() => addFileRef.current?.click()}>
+            <Upload size={12} /> Add one more trip detail
+          </Button>
+          {additionalFiles.length > 0 && (
+            <Button size="sm" className="gap-1 text-xs" onClick={submitAdditional} disabled={isReanalyzing}>
+              {isReanalyzing ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+              Re-analyze
+            </Button>
+          )}
+        </div>
+
+        <input
+          ref={addFileRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          multiple
+          onChange={(event) => {
+            const selected = Array.from(event.target.files ?? []);
+            if (selected.length > 0) setAdditionalFiles((prev) => [...prev, ...selected].slice(0, 5));
+            if (addFileRef.current) addFileRef.current.value = "";
+          }}
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+        <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+          <Phone size={13} /> Skip this and continue with our team
+        </Button>
+        <Button variant="outline" size="sm" onClick={onReset}>
+          Try with different details
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+/** Small file thumbnail for add-more section */
+function SmallFileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const isImage = /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+  return (
+    <div className="relative flex items-center gap-1.5 bg-muted rounded px-2 py-1 pr-6 min-w-0">
+      {isImage ? <ImageIcon size={11} className="text-muted-foreground shrink-0" /> : <FileText size={11} className="text-muted-foreground shrink-0" />}
+      <span className="text-[10px] text-foreground truncate max-w-[100px]">{file.name}</span>
+      <button
+        onClick={(e) => { e.preventDefault(); onRemove(); }}
+        className="absolute right-0.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full hover:bg-destructive/20 flex items-center justify-center"
+        aria-label="Remove"
+      >
+        <X size={8} className="text-muted-foreground" />
+      </button>
+    </div>
+  );
+}
+
+function SignalCards({ title, items, tone }: { title: string; items: TravelerSignalCard[]; tone: "good" | "check" }) {
   if (items.length === 0) return null;
   const toneClasses = tone === "good"
     ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-800/30"
@@ -260,7 +752,7 @@ function SignalCards({ title, items, tone }: { title: string; items: SignalCard[
   );
 }
 
-function TravelerQuestions({ questions }: { questions: string[] }) {
+function TravelerQuestions({ questions }: { questions: TravelerQuestion[] }) {
   if (!questions || questions.length === 0) return null;
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -268,9 +760,14 @@ function TravelerQuestions({ questions }: { questions: string[] }) {
       <SectionHeader icon={MessageCircle} title="Ask Before Booking" />
       <div className="space-y-1.5">
         {questions.map((question, index) => (
-          <div key={index} className="flex items-start gap-2 py-0.5">
+          <div key={question.code ?? index} className="flex items-start gap-2 py-0.5">
             <ChevronRight size={11} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] text-foreground leading-relaxed">{question}</p>
+            <div>
+              <p className="text-[11px] text-foreground leading-relaxed">{question.question}</p>
+              {question.why && (
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{question.why}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -278,7 +775,7 @@ function TravelerQuestions({ questions }: { questions: string[] }) {
   );
 }
 
-function OptionalPromptCard({ prompt, inspiration }: { prompt: OptionalPrompt | null; inspiration: Record<string, unknown> }) {
+function OptionalPromptCard({ prompt, inspiration }: { prompt: TravelerOptionalPrompt | null; inspiration: Record<string, unknown> }) {
   if (!prompt && !inspiration.prompt) return null;
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.23 }}
@@ -443,6 +940,7 @@ export default function TravelerAnalysisResults({
   isReanalyzing,
 }: Props) {
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+  const [addMoreExpanded, setAddMoreExpanded] = useState(false);
   const addFileRef = useRef<HTMLInputElement>(null);
 
   const submitAdditional = () => {
@@ -451,55 +949,59 @@ export default function TravelerAnalysisResults({
     setAdditionalFiles([]);
   };
 
-  if (!a) {
+  const handleAddFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(event.target.files ?? []);
+    if (selected.length > 0) setAdditionalFiles((prev) => [...prev, ...selected].slice(0, 5));
+    if (addFileRef.current) addFileRef.current.value = "";
+  };
+
+  const recoveryState = buildQuoteReviewRecoveryState(a, files);
+
+  if (recoveryState.mode === "manual") {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          Try sharing clearer screenshots or a PDF itinerary from your travel agent.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <ManualReviewFallback
+        signals={recoveryState.signals}
+        onUnlock={onUnlock}
+        onReset={onReset}
+      />
     );
   }
 
   const score = a.extracted_completeness_score ?? 0;
   const insights = (a.advisory_insights_json ?? []) as AdvisoryInsight[];
-  const questions = (a.traveler_questions_json ?? []) as string[];
+  const questions = (a.traveler_questions_json ?? []) as TravelerQuestion[];
   const nextInputs = (a.next_inputs_needed_json ?? []) as NextInput[];
   const modules = (a.unlockable_modules_json ?? []) as UnlockableModule[];
-  const hasAnyContent = !!(a.destination_city || a.total_price || a.travel_start_date);
 
-  const travelerOutput = asObject(a.traveler_output_json);
-  const customerConversion = {
-    ...asObject(a.customer_conversion_json),
-    ...asObject(travelerOutput.customer_conversion),
-  } as CustomerConversionPayload;
-  const painSignals = (asArray<SignalCard>(travelerOutput.pain_signals).length > 0
-    ? asArray<SignalCard>(travelerOutput.pain_signals)
-    : asArray<SignalCard>(a.pain_signals_json)).slice(0, 3);
-  const pleasureSignals = (asArray<SignalCard>(travelerOutput.pleasure_signals).length > 0
-    ? asArray<SignalCard>(travelerOutput.pleasure_signals)
-    : asArray<SignalCard>(a.pleasure_signals_json)).slice(0, 3);
-  const optionalPrompt = (asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts).length > 0
-    ? asArray<OptionalPrompt>(travelerOutput.optional_missing_prompts)
-    : asArray<OptionalPrompt>(a.optional_missing_prompts_json))[0] ?? null;
-  const inspirationCapture = {
-    ...asObject(a.inspiration_capture_json),
-    ...asObject(travelerOutput.inspiration_capture),
-  };
+  const customerConversion = asObject(a.customer_conversion_json) as CustomerConversionPayload;
+  const optionalPrompt = (a.optional_missing_prompts_json ?? [])[0] ?? null;
+  const inspirationCapture = asObject(a.inspiration_capture_json);
+  const destination = [a.destination_city, a.destination_country].filter(Boolean).join(", ");
 
-  if (!hasAnyContent) {
+  const priceStatus = sectionStatus([a?.total_price, a?.price_per_person]);
+  const flightStatus = sectionStatus([a?.flight_departure_time, a?.flight_arrival_time, ...(a?.airline_names_json ?? []), ...(a?.sectors_json ?? [])]);
+  const hotelStatus = sectionStatus([a?.hotel_check_in, a?.hotel_check_out, ...(a?.hotel_names_json ?? [])]);
+  const tripStatus = sectionStatus([destination, a?.travel_start_date, a?.traveller_count_total, a?.duration_nights, a?.duration_days]);
+  const confidence = a?.parsing_confidence ?? "low";
+  const isLowConfidence = confidence === "low";
+
+  const anyFound = priceStatus !== "missing" || flightStatus !== "missing" || hotelStatus !== "missing" || tripStatus !== "missing";
+  const allMissing = !anyFound && isLowConfidence;
+
+  if (recoveryState.mode === "partial") {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 text-center py-10 space-y-3">
-        <AlertTriangle size={28} className="mx-auto text-amber-500" />
-        <p className="text-sm font-medium text-foreground">We couldn't read your trip details</p>
-        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-          The items you shared may not contain recognisable travel information.
-        </p>
-        <Button variant="outline" size="sm" onClick={onReset}>Try with different details</Button>
-      </motion.div>
+      <PartialReadableRecovery
+        files={files}
+        signals={recoveryState.signals}
+        questions={recoveryState.questions}
+        onUnlock={onUnlock}
+        onReset={onReset}
+        addFileRef={addFileRef}
+        additionalFiles={additionalFiles}
+        setAdditionalFiles={setAdditionalFiles}
+        isReanalyzing={isReanalyzing}
+        submitAdditional={submitAdditional}
+      />
     );
   }
 
@@ -536,10 +1038,14 @@ export default function TravelerAnalysisResults({
       {a.advisory_summary && <OurRead summary={a.advisory_summary} />}
       <KeyInsights insights={insights} />
 
-      <div className="grid lg:grid-cols-2 gap-3">
-        <SignalCards title="What Looks Good" items={pleasureSignals} tone="good" />
-        <SignalCards title="Worth Checking" items={painSignals} tone="check" />
-      </div>
+      {/* All missing / weakly-structured — graceful manual fallback */}
+      {allMissing && (
+        <ManualReviewFallback
+          signals={recoveryState.signals}
+          onUnlock={onUnlock}
+          onReset={onReset}
+        />
+      )}
 
       <TravelerQuestions questions={questions} />
       <OptionalPromptCard prompt={optionalPrompt} inspiration={inspirationCapture} />
@@ -585,9 +1091,166 @@ export default function TravelerAnalysisResults({
         </div>
       </div>
 
-      {(a.extraction_warnings_json ?? []).length > 0 && (
+      {/* ── Section: Flights ── */}
+      {flightStatus !== "missing" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="border rounded-lg p-3 space-y-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            <StatusIcon status={flightStatus} />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Flights</span>
+          </div>
+          <DataRow label="Departure" value={a?.flight_departure_time} icon={Plane} />
+          <DataRow label="Arrival" value={a?.flight_arrival_time} icon={Plane} />
+          {(a?.airline_names_json ?? []).length > 0 && (
+            <DataRow label="Airlines" value={(a?.airline_names_json ?? []).join(", ")} icon={Plane} />
+          )}
+          {(a?.sectors_json ?? []).length > 0 && (
+            <DataRow label="Sectors" value={(a?.sectors_json ?? []).join(", ")} icon={Plane} />
+          )}
+        </motion.div>
+      )}
+
+      {/* ── Section: Hotels ── */}
+      {hotelStatus !== "missing" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="border rounded-lg p-3 space-y-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            <StatusIcon status={hotelStatus} />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hotels</span>
+          </div>
+          {(a?.hotel_names_json ?? []).length > 0 && (
+            <DataRow label="Hotels" value={(a?.hotel_names_json ?? []).join(", ")} icon={Building2} />
+          )}
+          <DataRow label="Check-in" value={a?.hotel_check_in} icon={Calendar} />
+          <DataRow label="Check-out" value={a?.hotel_check_out} icon={Calendar} />
+        </motion.div>
+      )}
+
+      {/* ── Missing section prompts ── */}
+      {priceStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Price not detected"
+          description="Upload a screenshot showing the trip price to unlock savings estimate and EMI options."
+          uploadHint="Tip: A screenshot of the price summary page works best"
+        />
+      )}
+      {flightStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Flight details missing"
+          description="Add a screenshot of your flight booking or itinerary to see departure/arrival times."
+          uploadHint="Tip: Share the flight confirmation or booking screenshot"
+        />
+      )}
+      {hotelStatus === "missing" && anyFound && (
+        <MissingPrompt
+          title="Hotel details missing"
+          description="Upload hotel booking screenshots to complete your trip timeline."
+          uploadHint="Tip: Share hotel confirmation emails or OTA booking screenshots"
+        />
+      )}
+
+      {/* ── Add More Screenshots ── */}
+      {anyFound && (
+        <div className="border border-dashed rounded-lg p-3">
+          {!addMoreExpanded ? (
+            <button
+              onClick={() => setAddMoreExpanded(true)}
+              className="w-full flex items-center justify-center gap-2 py-1.5 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <Plus size={13} /> Add more screenshots to improve results
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Add More Files</p>
+              {additionalFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {additionalFiles.map((f, i) => (
+                    <SmallFileThumb
+                      key={`${f.name}-${i}`}
+                      file={f}
+                      onRemove={() => setAdditionalFiles(prev => prev.filter((_, j) => j !== i))}
+                    />
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs flex-1"
+                  onClick={() => addFileRef.current?.click()}
+                >
+                  <ImageIcon size={12} /> Choose files
+                </Button>
+                {additionalFiles.length > 0 && (
+                  <Button
+                    size="sm"
+                    className="gap-1 text-xs"
+                    onClick={submitAdditional}
+                    disabled={isReanalyzing}
+                  >
+                    {isReanalyzing ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+                    Re-analyze
+                  </Button>
+                )}
+              </div>
+              <input
+                ref={addFileRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.png,.jpg,.jpeg"
+                multiple
+                onChange={handleAddFiles}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Unlock CTA ── */}
+      <div className="space-y-2 pt-1">
+        {anyFound && (
+          <>
+            <div className="relative rounded-xl overflow-hidden">
+              <div className="space-y-1.5 select-none p-3" style={{ filter: "blur(4px)" }} aria-hidden>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+                  <Shield size={13} className="text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-foreground">Exact savings amount and EMI breakdown</p>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/40">
+                  <Wallet size={13} className="text-primary shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-foreground">Recommended travel protection with pricing</p>
+                </div>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/60 backdrop-blur-[2px] px-4">
+                <Lock size={16} className="text-primary mb-1.5" />
+                <p className="font-heading font-bold text-xs text-foreground mb-0.5 text-center">
+                  Unlock full review
+                </p>
+                <p className="text-[10px] text-muted-foreground mb-2 text-center max-w-[260px]">
+                  Verify your mobile to see exact savings, EMI options, and trip recommendations
+                </p>
+                <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+                  <Phone size={13} /> Unlock full review
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {allMissing && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button size="sm" className="gap-1.5" onClick={onUnlock}>
+              <Phone size={13} /> Continue with our team
+            </Button>
+            <Button variant="outline" size="sm" onClick={onReset}>
+              Upload different files
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {asArray<string>(a.extraction_warnings_json).length > 0 && (
         <div className="space-y-0.5 px-1 pt-1">
-          {(a.extraction_warnings_json as string[]).map((warning, index) => (
+          {asArray<string>(a.extraction_warnings_json).map((warning, index) => (
             <p key={index} className="text-[10px] text-amber-600 italic">⚠️ {warning}</p>
           ))}
         </div>

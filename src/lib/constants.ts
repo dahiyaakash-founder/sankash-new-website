@@ -18,6 +18,9 @@ export const SANKASH_INSURANCE_DOCS_URL = "https://docs.sankash.in/docs/travel-i
 /** Payments docs fallback until a dedicated payments section is published */
 export const SANKASH_PAYMENTS_DOCS_URL = "https://docs.sankash.in/docs/intro";
 
+/** Internal docs anchor used by the live Developers page until the external docs host is reliable */
+export const SANKASH_DEVELOPERS_DOCS_URL = "/developers#developer-docs";
+
 /** Agent platform login */
 export const AGENT_LOGIN_URL = "https://app.sankash.in/agent/auth/login";
 

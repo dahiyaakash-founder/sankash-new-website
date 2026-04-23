@@ -44,6 +44,31 @@ export interface TeamMember {
   supervisor_id?: string | null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeLeadDedupResponse(result: unknown, lead: LeadInsert): { lead: LeadRow; isDuplicate: boolean } {
+  if (!isRecord(result)) {
+    throw new Error("Lead submission returned an unexpected response.");
+  }
+
+  const backendError = typeof result.error === "string" ? result.error.trim() : "";
+  if (backendError) {
+    throw new Error(backendError);
+  }
+
+  const leadId = typeof result.id === "string" ? result.id.trim() : "";
+  if (!leadId) {
+    throw new Error("Lead submission did not return a lead id.");
+  }
+
+  return {
+    lead: { ...lead, id: leadId, assigned_to: (typeof result.assigned_to === "string" ? result.assigned_to : null) ?? lead.assigned_to ?? null } as LeadRow,
+    isDuplicate: result.is_duplicate === true,
+  };
+}
+
 async function triggerTripIntelligenceRefresh(leadId: string, reason: string) {
   try {
     await supabase.functions.invoke("refresh-trip-intelligence", {
@@ -154,17 +179,7 @@ export async function createLeadWithDedup(lead: LeadInsert): Promise<{ lead: Lea
 
   if (error) throw error;
 
-  const result = data as any;
-
-  // Backend validation can return an error field instead of throwing
-  if (result?.error) {
-    throw new Error(result.error);
-  }
-
-  return {
-    lead: { ...lead, id: result.id, assigned_to: result.assigned_to ?? lead.assigned_to ?? null } as LeadRow,
-    isDuplicate: result.is_duplicate === true,
-  };
+  return normalizeLeadDedupResponse(data, lead);
 }
 
 /** Fetch leads with optional filters, search, sort, pagination */
@@ -177,6 +192,12 @@ export async function fetchLeads(opts: {
   assignedTo?: string;
   unassigned?: boolean;
   overdueFollowUp?: boolean;
+  onlyAnonymous?: boolean;
+  excludeAnonymous?: boolean;
+  /** @deprecated use onlyAnonymous instead */
+  onlyAnonymousTraveler?: boolean;
+  /** @deprecated use excludeAnonymous instead */
+  excludeAnonymousTraveler?: boolean;
   page?: number;
   pageSize?: number;
   sortBy?: string;
@@ -184,7 +205,19 @@ export async function fetchLeads(opts: {
 }) {
   const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
 
+  // Resolve new broad flags, falling back to legacy traveler-only flags
+  const onlyAnon = opts.onlyAnonymous ?? opts.onlyAnonymousTraveler ?? false;
+  const excludeAnon = opts.excludeAnonymous ?? opts.excludeAnonymousTraveler ?? false;
+
   let query = supabase.from("leads").select("*", { count: "exact" });
+
+  // Anonymous = no email AND no mobile number (any audience/source)
+  if (onlyAnon) {
+    query = query.is("email", null).is("mobile_number", null);
+  } else if (excludeAnon) {
+    // At least one contact method present
+    query = query.or("email.not.is.null,mobile_number.not.is.null");
+  }
 
   if (search) {
     query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,company_name.ilike.%${search}%,mobile_number.ilike.%${search}%`);

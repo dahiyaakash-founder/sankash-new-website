@@ -217,7 +217,7 @@ async function processLeadJob(supabaseAdmin: any, leadId: string) {
       intent,
       multi,
       recommendations,
-      sourceLikelihood,
+      sourceLikelihood as unknown as Record<string, unknown>,
       brain.outcome_learning_summary_json ?? ops?.outcome_learning_summary_json ?? {},
     );
 

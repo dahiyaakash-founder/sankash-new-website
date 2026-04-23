@@ -13,9 +13,11 @@ type PageVisit = {
 type IntentMarker =
   | "viewed_emi_section"
   | "opened_upload_section"
+  | "opened_build_trip_section"
   | "started_quote_upload"
   | "added_more_files"
-  | "submitted_contact_details";
+  | "submitted_contact_details"
+  | "submitted_build_trip_brief";
 
 interface TravelerIntentSessionState {
   version: string;
@@ -30,9 +32,11 @@ interface TravelerIntentSessionState {
   viewed_emi_page: boolean;
   viewed_emi_section: boolean;
   opened_upload_section: boolean;
+  opened_build_trip_section: boolean;
   quote_upload_count: number;
   add_more_upload_count: number;
   contact_submit_count: number;
+  build_trip_submit_count: number;
   upload_started_at: string | null;
   latest_upload_started_at: string | null;
   latest_contact_submitted_at: string | null;
@@ -47,7 +51,7 @@ interface TravelerIntentSessionState {
 }
 
 interface IntentSnapshotContext {
-  context: "initial_upload" | "add_more_files" | "contact_capture";
+  context: "initial_upload" | "add_more_files" | "contact_capture" | "build_trip_brief";
   file_count?: number;
   current_lead_id?: string | null;
 }
@@ -107,9 +111,11 @@ function defaultState(): TravelerIntentSessionState {
     viewed_emi_page: false,
     viewed_emi_section: false,
     opened_upload_section: false,
+    opened_build_trip_section: false,
     quote_upload_count: 0,
     add_more_upload_count: 0,
     contact_submit_count: 0,
+    build_trip_submit_count: 0,
     upload_started_at: null,
     latest_upload_started_at: null,
     latest_contact_submitted_at: null,
@@ -191,6 +197,7 @@ export function markTravelerIntentSignal(marker: IntentMarker) {
 
   if (marker === "viewed_emi_section") state.viewed_emi_section = true;
   if (marker === "opened_upload_section") state.opened_upload_section = true;
+  if (marker === "opened_build_trip_section") state.opened_build_trip_section = true;
   if (marker === "started_quote_upload") {
     state.quote_upload_count += 1;
     state.upload_started_at = state.upload_started_at ?? now;
@@ -203,6 +210,9 @@ export function markTravelerIntentSignal(marker: IntentMarker) {
   if (marker === "submitted_contact_details") {
     state.contact_submit_count += 1;
     state.latest_contact_submitted_at = now;
+  }
+  if (marker === "submitted_build_trip_brief") {
+    state.build_trip_submit_count += 1;
   }
 
   state.last_seen_at = now;

@@ -28,6 +28,7 @@ import {
 } from "@/lib/upload-validation";
 import { trackTravelerQuoteUpload, trackTravelerUnlockSubmit, trackQuoteAnalysisRequested } from "@/lib/analytics";
 import { buildTravelerIntentSnapshot, markTravelerIntentSignal } from "@/lib/traveler-intent-session";
+import { captureTravelerContact } from "@/lib/traveler-contact-service";
 
 import {
   Dialog,
@@ -127,7 +128,7 @@ function FileThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
         className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/10 hover:bg-destructive/20 flex items-center justify-center transition-colors"
-        aria-label="Remove file"
+        aria-label="Remove"
       >
         <X size={10} className="text-muted-foreground" />
       </button>
@@ -231,6 +232,7 @@ const TravelerQuoteUploader = () => {
       });
 
       if (!lead?.id) throw new Error("Lead creation failed");
+      setCurrentLeadId(lead.id);
 
       // Upload all files as attachments and collect URLs
       setAnalysisProgress("Organising your holiday details…");
@@ -269,12 +271,11 @@ const TravelerQuoteUploader = () => {
 
       // Determine confidence from analysis result or default to medium
       setAnalysisResult(analysis);
-      setCurrentLeadId(lead.id);
       setStage("results");
     } catch (err) {
       console.error("Upload/analysis error:", err);
-      setErrorTitle("Something went wrong");
-      setErrorBody("We couldn't review your trip details. Please try again.");
+      setErrorTitle("We couldn't complete the automatic review");
+      setErrorBody("Your trip details may still be usable. Share your mobile number and our team will continue the review with you on WhatsApp or call.");
       setErrorType(null);
       setStage("error");
     }
@@ -383,25 +384,19 @@ const TravelerQuoteUploader = () => {
       const { createLeadWithDedup, uploadQuoteFile } = await import("@/lib/leads-service");
       const { uploadLeadAttachment } = await import("@/lib/attachments-service");
       const { logLeadCreated } = await import("@/lib/activity-service");
-      const { supabase } = await import("@/integrations/supabase/client");
 
       if (currentLeadId) {
-        const { data, error } = await supabase.functions.invoke("capture-traveler-contact", {
-          body: {
-            lead_id: currentLeadId,
-            full_name: leadName.trim(),
-            mobile_number: phoneValidation.normalized,
-            email: leadEmail.trim() || null,
-            intent_snapshot: buildTravelerIntentSnapshot({
-              context: "contact_capture",
-              current_lead_id: currentLeadId,
-              file_count: files.length,
-            }),
-          },
+        await captureTravelerContact({
+          lead_id: currentLeadId,
+          full_name: leadName.trim(),
+          mobile_number: phoneValidation.normalized,
+          email: leadEmail.trim() || null,
+          intent_snapshot: buildTravelerIntentSnapshot({
+            context: "contact_capture",
+            current_lead_id: currentLeadId,
+            file_count: files.length,
+          }),
         });
-
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
 
         trackTravelerUnlockSubmit({});
         setLeadSubmitted(true);
@@ -637,7 +632,12 @@ const TravelerQuoteUploader = () => {
                     </p>
                   </div>
                 )}
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                  {files.length > 0 && (
+                    <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
+                      <Phone size={13} /> Continue with our team
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={reset}>
                     Try again
                   </Button>
@@ -694,12 +694,12 @@ const TravelerQuoteUploader = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading">
-              {leadSubmitted ? "Review request received" : "Unlock your full review"}
+              {leadSubmitted ? "Review request received" : "Continue your trip review"}
             </DialogTitle>
             <DialogDescription>
               {leadSubmitted
-                ? "Your details have been submitted successfully. We will process your detailed review and share exact savings, EMI options, and next steps."
-                : "Enter your details to unlock exact savings, EMI options, and a more detailed review of this holiday quote."}
+                ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
+                : "Share your mobile number and our team will continue your trip review on WhatsApp or call. If the automatic review is ready, we'll include exact savings and EMI options too."}
             </DialogDescription>
           </DialogHeader>
           {leadSubmitted ? (
@@ -708,7 +708,7 @@ const TravelerQuoteUploader = () => {
                 <CheckCircle2 size={24} className="text-brand-green" />
               </div>
               <p className="text-sm text-foreground font-medium text-center">
-                Your detailed review request has been recorded.
+                Your trip review request has been recorded.
               </p>
               <Button variant="outline" size="sm" onClick={() => { setShowLeadForm(false); setLeadSubmitted(false); }}>
                 Close
@@ -730,9 +730,9 @@ const TravelerQuoteUploader = () => {
                 <Input type="email" placeholder="you@example.com" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} maxLength={255} />
               </div>
               {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
-              <p className="text-[11px] text-muted-foreground">We will verify your details and share your detailed review.</p>
+              <p className="text-[11px] text-muted-foreground">We will verify your details and continue the review with you on WhatsApp or call.</p>
               <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
-                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <>Unlock detailed review <ArrowRight size={14} /></>}
+                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <>Continue with my trip review <ArrowRight size={14} /></>}
               </Button>
             </form>
           )}
