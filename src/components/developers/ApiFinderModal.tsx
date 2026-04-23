@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Banknote, ShieldCheck, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
-import { SANKASH_DEVELOPERS_DOCS_URL } from "@/lib/constants";
+import {
+  SANKASH_DOCS_URL,
+  SANKASH_INSURANCE_DOCS_URL,
+  SANKASH_LENDING_DOCS_URL,
+  SANKASH_PAYMENTS_DOCS_URL,
+} from "@/lib/constants";
 
 const useCases = [
   { id: "emi", label: "Offer No Cost EMI", apis: ["Lending & Checkout API"], icon: Banknote },
@@ -10,6 +15,13 @@ const useCases = [
   { id: "payments", label: "Collect payments", apis: ["Payments API"], icon: CreditCard },
   { id: "multiple", label: "Multiple use cases", apis: ["Lending & Checkout API", "Travel Insurance API", "Payments API"], icon: CheckCircle2 },
 ] as const;
+
+const docsUrlByUseCase: Record<(typeof useCases)[number]["id"], string> = {
+  emi: SANKASH_LENDING_DOCS_URL,
+  insurance: SANKASH_INSURANCE_DOCS_URL,
+  payments: SANKASH_PAYMENTS_DOCS_URL,
+  multiple: SANKASH_DOCS_URL,
+};
 
 interface ApiFinderModalProps {
   open: boolean;
@@ -26,6 +38,7 @@ const ApiFinderModal = ({ open, onOpenChange, onOpenSandbox }: ApiFinderModalPro
   };
 
   const selectedCase = useCases.find((u) => u.id === selected);
+  const docsHref = selected ? docsUrlByUseCase[selected as keyof typeof docsUrlByUseCase] : SANKASH_DOCS_URL;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -68,7 +81,7 @@ const ApiFinderModal = ({ open, onOpenChange, onOpenSandbox }: ApiFinderModalPro
             </div>
             <div className="flex gap-2">
               <Button size="default" className="flex-1" asChild>
-                <a href={SANKASH_DEVELOPERS_DOCS_URL}>
+                <a href={docsHref} target="_blank" rel="noopener noreferrer">
                   View Docs <ExternalLink size={14} />
                 </a>
               </Button>

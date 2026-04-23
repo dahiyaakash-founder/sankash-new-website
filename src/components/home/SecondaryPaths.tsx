@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Code2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SANKASH_DOCS_URL } from "@/lib/constants";
 
 const SecondaryPaths = () => {
   return (
@@ -30,7 +31,7 @@ const SecondaryPaths = () => {
                 Integrate lending, insurance, and payments via API. Clean docs, sandbox access, and production-ready SDKs for OTAs, DMCs, and travel platforms.
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
-                <a href="https://docs.sankash.in" target="_blank" rel="noopener noreferrer">
+                <a href={SANKASH_DOCS_URL} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm" className="text-xs gap-1 border-primary/20 text-primary">
                     View Docs <ArrowRight size={12} />
                   </Button>
