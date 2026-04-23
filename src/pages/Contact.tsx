@@ -254,13 +254,7 @@ const Contact = () => {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {path.description}
                 </p>
-              {path.link ? (
-                  <Link to={path.link}>
-                    <Button variant="outline-primary" size="sm" className="gap-1.5 text-xs">
-                      {path.cta} <ExternalLink size={12} />
-                    </Button>
-                  </Link>
-              ) : (path as any).scrollTo ? (
+              {(path as any).scrollTo ? (
                   <Button
                     variant="outline-primary"
                     size="sm"
