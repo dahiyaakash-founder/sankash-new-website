@@ -445,8 +445,8 @@ const ItineraryUploader = () => {
             <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
               <FileText size={14} className="text-muted-foreground shrink-0" />
               <span className="text-xs text-foreground font-medium truncate">{fileName}</span>
-              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                Detected
+              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full ml-auto shrink-0">
+                Preview
               </span>
             </div>
 
@@ -456,7 +456,7 @@ const ItineraryUploader = () => {
                   This looks like a travel itinerary
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  We found travel signals and this itinerary may be eligible for EMI, protection, and payment collection options.
+                  We've spotted travel signals worth reviewing. Add your details to unlock the full commercial review for this itinerary.
                 </p>
               </div>
 
@@ -476,17 +476,22 @@ const ItineraryUploader = () => {
               </div>
             </div>
 
-              <div className="flex items-center gap-3 pt-1">
-              <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
-                Share details to unlock full review <ArrowRight size={14} />
-              </Button>
-              <Button variant="outline" size="sm" onClick={reset}>
-                Upload another file
-              </Button>
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2.5">
+              <p className="text-[11px] font-semibold text-primary uppercase tracking-wider">
+                Next step — required
+              </p>
+              <p className="text-xs text-foreground leading-relaxed">
+                Share your name and contact so this quote becomes a real review request you can act on.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
+                  Unlock full review <ArrowRight size={14} />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  Upload another file
+                </Button>
+              </div>
             </div>
-            <p className="text-[10px] text-muted-foreground/60 px-1">
-              See EMI fit, insurance fit, and payment activation for this itinerary
-            </p>
           </motion.div>
         )}
 
@@ -516,8 +521,8 @@ const ItineraryUploader = () => {
             <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
               <FileText size={14} className="text-muted-foreground shrink-0" />
               <span className="text-xs text-foreground font-medium truncate">{fileName}</span>
-              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                Reviewed
+              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full ml-auto shrink-0">
+                Preview
               </span>
             </div>
 
@@ -589,61 +594,137 @@ const ItineraryUploader = () => {
       </AnimatePresence>
 
       <Dialog open={showLeadForm} onOpenChange={setShowLeadForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">
-              {leadSubmitted ? "Review request saved" : "Unlock the full agent review"}
-            </DialogTitle>
-            <DialogDescription>
-              {leadSubmitted
-                ? "Your contact details are saved. Continue to the agent portal to access the full commercial review."
-                : "Share your details so this quote is treated as a real review request and not just anonymous intent. We'll connect the itinerary to your agent workflow."}
-            </DialogDescription>
-          </DialogHeader>
-
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
           {leadSubmitted ? (
-            <div className="flex flex-col items-center py-6 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
-                <CheckCircle2 size={24} className="text-brand-green" />
-              </div>
-              <p className="text-sm text-foreground font-medium text-center">
-                Your quote review is now attached to a real contact.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 w-full">
-                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="flex-1">
-                  <Button className="w-full gap-1.5">
-                    Continue to Agent Login <ArrowRight size={14} />
+            <div className="p-6">
+              <div className="flex flex-col items-center py-4 space-y-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
+                  <CheckCircle2 size={24} className="text-brand-green" />
+                </div>
+                <div className="space-y-1">
+                  <DialogTitle className="font-heading text-base">Review request saved</DialogTitle>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    This itinerary is now attached to a real contact. Continue to the agent portal to access the full commercial review.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full pt-2">
+                  <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Button className="w-full gap-1.5">
+                      Continue to Agent Login <ArrowRight size={14} />
+                    </Button>
+                  </a>
+                  <Button variant="outline" onClick={() => setShowLeadForm(false)}>
+                    Close
                   </Button>
-                </a>
-                <Button variant="outline" onClick={() => setShowLeadForm(false)}>
-                  Close
-                </Button>
+                </div>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleLeadSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Full name <span className="text-destructive">*</span></label>
-                <Input placeholder="Your full name" value={leadName} onChange={(e) => setLeadName(e.target.value)} required maxLength={100} />
+            <>
+              <div className="bg-gradient-to-b from-primary/5 to-transparent px-6 pt-6 pb-4 border-b">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Lock size={12} className="text-primary" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                    Required to unlock
+                  </p>
+                </div>
+                <DialogTitle className="font-heading text-lg leading-tight">
+                  Unlock the full commercial review
+                </DialogTitle>
+                <DialogDescription className="text-xs mt-1.5 leading-relaxed">
+                  Add your details so this quote becomes a real review request linked to your agent workflow — not anonymous intent.
+                </DialogDescription>
+                <ul className="mt-3 space-y-1.5">
+                  <li className="flex items-start gap-2 text-[12px] text-foreground">
+                    <CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" />
+                    <span>EMI fit, protection fit, and PG activation for this itinerary</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-[12px] text-foreground">
+                    <CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" />
+                    <span>Saved to your agent workflow for follow-up</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-[12px] text-foreground">
+                    <CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" />
+                    <span>Reviewed by a SanKash commercial advisor</span>
+                  </li>
+                </ul>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Mobile number <span className="text-muted-foreground text-xs">(optional)</span></label>
-                <Input type="tel" placeholder="+91 98765 43210" value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} maxLength={20} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Email <span className="text-muted-foreground text-xs">(optional)</span></label>
-                <Input type="email" placeholder="you@agency.com" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} maxLength={255} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Company <span className="text-muted-foreground text-xs">(optional)</span></label>
-                <Input placeholder="Agency name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={150} />
-              </div>
-              {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
-              <p className="text-[11px] text-muted-foreground">A mobile number or email is required before we treat this as a real review request.</p>
-              <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
-                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : <>Save and continue <ArrowRight size={14} /></>}
-              </Button>
-            </form>
+              <form onSubmit={handleLeadSubmit} className="px-6 py-5 space-y-3.5">
+                <div className="space-y-1.5">
+                  <label htmlFor="a-lead-name" className="text-xs font-semibold text-foreground">
+                    Full name <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="a-lead-name"
+                    placeholder="Your full name"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    required
+                    maxLength={100}
+                    autoComplete="name"
+                    className="h-11"
+                  />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label htmlFor="a-lead-phone" className="text-xs font-semibold text-foreground">
+                      Mobile <span className="text-muted-foreground font-normal">(or email)</span>
+                    </label>
+                    <Input
+                      id="a-lead-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      placeholder="10-digit mobile"
+                      value={leadPhone}
+                      onChange={(e) => setLeadPhone(e.target.value)}
+                      maxLength={20}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="a-lead-email" className="text-xs font-semibold text-foreground">
+                      Work email
+                    </label>
+                    <Input
+                      id="a-lead-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@agency.com"
+                      value={leadEmail}
+                      onChange={(e) => setLeadEmail(e.target.value)}
+                      maxLength={255}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="a-lead-company" className="text-xs font-semibold text-foreground">
+                    Agency name <span className="text-muted-foreground font-normal">(optional)</span>
+                  </label>
+                  <Input
+                    id="a-lead-company"
+                    placeholder="Your travel agency"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    maxLength={150}
+                    autoComplete="organization"
+                    className="h-11"
+                  />
+                </div>
+                {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
+                <p className="text-[11px] text-muted-foreground">
+                  Mobile or email required. We use it to attach this review to your workflow — not for marketing.
+                </p>
+                <Button type="submit" size="lg" className="w-full gap-2 h-12" disabled={leadSubmitting}>
+                  {leadSubmitting ? (
+                    <><Loader2 size={14} className="animate-spin" /> Saving…</>
+                  ) : (
+                    <>Unlock full review <ArrowRight size={14} /></>
+                  )}
+                </Button>
+              </form>
+            </>
           )}
         </DialogContent>
       </Dialog>
