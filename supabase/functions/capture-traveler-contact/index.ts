@@ -87,6 +87,9 @@ Deno.serve(async (req) => {
         metadata_json: {
           ...metadata,
           upload_only: false,
+          anonymous_intent: false,
+          lead_capture_classification: "actionable_lead",
+          requires_mobile_for_next_step: false,
           unlocked_from_existing_itinerary: true,
           traveler_intent_session: intentSnapshot ?? metadata.traveler_intent_session ?? null,
           traveler_contact_captured_at: new Date().toISOString(),

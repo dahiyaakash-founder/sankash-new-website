@@ -5,6 +5,13 @@ import { createLeadWithDedup, uploadQuoteFile, type LeadRow } from "@/lib/leads-
 
 export type AgentQuoteReviewConfidence = "high" | "medium";
 
+export interface AgentQuoteReviewContact {
+  full_name: string;
+  mobile_number?: string | null;
+  email?: string | null;
+  company_name?: string | null;
+}
+
 /**
  * Persists the minimum viable agent review artifact before the preview UI
  * is allowed to present a successful result.
@@ -16,17 +23,39 @@ export type AgentQuoteReviewConfidence = "high" | "medium";
 export async function saveAgentQuoteReviewLead(
   file: File,
   confidence: AgentQuoteReviewConfidence,
+  contact: AgentQuoteReviewContact,
 ): Promise<LeadRow> {
+  const fullName = contact.full_name.trim();
+  const mobile = contact.mobile_number?.trim() || null;
+  const email = contact.email?.trim() || null;
+  const company = contact.company_name?.trim() || null;
+
+  if (!fullName) {
+    throw new Error("Agent full name is required");
+  }
+
+  if (!mobile && !email) {
+    throw new Error("Provide a mobile number or email before saving this review");
+  }
+
   const uploaded = await uploadQuoteFile(file);
 
   const { lead } = await createLeadWithDedup({
-    full_name: "Agent (anonymous)",
+    full_name: fullName,
+    mobile_number: mobile,
+    email,
+    company_name: company,
     lead_source_page: "for-travel-agents",
     lead_source_type: "agent_quote_review",
     audience_type: "agent",
     quote_file_name: file.name,
     quote_file_url: uploaded.url,
-    metadata_json: { confidence },
+    metadata_json: {
+      confidence,
+      anonymous_intent: false,
+      lead_capture_classification: "actionable_lead",
+      requires_contact_for_lead: false,
+    },
   });
 
   if (!lead?.id) {
