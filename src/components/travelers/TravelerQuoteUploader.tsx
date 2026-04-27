@@ -785,44 +785,111 @@ const TravelerQuoteUploader = () => {
 
       {/* Lead capture modal */}
       <Dialog open={showLeadForm} onOpenChange={setShowLeadForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">{leadCaptureCopy.title}</DialogTitle>
-            <DialogDescription>{leadCaptureCopy.description}</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
           {leadSubmitted ? (
-            <div className="flex flex-col items-center py-6 space-y-3">
-              <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
-                <CheckCircle2 size={24} className="text-brand-green" />
+            <div className="p-6">
+              <div className="flex flex-col items-center py-4 space-y-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
+                  <CheckCircle2 size={24} className="text-brand-green" />
+                </div>
+                <div className="space-y-1">
+                  <DialogTitle className="font-heading text-base">{leadCaptureCopy.title}</DialogTitle>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    {leadCaptureCopy.description}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => { setShowLeadForm(false); setLeadSubmitted(false); }}>
+                  Close
+                </Button>
               </div>
-              <p className="text-sm text-foreground font-medium text-center">
-                Your trip review request has been recorded.
-              </p>
-              <Button variant="outline" size="sm" onClick={() => { setShowLeadForm(false); setLeadSubmitted(false); }}>
-                Close
-              </Button>
             </div>
           ) : (
-            <form onSubmit={handleLeadSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Full name <span className="text-destructive">*</span></label>
-                <Input placeholder="Your full name" value={leadName} onChange={(e) => setLeadName(e.target.value)} required maxLength={100} />
+            <>
+              <div className="bg-gradient-to-b from-primary/5 to-transparent px-6 pt-6 pb-4 border-b">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1.5">
+                  {leadCaptureCopy.eyebrow}
+                </p>
+                <DialogTitle className="font-heading text-lg leading-tight">
+                  {leadCaptureCopy.title}
+                </DialogTitle>
+                <DialogDescription className="text-xs mt-1.5 leading-relaxed">
+                  {leadCaptureCopy.description}
+                </DialogDescription>
+                <ul className="mt-3 space-y-1.5">
+                  {leadCaptureCopy.benefits.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-[12px] text-foreground">
+                      <CheckCircle2 size={13} className="text-primary shrink-0 mt-0.5" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Mobile number <span className="text-destructive">*</span></label>
-                <Input type="tel" placeholder="+91 98765 43210" value={leadPhone} onChange={(e) => { setLeadPhone(e.target.value); if (phoneError) setPhoneError(null); }} required maxLength={15} className={phoneError ? "border-destructive" : ""} />
-                {phoneError && <p className="text-xs text-destructive">{phoneError}</p>}
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Email <span className="text-muted-foreground text-xs">(optional)</span></label>
-                <Input type="email" placeholder="you@example.com" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} maxLength={255} />
-              </div>
-              {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
-              <p className="text-[11px] text-muted-foreground">We will verify your details and continue the review with you on WhatsApp or call.</p>
-              <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
-                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <>{leadCaptureCopy.button} <ArrowRight size={14} /></>}
-              </Button>
-            </form>
+              <form onSubmit={handleLeadSubmit} className="px-6 py-5 space-y-3.5">
+                <div className="space-y-1.5">
+                  <label htmlFor="t-lead-name" className="text-xs font-semibold text-foreground">
+                    Your name <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="t-lead-name"
+                    placeholder="Full name"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    required
+                    maxLength={100}
+                    autoComplete="name"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="t-lead-phone" className="text-xs font-semibold text-foreground">
+                    Mobile number <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="t-lead-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="10-digit mobile"
+                    value={leadPhone}
+                    onChange={(e) => { setLeadPhone(e.target.value); if (phoneError) setPhoneError(null); }}
+                    required
+                    maxLength={15}
+                    className={`h-11 ${phoneError ? "border-destructive" : ""}`}
+                  />
+                  {phoneError ? (
+                    <p className="text-[11px] text-destructive">{phoneError}</p>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">We'll only use this to continue your trip review on WhatsApp.</p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="t-lead-email" className="text-xs font-semibold text-foreground">
+                    Email <span className="text-muted-foreground font-normal">(optional)</span>
+                  </label>
+                  <Input
+                    id="t-lead-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    maxLength={255}
+                    className="h-11"
+                  />
+                </div>
+                {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
+                <Button type="submit" size="lg" className="w-full gap-2 h-12" disabled={leadSubmitting}>
+                  {leadSubmitting ? (
+                    <><Loader2 size={14} className="animate-spin" /> Submitting…</>
+                  ) : (
+                    <>{leadCaptureCopy.button} <ArrowRight size={14} /></>
+                  )}
+                </Button>
+                <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+                  No spam. No credit-score impact. Reviewed by a real travel advisor.
+                </p>
+              </form>
+            </>
           )}
         </DialogContent>
       </Dialog>
