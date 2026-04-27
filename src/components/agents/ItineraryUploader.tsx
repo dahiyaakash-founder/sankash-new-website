@@ -445,8 +445,8 @@ const ItineraryUploader = () => {
             <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
               <FileText size={14} className="text-muted-foreground shrink-0" />
               <span className="text-xs text-foreground font-medium truncate">{fileName}</span>
-              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                Detected
+              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full ml-auto shrink-0">
+                Preview
               </span>
             </div>
 
@@ -456,7 +456,7 @@ const ItineraryUploader = () => {
                   This looks like a travel itinerary
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  We found travel signals and this itinerary may be eligible for EMI, protection, and payment collection options.
+                  We've spotted travel signals worth reviewing. Add your details to unlock the full commercial review for this itinerary.
                 </p>
               </div>
 
@@ -476,17 +476,22 @@ const ItineraryUploader = () => {
               </div>
             </div>
 
-              <div className="flex items-center gap-3 pt-1">
-              <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
-                Share details to unlock full review <ArrowRight size={14} />
-              </Button>
-              <Button variant="outline" size="sm" onClick={reset}>
-                Upload another file
-              </Button>
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2.5">
+              <p className="text-[11px] font-semibold text-primary uppercase tracking-wider">
+                Next step — required
+              </p>
+              <p className="text-xs text-foreground leading-relaxed">
+                Share your name and contact so this quote becomes a real review request you can act on.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
+                  Unlock full review <ArrowRight size={14} />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  Upload another file
+                </Button>
+              </div>
             </div>
-            <p className="text-[10px] text-muted-foreground/60 px-1">
-              See EMI fit, insurance fit, and payment activation for this itinerary
-            </p>
           </motion.div>
         )}
 
