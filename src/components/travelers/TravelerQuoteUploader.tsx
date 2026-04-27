@@ -44,6 +44,7 @@ import TravelerAnalysisResults from "./TravelerAnalysisResults";
 const MAX_FILES = 5;
 
 type Stage = "upload" | "analyzing" | "results" | "error";
+type LeadCaptureContext = "unlock_review" | "refine_trip" | "manual_review";
 
 function buildAnalysisMessages(files: File[]) {
   const isMultiFile = files.length > 1;
@@ -153,6 +154,9 @@ const TravelerQuoteUploader = () => {
   const [analysisProgress, setAnalysisProgress] = useState("");
   const [analysisStepIndex, setAnalysisStepIndex] = useState(0);
   const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
+  const [contactCaptured, setContactCaptured] = useState(false);
+  const [leadCaptureContext, setLeadCaptureContext] = useState<LeadCaptureContext>("unlock_review");
+  const [pendingAdditionalFiles, setPendingAdditionalFiles] = useState<File[]>([]);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analysisMessages = useMemo(() => buildAnalysisMessages(files), [files]);
@@ -194,6 +198,14 @@ const TravelerQuoteUploader = () => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
 
+  const openLeadCapture = useCallback((context: LeadCaptureContext) => {
+    setLeadCaptureContext(context);
+    setLeadError(null);
+    setPhoneError(null);
+    setLeadSubmitted(false);
+    setShowLeadForm(true);
+  }, []);
+
   /** Start analysis — uploads all files and triggers the unified pipeline */
   const startAnalysis = useCallback(async () => {
     if (files.length === 0) return;
@@ -223,6 +235,9 @@ const TravelerQuoteUploader = () => {
         quote_file_url: uploaded.url,
         metadata_json: {
           upload_only: true,
+          anonymous_intent: true,
+          lead_capture_classification: "anonymous_upload",
+          requires_mobile_for_next_step: true,
           file_count: files.length,
           traveler_intent_session: buildTravelerIntentSnapshot({
             context: "initial_upload",
@@ -233,6 +248,7 @@ const TravelerQuoteUploader = () => {
 
       if (!lead?.id) throw new Error("Lead creation failed");
       setCurrentLeadId(lead.id);
+      setContactCaptured(false);
 
       // Upload all files as attachments and collect URLs
       setAnalysisProgress("Organising your holiday details…");
@@ -308,15 +324,23 @@ const TravelerQuoteUploader = () => {
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
+    setShowLeadForm(false);
+    setLeadSubmitted(false);
+    setLeadName("");
+    setLeadPhone("");
+    setLeadEmail("");
     setAnalysisResult(null);
     setAnalysisProgress("");
     setCurrentLeadId(null);
+    setContactCaptured(false);
+    setLeadCaptureContext("unlock_review");
+    setPendingAdditionalFiles([]);
     setIsReanalyzing(false);
     sessionStorage.removeItem("traveler_quote_session");
   };
 
   /** Add more files to existing analysis and re-trigger */
-  const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
+  const performAddMoreFiles = useCallback(async (newFiles: File[]) => {
     if (!currentLeadId) return;
     setIsReanalyzing(true);
     markTravelerIntentSignal("added_more_files");
@@ -356,6 +380,16 @@ const TravelerQuoteUploader = () => {
       setIsReanalyzing(false);
     }
   }, [currentLeadId]);
+
+  const handleAddMoreFiles = useCallback(async (newFiles: File[]) => {
+    if (!contactCaptured) {
+      setPendingAdditionalFiles(newFiles);
+      openLeadCapture("refine_trip");
+      return;
+    }
+
+    await performAddMoreFiles(newFiles);
+  }, [contactCaptured, openLeadCapture, performAddMoreFiles]);
 
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
@@ -398,8 +432,16 @@ const TravelerQuoteUploader = () => {
           }),
         });
 
+        setContactCaptured(true);
         trackTravelerUnlockSubmit({});
-        setLeadSubmitted(true);
+        if (pendingAdditionalFiles.length > 0) {
+          setShowLeadForm(false);
+          const queuedFiles = [...pendingAdditionalFiles];
+          setPendingAdditionalFiles([]);
+          await performAddMoreFiles(queuedFiles);
+        } else {
+          setLeadSubmitted(true);
+        }
         return;
       }
 
@@ -420,6 +462,9 @@ const TravelerQuoteUploader = () => {
         quote_file_url: quoteFileUrl,
         metadata_json: {
           confidence: analysisResult?.parsing_confidence ?? "medium",
+          anonymous_intent: false,
+          lead_capture_classification: "actionable_lead",
+          requires_mobile_for_next_step: false,
           file_count: files.length,
           traveler_intent_session: buildTravelerIntentSnapshot({
             context: "contact_capture",
@@ -435,6 +480,7 @@ const TravelerQuoteUploader = () => {
         if (!isDuplicate) await logLeadCreated(lead.id, "for-travelers").catch(() => {});
       }
 
+      setContactCaptured(true);
       trackTravelerUnlockSubmit({});
       setLeadSubmitted(true);
     } catch (err: any) {
@@ -444,6 +490,36 @@ const TravelerQuoteUploader = () => {
       setLeadSubmitting(false);
     }
   };
+
+  const leadCaptureCopy = useMemo(() => {
+    switch (leadCaptureContext) {
+      case "refine_trip":
+        return {
+          title: leadSubmitted ? "Trip update request received" : "Keep refining this trip",
+          description: leadSubmitted
+            ? "Your details have been submitted successfully. We'll review the extra trip details and continue with you on WhatsApp or call."
+            : "Share your mobile number to keep refining this trip, receive the next review on WhatsApp, and unlock EMI options if they fit.",
+          button: "Continue with WhatsApp review",
+        };
+      case "manual_review":
+        return {
+          title: leadSubmitted ? "Review request received" : "Let our team continue this review",
+          description: leadSubmitted
+            ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
+            : "Share your mobile number and our team will pick this up on WhatsApp or call, even if the automatic read is incomplete.",
+          button: "Continue on WhatsApp",
+        };
+      case "unlock_review":
+      default:
+        return {
+          title: leadSubmitted ? "Full review request received" : "Unlock your full trip review",
+          description: leadSubmitted
+            ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
+            : "Share your mobile number to get the full review, continue on WhatsApp, receive EMI options, and let our team refine this trip with you.",
+          button: "Get my full review",
+        };
+    }
+  }, [leadCaptureContext, leadSubmitted]);
 
   const activeAnalysisMessage = analysisMessages[analysisStepIndex] ?? analysisMessages[0];
 
@@ -634,7 +710,7 @@ const TravelerQuoteUploader = () => {
                 )}
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                   {files.length > 0 && (
-                    <Button size="sm" className="gap-1.5" onClick={() => setShowLeadForm(true)}>
+                    <Button size="sm" className="gap-1.5" onClick={() => openLeadCapture("manual_review")}>
                       <Phone size={13} /> Continue with our team
                     </Button>
                   )}
@@ -679,7 +755,7 @@ const TravelerQuoteUploader = () => {
               key="results"
               analysis={analysisResult}
               files={files}
-              onUnlock={() => setShowLeadForm(true)}
+              onUnlock={() => openLeadCapture("unlock_review")}
               onAddMore={handleAddMoreFiles}
               onReanalyze={() => {}}
               onReset={reset}
@@ -693,14 +769,8 @@ const TravelerQuoteUploader = () => {
       <Dialog open={showLeadForm} onOpenChange={setShowLeadForm}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-heading">
-              {leadSubmitted ? "Review request received" : "Continue your trip review"}
-            </DialogTitle>
-            <DialogDescription>
-              {leadSubmitted
-                ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
-                : "Share your mobile number and our team will continue your trip review on WhatsApp or call. If the automatic review is ready, we'll include exact savings and EMI options too."}
-            </DialogDescription>
+            <DialogTitle className="font-heading">{leadCaptureCopy.title}</DialogTitle>
+            <DialogDescription>{leadCaptureCopy.description}</DialogDescription>
           </DialogHeader>
           {leadSubmitted ? (
             <div className="flex flex-col items-center py-6 space-y-3">
@@ -732,7 +802,7 @@ const TravelerQuoteUploader = () => {
               {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
               <p className="text-[11px] text-muted-foreground">We will verify your details and continue the review with you on WhatsApp or call.</p>
               <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
-                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <>Continue with my trip review <ArrowRight size={14} /></>}
+                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <>{leadCaptureCopy.button} <ArrowRight size={14} /></>}
               </Button>
             </form>
           )}

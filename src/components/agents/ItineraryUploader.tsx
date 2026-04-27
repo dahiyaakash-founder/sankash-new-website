@@ -7,6 +7,14 @@ import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
   Upload,
   FileText,
   CheckCircle2,
@@ -30,7 +38,7 @@ import {
 } from "@/lib/upload-validation";
 import { getAgentInsuranceInsight, type InsuranceInsight } from "@/lib/insurance-rules";
 import { trackAgentQuoteUpload, trackQuoteAnalysisRequested } from "@/lib/analytics";
-import { saveAgentQuoteReviewLead } from "@/lib/agent-quote-review-service";
+import { saveAgentQuoteReviewLead, type AgentQuoteReviewConfidence } from "@/lib/agent-quote-review-service";
 
 type Stage = "upload" | "validating" | "analyzing" | "results-medium" | "results-high" | "error";
 
@@ -81,6 +89,8 @@ function wait(ms: number) {
 
 const ItineraryUploader = () => {
   const [stage, setStage] = useState<Stage>("upload");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [reviewConfidence, setReviewConfidence] = useState<AgentQuoteReviewConfidence | null>(null);
   const [fileName, setFileName] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [errorTitle, setErrorTitle] = useState("");
@@ -88,6 +98,20 @@ const ItineraryUploader = () => {
   const [errorType, setErrorType] = useState<ValidationErrorType | null>(null);
   const [showSamples, setShowSamples] = useState(false);
   const [insuranceInsight, setInsuranceInsight] = useState<InsuranceInsight | null>(null);
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadName, setLeadName] = useState("");
+  const [leadPhone, setLeadPhone] = useState("");
+  const [leadEmail, setLeadEmail] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [leadError, setLeadError] = useState<string | null>(null);
+
+  const openLeadCapture = useCallback(() => {
+    setLeadError(null);
+    setLeadSubmitted(false);
+    setShowLeadForm(true);
+  }, []);
 
   const handleFile = useCallback((file: File) => {
     const validation = validateFile(file);
@@ -101,6 +125,7 @@ const ItineraryUploader = () => {
     }
 
     setFileName(file.name);
+    setUploadedFile(file);
     trackAgentQuoteUpload({ file_uploaded: true });
     setStage("validating");
 
@@ -120,11 +145,10 @@ const ItineraryUploader = () => {
       setInsuranceInsight(getAgentInsuranceInsight(file.name));
       setStage("analyzing");
       trackQuoteAnalysisRequested({ audience_type: "agent" });
+      const normalizedConfidence = result.confidence === "high" ? "high" : "medium";
+      setReviewConfidence(normalizedConfidence);
       try {
-        await Promise.all([
-          wait(2200),
-          saveAgentQuoteReviewLead(file, result.confidence === "high" ? "high" : "medium"),
-        ]);
+        await wait(2200);
 
         const finalStage = result.confidence === "high" ? "results-high" : "results-medium";
         setStage(finalStage);
@@ -159,12 +183,63 @@ const ItineraryUploader = () => {
   const reset = () => {
     setStage("upload");
     setFileName("");
+    setUploadedFile(null);
+    setReviewConfidence(null);
     setErrorTitle("");
     setErrorBody("");
     setErrorType(null);
     setShowSamples(false);
     setInsuranceInsight(null);
+    setShowLeadForm(false);
+    setLeadSubmitted(false);
+    setLeadSubmitting(false);
+    setLeadName("");
+    setLeadPhone("");
+    setLeadEmail("");
+    setCompanyName("");
+    setLeadError(null);
   };
+
+  const handleLeadSubmit = useCallback(async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!uploadedFile || !reviewConfidence) {
+      setLeadError("Please upload the quote again before continuing.");
+      return;
+    }
+
+    const fullName = leadName.trim();
+    const phone = leadPhone.trim();
+    const email = leadEmail.trim();
+    const company = companyName.trim();
+
+    if (!fullName) {
+      setLeadError("Please share your full name.");
+      return;
+    }
+
+    if (!phone && !email) {
+      setLeadError("Share a mobile number or email so we can treat this as a real review request.");
+      return;
+    }
+
+    setLeadSubmitting(true);
+    setLeadError(null);
+
+    try {
+      await saveAgentQuoteReviewLead(uploadedFile, reviewConfidence, {
+        full_name: fullName,
+        mobile_number: phone || null,
+        email: email || null,
+        company_name: company || null,
+      });
+      setLeadSubmitted(true);
+    } catch (error) {
+      console.error("Agent itinerary save failed:", error);
+      setLeadError(error instanceof Error ? error.message : "We couldn't save this review request. Please try again.");
+    } finally {
+      setLeadSubmitting(false);
+    }
+  }, [companyName, leadEmail, leadName, leadPhone, reviewConfidence, uploadedFile]);
 
   return (
     <div className="bg-card rounded-2xl border shadow-card overflow-hidden">
@@ -401,12 +476,10 @@ const ItineraryUploader = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-1">
-              <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-                <Button size="sm" className="gap-1.5">
-                  Login to unlock full review <ArrowRight size={14} />
-                </Button>
-              </a>
+              <div className="flex items-center gap-3 pt-1">
+              <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
+                Share details to unlock full review <ArrowRight size={14} />
+              </Button>
               <Button variant="outline" size="sm" onClick={reset}>
                 Upload another file
               </Button>
@@ -506,16 +579,74 @@ const ItineraryUploader = () => {
                  <p className="text-[11px] text-muted-foreground mb-3 text-center max-w-[280px] leading-relaxed">
                    Login to access EMI fit, protection fit, and payment activation for this itinerary
                 </p>
-                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" className="gap-1.5">
-                    Agent Login <ArrowRight size={14} />
-                  </Button>
-                </a>
+                <Button size="sm" className="gap-1.5" onClick={openLeadCapture}>
+                  Share details to unlock <ArrowRight size={14} />
+                </Button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Dialog open={showLeadForm} onOpenChange={setShowLeadForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading">
+              {leadSubmitted ? "Review request saved" : "Unlock the full agent review"}
+            </DialogTitle>
+            <DialogDescription>
+              {leadSubmitted
+                ? "Your contact details are saved. Continue to the agent portal to access the full commercial review."
+                : "Share your details so this quote is treated as a real review request and not just anonymous intent. We'll connect the itinerary to your agent workflow."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {leadSubmitted ? (
+            <div className="flex flex-col items-center py-6 space-y-3">
+              <div className="w-12 h-12 rounded-full bg-brand-green/10 flex items-center justify-center">
+                <CheckCircle2 size={24} className="text-brand-green" />
+              </div>
+              <p className="text-sm text-foreground font-medium text-center">
+                Your quote review is now attached to a real contact.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <a href={AGENT_LOGIN_URL} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button className="w-full gap-1.5">
+                    Continue to Agent Login <ArrowRight size={14} />
+                  </Button>
+                </a>
+                <Button variant="outline" onClick={() => setShowLeadForm(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleLeadSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Full name <span className="text-destructive">*</span></label>
+                <Input placeholder="Your full name" value={leadName} onChange={(e) => setLeadName(e.target.value)} required maxLength={100} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Mobile number <span className="text-muted-foreground text-xs">(optional)</span></label>
+                <Input type="tel" placeholder="+91 98765 43210" value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} maxLength={20} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email <span className="text-muted-foreground text-xs">(optional)</span></label>
+                <Input type="email" placeholder="you@agency.com" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} maxLength={255} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Company <span className="text-muted-foreground text-xs">(optional)</span></label>
+                <Input placeholder="Agency name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={150} />
+              </div>
+              {leadError && <p className="text-xs text-destructive font-medium">{leadError}</p>}
+              <p className="text-[11px] text-muted-foreground">A mobile number or email is required before we treat this as a real review request.</p>
+              <Button type="submit" className="w-full gap-2" disabled={leadSubmitting}>
+                {leadSubmitting ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : <>Save and continue <ArrowRight size={14} /></>}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

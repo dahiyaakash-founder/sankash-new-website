@@ -247,8 +247,58 @@ describe("traveler quote review fallback", () => {
         expect.objectContaining({
           lead_source_page: "for-travelers",
           lead_source_type: "itinerary_upload",
+          metadata_json: expect.objectContaining({
+            anonymous_intent: true,
+            lead_capture_classification: "anonymous_upload",
+          }),
         }),
       );
     });
+  });
+
+  it("requires mobile capture before re-analyzing extra files after the first useful readback", async () => {
+    triggerItineraryAnalysisMock.mockResolvedValue(
+      makeAnalysis({
+        destination_city: "Maldives",
+        parsing_confidence: "medium",
+        duration_nights: 4,
+        duration_days: 5,
+        total_price: 185000,
+        extracted_completeness_score: 46,
+        next_inputs_needed_json: [
+          {
+            label: "Share your travel month",
+            reason: "We need your month of travel to tighten timing and budget checks.",
+            priority: "high",
+          },
+        ],
+      }),
+    );
+
+    const { container } = render(<TravelerQuoteUploader />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["%PDF-1.4"], "maldives-itinerary.pdf", { type: "application/pdf" });
+
+    fireEvent.change(input, {
+      target: { files: [file] },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /review my trip/i }));
+
+    expect(await screen.findByText("What's Missing")).toBeInTheDocument();
+
+    const fileInputs = container.querySelectorAll('input[type="file"]');
+    const addMoreInput = fileInputs[fileInputs.length - 1] as HTMLInputElement;
+    const extraFile = new File(["image"], "travel-dates.png", { type: "image/png" });
+
+    fireEvent.change(addMoreInput, {
+      target: { files: [extraFile] },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /re-analyze/i }));
+
+    expect(await screen.findByText("Keep refining this trip")).toBeInTheDocument();
+    expect(triggerItineraryAnalysisMock).toHaveBeenCalledTimes(1);
+    expect(uploadLeadAttachmentMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import React from "react";
@@ -93,23 +93,46 @@ describe("agent itinerary upload and build-my-trip submission", () => {
     toastError.mockReset();
   });
 
-  it("shows an explicit upload issue when the agent review lead cannot be saved", async () => {
-    vi.useFakeTimers();
-    saveAgentQuoteReviewLead.mockRejectedValue(new Error("Lead creation failed"));
+  it("waits for agent contact details before creating an actionable quote-review lead", async () => {
+    vi.useRealTimers();
+    saveAgentQuoteReviewLead.mockResolvedValue({ id: "agent-lead-1" });
 
     const { container } = render(<ItineraryUploader />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File(["quote"], "goa-package.pdf", { type: "application/pdf" });
 
-    await act(async () => {
-      fireEvent.change(input, { target: { files: [file] } });
-      await vi.advanceTimersByTimeAsync(1000);
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText("Commercial Review Preview", {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(saveAgentQuoteReviewLead).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /share details to unlock/i }));
+    fireEvent.change(screen.getByPlaceholderText("Your full name"), {
+      target: { value: "Aakash Dahiya" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    expect(await screen.findByText(/mobile number or email is required/i)).toBeInTheDocument();
+    expect(saveAgentQuoteReviewLead).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByPlaceholderText("you@agency.com"), {
+      target: { value: "akash@agency.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    await waitFor(() => {
+      expect(saveAgentQuoteReviewLead).toHaveBeenCalledWith(
+        file,
+        "high",
+        expect.objectContaining({
+          full_name: "Aakash Dahiya",
+          email: "akash@agency.com",
+        }),
+      );
     });
 
-    expect(screen.getByText("We couldn't save this itinerary")).toBeInTheDocument();
-    expect(screen.getByText("The quote did not reach our review system. Please upload it again.")).toBeInTheDocument();
-    expect(screen.queryByText("Commercial Review Preview")).not.toBeInTheDocument();
-  });
+    expect(await screen.findByText("Review request saved")).toBeInTheDocument();
+  }, 10000);
 
   it("stores build-my-trip leads under itinerary_upload and gives the submitted state a live talk-to-us path", async () => {
     createLeadWithDedup.mockResolvedValue({
