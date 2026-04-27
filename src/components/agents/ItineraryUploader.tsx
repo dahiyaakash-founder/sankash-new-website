@@ -521,8 +521,8 @@ const ItineraryUploader = () => {
             <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
               <FileText size={14} className="text-muted-foreground shrink-0" />
               <span className="text-xs text-foreground font-medium truncate">{fileName}</span>
-              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-auto shrink-0">
-                Reviewed
+              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-0.5 rounded-full ml-auto shrink-0">
+                Preview
               </span>
             </div>
 
