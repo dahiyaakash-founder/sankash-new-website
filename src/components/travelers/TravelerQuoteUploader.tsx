@@ -495,28 +495,46 @@ const TravelerQuoteUploader = () => {
     switch (leadCaptureContext) {
       case "refine_trip":
         return {
-          title: leadSubmitted ? "Trip update request received" : "Keep refining this trip",
+          eyebrow: "One quick step",
+          title: leadSubmitted ? "We've got your update" : "Refine this trip with our team",
           description: leadSubmitted
-            ? "Your details have been submitted successfully. We'll review the extra trip details and continue with you on WhatsApp or call."
-            : "Share your mobile number to keep refining this trip, receive the next review on WhatsApp, and unlock EMI options if they fit.",
-          button: "Continue with WhatsApp review",
+            ? "Your details are in. We'll continue this trip on WhatsApp shortly."
+            : "Add your mobile so we can keep shaping this trip with you on WhatsApp — and share EMI options the moment they fit.",
+          button: "Continue on WhatsApp",
+          benefits: [
+            "Pick up the next round on WhatsApp",
+            "Get EMI options if they fit your trip",
+            "A real travel advisor stays in the loop",
+          ],
         };
       case "manual_review":
         return {
-          title: leadSubmitted ? "Review request received" : "Let our team continue this review",
+          eyebrow: "Hand this to a human",
+          title: leadSubmitted ? "We've got it" : "Let our team continue from here",
           description: leadSubmitted
-            ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
-            : "Share your mobile number and our team will pick this up on WhatsApp or call, even if the automatic read is incomplete.",
+            ? "Your details are in. A travel advisor will pick this up on WhatsApp shortly."
+            : "Drop your mobile and our team will continue this review with you on WhatsApp — even where the automatic read fell short.",
           button: "Continue on WhatsApp",
+          benefits: [
+            "A travel advisor reviews your trip in person",
+            "We message you on WhatsApp — no spam calls",
+            "Free, no booking required",
+          ],
         };
       case "unlock_review":
       default:
         return {
-          title: leadSubmitted ? "Full review request received" : "Unlock your full trip review",
+          eyebrow: "Unlock full review",
+          title: leadSubmitted ? "Your full review is on the way" : "Get your full trip review",
           description: leadSubmitted
-            ? "Your details have been submitted successfully. Our team will continue your trip review and share the next steps on WhatsApp or call."
-            : "Share your mobile number to get the full review, continue on WhatsApp, receive EMI options, and let our team refine this trip with you.",
-          button: "Get my full review",
+            ? "Your details are in. We'll send the full review on WhatsApp shortly."
+            : "Add your mobile to unlock the full review, continue on WhatsApp, and see EMI options if they fit.",
+          button: "Unlock my full review",
+          benefits: [
+            "See the full trip review, not just a preview",
+            "Continue the conversation on WhatsApp",
+            "Get EMI options tailored to this trip",
+          ],
         };
     }
   }, [leadCaptureContext, leadSubmitted]);
