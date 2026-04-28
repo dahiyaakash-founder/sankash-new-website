@@ -203,7 +203,7 @@ export async function fetchLeads(opts: {
   sortBy?: string;
   sortAsc?: boolean;
 }) {
-  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "updated_at", sortAsc = false } = opts;
+  const { search, status, sourceType, audience, priority, assignedTo, unassigned, overdueFollowUp, page = 1, pageSize = 25, sortBy = "created_at", sortAsc = false } = opts;
 
   // Resolve new broad flags, falling back to legacy traveler-only flags
   const onlyAnon = opts.onlyAnonymous ?? opts.onlyAnonymousTraveler ?? false;
