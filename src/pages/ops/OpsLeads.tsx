@@ -185,8 +185,30 @@ const OpsLeads = () => {
     } catch {}
   }, []);
 
+  // Intake summary counts (Received On / created_at), adapted to active bucket
+  const loadIntakeCounts = useCallback(async () => {
+    try {
+      const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+      const startOfYesterday = new Date(startOfToday); startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+      const startOf7 = new Date(startOfToday); startOf7.setDate(startOf7.getDate() - 6);
+      const isAnon = activeTab === "anon";
+      const bucketCol = supabaseFilterFor(isAnon);
+      const [todayRes, yestRes, last7Res] = await Promise.all([
+        bucketCol().gte("created_at", startOfToday.toISOString()),
+        bucketCol().gte("created_at", startOfYesterday.toISOString()).lt("created_at", startOfToday.toISOString()),
+        bucketCol().gte("created_at", startOf7.toISOString()),
+      ]);
+      setIntakeCounts({
+        today: todayRes.count ?? 0,
+        yesterday: yestRes.count ?? 0,
+        last7: last7Res.count ?? 0,
+      });
+    } catch {}
+  }, [activeTab]);
+
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadCounts(); }, [loadCounts]);
+  useEffect(() => { loadIntakeCounts(); }, [loadIntakeCounts]);
 
   // Load team members for owner display
   useEffect(() => {
