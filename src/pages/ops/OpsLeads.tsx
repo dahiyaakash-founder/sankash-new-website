@@ -193,11 +193,16 @@ const OpsLeads = () => {
       const startOfYesterday = new Date(startOfToday); startOfYesterday.setDate(startOfYesterday.getDate() - 1);
       const startOf7 = new Date(startOfToday); startOf7.setDate(startOf7.getDate() - 6);
       const isAnon = activeTab === "anon";
-      const bucketCol = supabaseFilterFor(isAnon);
+      const buildBase = () => {
+        let q = supabase.from("leads").select("id", { count: "exact", head: true });
+        if (isAnon) q = q.is("email", null).is("mobile_number", null);
+        else q = q.or("email.not.is.null,mobile_number.not.is.null");
+        return q;
+      };
       const [todayRes, yestRes, last7Res] = await Promise.all([
-        bucketCol().gte("created_at", startOfToday.toISOString()),
-        bucketCol().gte("created_at", startOfYesterday.toISOString()).lt("created_at", startOfToday.toISOString()),
-        bucketCol().gte("created_at", startOf7.toISOString()),
+        buildBase().gte("created_at", startOfToday.toISOString()),
+        buildBase().gte("created_at", startOfYesterday.toISOString()).lt("created_at", startOfToday.toISOString()),
+        buildBase().gte("created_at", startOf7.toISOString()),
       ]);
       setIntakeCounts({
         today: todayRes.count ?? 0,
