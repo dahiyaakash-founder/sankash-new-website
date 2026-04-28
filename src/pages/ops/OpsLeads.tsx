@@ -408,17 +408,31 @@ const OpsLeads = () => {
                     </td>
                   </tr>
                 )}
-                {!loading && leads.map((lead: any) => (
+                {!loading && leads.map((lead: any) => {
+                  const createdMs = new Date(lead.created_at).getTime();
+                  const ageHours = (Date.now() - createdMs) / 36e5;
+                  const isUntouched = lead.status === "new";
+                  const isFreshToday = isUntouched && ageHours <= 24;
+                  const isFreshWeek = isUntouched && ageHours > 24 && ageHours <= 24 * 7;
+                  return (
                   <tr
                     key={lead.id}
-                    className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${selected.has(lead.id) ? "bg-primary/5" : ""}`}
+                    className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${selected.has(lead.id) ? "bg-primary/5" : ""} ${isFreshToday ? "bg-primary/[0.04]" : ""}`}
                     onClick={() => navigate(`/ops/leads/${lead.id}`)}
                   >
-                    <td className="px-3 py-2.5" onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}>
+                    <td className={`px-3 py-2.5 ${isFreshToday ? "border-l-2 border-l-primary" : ""}`} onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}>
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleSelect(lead.id)} className="rounded" />
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                        {isFreshToday && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">New today</span>
+                        )}
+                        {isFreshWeek && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">Untouched</span>
+                        )}
+                      </div>
                       <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.created_at), "HH:mm")}</span>
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
