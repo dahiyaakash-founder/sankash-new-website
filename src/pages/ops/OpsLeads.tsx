@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OpsLayout from "@/components/ops/OpsLayout";
 import { fetchLeads, fetchTeamMembers, updateLead, leadsToCSV, type LeadRow, type LeadStatus, type LeadSourceType, type AudienceType, type LeadPriority, type TeamMember } from "@/lib/leads-service";
+import { supabase } from "@/integrations/supabase/client";
 import { logActivity } from "@/lib/activity-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,7 @@ const OpsLeads = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importOpen, setImportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [intakeCounts, setIntakeCounts] = useState<{ today: number; yesterday: number; last7: number }>({ today: 0, yesterday: 0, last7: 0 });
 
   const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
@@ -184,8 +186,35 @@ const OpsLeads = () => {
     } catch {}
   }, []);
 
+  // Intake summary counts (Received On / created_at), adapted to active bucket
+  const loadIntakeCounts = useCallback(async () => {
+    try {
+      const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+      const startOfYesterday = new Date(startOfToday); startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+      const startOf7 = new Date(startOfToday); startOf7.setDate(startOf7.getDate() - 6);
+      const isAnon = activeTab === "anon";
+      const buildBase = () => {
+        let q = supabase.from("leads").select("id", { count: "exact", head: true });
+        if (isAnon) q = q.is("email", null).is("mobile_number", null);
+        else q = q.or("email.not.is.null,mobile_number.not.is.null");
+        return q;
+      };
+      const [todayRes, yestRes, last7Res] = await Promise.all([
+        buildBase().gte("created_at", startOfToday.toISOString()),
+        buildBase().gte("created_at", startOfYesterday.toISOString()).lt("created_at", startOfToday.toISOString()),
+        buildBase().gte("created_at", startOf7.toISOString()),
+      ]);
+      setIntakeCounts({
+        today: todayRes.count ?? 0,
+        yesterday: yestRes.count ?? 0,
+        last7: last7Res.count ?? 0,
+      });
+    } catch {}
+  }, [activeTab]);
+
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadCounts(); }, [loadCounts]);
+  useEffect(() => { loadIntakeCounts(); }, [loadIntakeCounts]);
 
   // Load team members for owner display
   useEffect(() => {
@@ -268,6 +297,23 @@ const OpsLeads = () => {
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Intake summary (Received On / created_at) */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: "Today", value: intakeCounts.today, tone: "bg-primary/10 text-primary border-primary/20" },
+            { label: "Yesterday", value: intakeCounts.yesterday, tone: "bg-muted text-foreground border-border" },
+            { label: "Last 7 days", value: intakeCounts.last7, tone: "bg-muted text-foreground border-border" },
+          ].map((c) => (
+            <div key={c.label} className={`inline-flex items-baseline gap-2 rounded-lg border px-3 py-1.5 ${c.tone}`}>
+              <span className="text-[10px] uppercase tracking-wide font-medium opacity-80">{c.label}</span>
+              <span className="text-sm font-semibold tabular-nums">{c.value}</span>
+            </div>
+          ))}
+          <span className="text-[10px] text-muted-foreground self-center ml-1">
+            Intake by Received On · {activeTab === "anon" ? "Anonymous" : "Main Leads"}
+          </span>
         </div>
 
         {/* View presets */}
@@ -362,17 +408,31 @@ const OpsLeads = () => {
                     </td>
                   </tr>
                 )}
-                {!loading && leads.map((lead: any) => (
+                {!loading && leads.map((lead: any) => {
+                  const createdMs = new Date(lead.created_at).getTime();
+                  const ageHours = (Date.now() - createdMs) / 36e5;
+                  const isUntouched = lead.status === "new";
+                  const isFreshToday = isUntouched && ageHours <= 24;
+                  const isFreshWeek = isUntouched && ageHours > 24 && ageHours <= 24 * 7;
+                  return (
                   <tr
                     key={lead.id}
-                    className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${selected.has(lead.id) ? "bg-primary/5" : ""}`}
+                    className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${selected.has(lead.id) ? "bg-primary/5" : ""} ${isFreshToday ? "bg-primary/[0.04]" : ""}`}
                     onClick={() => navigate(`/ops/leads/${lead.id}`)}
                   >
-                    <td className="px-3 py-2.5" onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}>
+                    <td className={`px-3 py-2.5 ${isFreshToday ? "border-l-2 border-l-primary" : ""}`} onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}>
                       <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleSelect(lead.id)} className="rounded" />
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
-                      <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-foreground">{format(new Date(lead.created_at), "dd MMM yy")}</span>
+                        {isFreshToday && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">New today</span>
+                        )}
+                        {isFreshWeek && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">Untouched</span>
+                        )}
+                      </div>
                       <span className="block text-[10px] text-muted-foreground/60">{format(new Date(lead.created_at), "HH:mm")}</span>
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
@@ -446,7 +506,8 @@ const OpsLeads = () => {
                     </td>
                     <td className="px-3 py-2.5 text-xs capitalize hidden lg:table-cell">{lead.audience_type ?? "—"}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
