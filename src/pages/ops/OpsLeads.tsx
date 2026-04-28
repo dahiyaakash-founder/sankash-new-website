@@ -506,7 +506,8 @@ const OpsLeads = () => {
                     </td>
                     <td className="px-3 py-2.5 text-xs capitalize hidden lg:table-cell">{lead.audience_type ?? "—"}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
