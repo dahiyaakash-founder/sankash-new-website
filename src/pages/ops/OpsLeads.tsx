@@ -119,6 +119,7 @@ const OpsLeads = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importOpen, setImportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [intakeCounts, setIntakeCounts] = useState<{ today: number; yesterday: number; last7: number }>({ today: 0, yesterday: 0, last7: 0 });
 
   const canDelete = role === "super_admin" || role === "admin" || role === "team_supervisor";
   const canImport = role === "super_admin" || role === "admin" || role === "team_supervisor";
