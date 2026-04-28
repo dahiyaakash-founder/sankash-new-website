@@ -299,6 +299,23 @@ const OpsLeads = () => {
           </div>
         </div>
 
+        {/* Intake summary (Received On / created_at) */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: "Today", value: intakeCounts.today, tone: "bg-primary/10 text-primary border-primary/20" },
+            { label: "Yesterday", value: intakeCounts.yesterday, tone: "bg-muted text-foreground border-border" },
+            { label: "Last 7 days", value: intakeCounts.last7, tone: "bg-muted text-foreground border-border" },
+          ].map((c) => (
+            <div key={c.label} className={`inline-flex items-baseline gap-2 rounded-lg border px-3 py-1.5 ${c.tone}`}>
+              <span className="text-[10px] uppercase tracking-wide font-medium opacity-80">{c.label}</span>
+              <span className="text-sm font-semibold tabular-nums">{c.value}</span>
+            </div>
+          ))}
+          <span className="text-[10px] text-muted-foreground self-center ml-1">
+            Intake by Received On · {activeTab === "anon" ? "Anonymous" : "Main Leads"}
+          </span>
+        </div>
+
         {/* View presets */}
         <div className="flex flex-wrap gap-1.5">
           {VIEW_PRESETS.map((p) => (
